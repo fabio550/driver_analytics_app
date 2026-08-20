@@ -1,4 +1,4 @@
-import 'package:driver_analytics_app/presentation/pages/home_page.dart';
+import 'package:driver_analytics_app/core/presentation/pages/home_page.dart';
 import 'package:go_router/go_router.dart';
 
 final routes = [
