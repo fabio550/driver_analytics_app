@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-//import 'package:go_router/go_router.dart';
+import 'package:go_router/go_router.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -12,14 +12,17 @@ class HomePage extends StatelessWidget {
         title: Text('Driver Analytics App')
       ),
       body: Center(
-        child: Column(
-          children: [
-            ElevatedButton(
-                onPressed: () {
-                  //context.push('/shifts');
-                },
-                child: Text('Jornadas')),
-          ],
+        child: Padding(
+          padding: const EdgeInsets.all(40),
+          child: Column(
+            children: [
+              ElevatedButton(
+                  onPressed: () {
+                    context.push('/shifts');
+                  },
+                  child: Text('Jornadas')),
+            ],
+          ),
         ),
       )
     );
