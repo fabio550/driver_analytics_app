@@ -54,3 +54,16 @@ class _ShiftsPageState extends ConsumerState<ShiftsPage> {
     );
   }
 }
+
+Future<void> _startShift(BuildContext context, WidgetRef ref) async {
+  final initialKm = await StartShiftDialog.show(context);
+  if (initialKm == null || !context.mounted) return;
+
+  await ref.read(activeShiftNotifierProvider.notifier).start(initialKm);
+  if (!context.mounted) return;
+
+  final activeShift = ref.read(activeShiftNotifierProvider).shift;
+  if (activeShift != null) {
+    context.push('/shifts/active');
+  }
+}
