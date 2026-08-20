@@ -12,12 +12,10 @@ class StartShiftUseCase {
   final IdGenerator _idGenerator;
 
   const StartShiftUseCase({
-    required ShiftRepository repository,
-    required ShiftValidator validator,
-    required IdGenerator idGenerator,
-  })  : _repository = repository,
-        _validator = validator,
-        _idGenerator = idGenerator;
+    required this._repository,
+    required this._validator,
+    required this._idGenerator,
+  });
 
   Future<Result<ShiftEntity, List<ValidationFailure<ShiftField>>>> execute({
     required double initialKm,
