@@ -1,8 +1,11 @@
 import 'package:driver_analytics_app/core/presentation/providers/clock_provider.dart';
 import 'package:driver_analytics_app/features/shift/application/providers/active_shift_provider.dart';
+import 'package:driver_analytics_app/features/shift/domain/enums/shift_status.dart';
+import 'package:driver_analytics_app/features/shift/presentation/widgets/finish_shift_dialog.dart';
 import 'package:driver_analytics_app/features/shift/presentation/widgets/shift_pause_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 class ActiveShiftPage extends ConsumerWidget {
   const ActiveShiftPage({super.key});
@@ -91,13 +94,36 @@ class _ActiveShiftBody extends ConsumerWidget {
             ShiftPauseTile(index: i, pause: shift.pauses[i], now: now),
         const SizedBox(height: 24),
         OutlinedButton(
-          // A finalização (dialog de km final/ganhos + tela de resumo)
-          // entra na próxima fatia.
-          onPressed: null,
+          onPressed: state.isSubmitting ? null : () => _finish(context, ref),
+          style: OutlinedButton.styleFrom(
+            foregroundColor: colorScheme.error,
+            side: BorderSide(color: colorScheme.error),
+          ),
           child: const Text('Finalizar jornada'),
         ),
       ],
     );
+  }
+  
+  Future<void> _finish(BuildContext context, WidgetRef ref) async {
+    final shift = ref.read(activeShiftNotifierProvider).shift;
+    if (shift == null) return;
+
+    final result = await FinishShiftDialog.show(
+      context,
+      initialKm: shift.initialKm,
+    );
+    if (result == null || !context.mounted) return;
+
+    final (finalKm, earnings) = result;
+    final notifier = ref.read(activeShiftNotifierProvider.notifier);
+    await notifier.finish(finalKm: finalKm, earnings: earnings);
+    if (!context.mounted) return;
+
+    final updated = ref.read(activeShiftNotifierProvider).shift;
+    if (updated?.status == ShiftStatus.finished) {
+      context.push('/shifts/active/summary');
+    }
   }
 
   String _formatDuration(Duration duration) {
