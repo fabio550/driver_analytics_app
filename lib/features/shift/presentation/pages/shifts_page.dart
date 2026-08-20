@@ -20,9 +20,12 @@ class _ShiftsPageState extends ConsumerState<ShiftsPage> {
   void initState() {
     super.initState();
 
-    Future.microtask(
-      () => ref.read(shiftNotifierProvider.notifier).loadShifts(),
-    );
+    Future.microtask(() {
+      ref.read(shiftNotifierProvider.notifier).loadShifts();
+      // Recupera uma jornada em andamento caso o app tenha sido reaberto
+      // no meio de uma (persistida a cada transição — ver ActiveShiftNotifier).
+      ref.read(activeShiftNotifierProvider.notifier).restore();
+    });
   }
 
   @override
@@ -35,7 +38,11 @@ class _ShiftsPageState extends ConsumerState<ShiftsPage> {
           IconButton(
             icon: const Icon(Icons.play_arrow),
             tooltip: 'Iniciar jornada',
-            onPressed: () => _startShift(context, ref),
+            // Evita criar uma segunda jornada por cima de uma já em
+            // andamento (recuperada ou não).
+            onPressed:
+                activeShift != null ? null : () => _startShift(context, ref),
+            ),
           ),
         ],
       ),
@@ -46,13 +53,19 @@ class _ShiftsPageState extends ConsumerState<ShiftsPage> {
         icon: const Icon(Icons.add),
         label: const Text('Nova Jornada'),
       ),
-      body: switch (state.status) {
-        ShiftLoadStatus.initial || ShiftLoadStatus.loading => const Center(
-            child: CircularProgressIndicator(),
-          ),
-        ShiftLoadStatus.loaded => ShiftsListView(shifts: state.shifts),
-        ShiftLoadStatus.error => const ShiftsErrorView(),
-      },
+      body: Column(
+        children: [
+          if (activeShift != null) _ActiveShiftBanner(shift: activeShift),
+          Expanded(
+            child: switch (state.status) {
+              ShiftLoadStatus.initial ||
+              ShiftLoadStatus.loading =>
+                const Center(child: CircularProgressIndicator()),
+              ShiftLoadStatus.loaded => ShiftsListView(shifts: state.shifts),
+              ShiftLoadStatus.error => const ShiftsErrorView(),
+          },
+        ],
+      ),
     );
   }
 
@@ -67,5 +80,55 @@ class _ShiftsPageState extends ConsumerState<ShiftsPage> {
     if (activeShift != null) {
       context.push('/shifts/active');
     }
+  }
+}
+
+              final activeShift = ref.read(activeShiftNotifierProvider).shift;
+    if (activeShift != null) {
+      context.push('/shifts/active');
+    }
+  }
+}
+
+    final activeShift = ref.read(activeShiftNotifierProvider).shift;
+    if (activeShift != null) {
+      context.push('/shifts/active');
+    }
+  }
+}
+
+class _ActiveShiftBanner extends StatelessWidget {
+  final ShiftEntity shift;
+
+  const _ActiveShiftBanner({required this.shift});
+
+  @override
+  Widget build(BuildContext context) {
+    final isPaused = shift.isPaused;
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Material(
+      color: isPaused ? colorScheme.tertiaryContainer : colorScheme.primaryContainer,
+      child: InkWell(
+        onTap: () => context.push('/shifts/active'),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: Row(
+            children: [
+              Icon(isPaused ? Icons.pause_circle : Icons.play_circle),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  isPaused
+                      ? 'Jornada pausada — toque para voltar'
+                      : 'Jornada em andamento — toque para voltar',
+                ),
+              ),
+              const Icon(Icons.chevron_right),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
