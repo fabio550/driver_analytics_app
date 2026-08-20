@@ -11,4 +11,7 @@ final routes = [
     path: '/shifts',
     builder: (context, state) => const ShiftsPage(),
   ),
+  GoRoute(
+    path: '/shifts/create',
+    builder: (context, state) => const ShiftCreatePage(),
 ];
