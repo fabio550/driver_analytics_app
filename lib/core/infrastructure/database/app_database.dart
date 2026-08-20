@@ -1,10 +1,14 @@
 import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
+import 'package:driver_analytics_app/features/shift/infrastructure/database/tables/shift_pauses.dart';
+import 'package:driver_analytics_app/features/shift/infrastructure/database/tables/shifts.dart';
 
 part 'app_database.g.dart';
 
 @DriftDatabase(
   tables: [
+    Shifts,
+    ShiftPauses,
   ]
 )
 class AppDatabase extends _$AppDatabase {
