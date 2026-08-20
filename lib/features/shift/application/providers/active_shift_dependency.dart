@@ -37,3 +37,18 @@ final resumeShiftUseCaseProvider = Provider<ResumeShiftUseCase>((ref) {
     validator: validator,
   );
 });
+
+final finishShiftUseCaseProvider = Provider<FinishShiftUseCase>((ref) {
+  final repository = ref.watch(shiftRepositoryProvider);
+  final validator = ref.watch(shiftValidatorProvider);
+  return FinishShiftUseCase(
+    repository: repository,
+    validator: validator,
+  );
+});
+
+final confirmShiftUseCaseProvider = Provider<ConfirmShiftUseCase>((ref) {
+  final repository = ref.watch(shiftRepositoryProvider);
+  return ConfirmShiftUseCase(repository: repository);
+});
+
