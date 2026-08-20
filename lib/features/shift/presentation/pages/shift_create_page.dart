@@ -224,3 +224,125 @@ class _ShiftCreatePageState extends ConsumerState<ShiftCreatePage> {
       lastDate: DateTime(now.year + 1),
     );
     if (date == null || !mounted) return null;
+
+    final time = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.fromDateTime(initial ?? now),
+    );
+    if (time == null) return null;
+
+    return DateTime(date.year, date.month, date.day, time.hour, time.minute);
+  }
+
+  Future<void> _pickStartTime() async {
+    final picked = await _pickDateTime(_formState.startTime);
+    if (picked == null) return;
+    setState(() => _formState = _formState.copyWith(startTime: picked));
+  }
+
+  Future<void> _pickEndTime() async {
+    final picked = await _pickDateTime(_formState.endTime);
+    if (picked == null) return;
+    setState(() => _formState = _formState.copyWith(endTime: picked));
+  }
+
+  Future<void> _pickPauseTime(int pauseId, {required bool isStart}) async {
+    final pauseIndex = _formState.pauses.indexWhere((p) => p.id == pauseId);
+    if (pauseIndex == -1) return;
+
+    final entry = _formState.pauses[pauseIndex];
+    final picked = await _pickDateTime(isStart ? entry.startTime : entry.endTime);
+    if (picked == null) return;
+
+    final updatedEntry = isStart
+        ? entry.copyWith(startTime: picked)
+        : entry.copyWith(endTime: picked);
+
+    final updatedPauses = [..._formState.pauses];
+    updatedPauses[pauseIndex] = updatedEntry;
+
+    setState(() => _formState = _formState.copyWith(pauses: updatedPauses));
+  }
+
+  void _addPause() {
+    setState(() {
+      _formState = _formState.copyWith(
+        pauses: [
+          ..._formState.pauses,
+          ShiftPauseFormEntry(id: _formState.nextPauseId),
+        ],
+        nextPauseId: _formState.nextPauseId + 1,
+      );
+    });
+  }
+
+  void _removePause(int id) {
+    setState(() {
+      _formState = _formState.copyWith(
+        pauses: _formState.pauses.where((p) => p.id != id).toList(),
+      );
+    });
+  }
+
+  Future<void> _submit() async {
+    final initialKm = double.tryParse(_formState.initialKm.replaceAll(',', '.'));
+    final startTime = _formState.startTime;
+
+    if (initialKm == null || startTime == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Preencha a km inicial e o horário de início.'),
+        ),
+      );
+      return;
+    }
+
+    final finalKm = _formState.finalKm.trim().isEmpty
+        ? null
+        : double.tryParse(_formState.finalKm.replaceAll(',', '.'));
+    final earnings = _formState.earnings.trim().isEmpty
+        ? null
+        : double.tryParse(_formState.earnings.replaceAll(',', '.'));
+    final endTime = _formState.endTime;
+
+    final pauses = _formState.pauses
+        .where((p) => p.startTime != null)
+        .map((p) => PauseInput(startTime: p.startTime!, endTime: p.endTime))
+        .toList();
+
+    setState(() => _formState = _formState.copyWith(isSubmitting: true));
+
+    await ref.read(shiftNotifierProvider.notifier).createShift(
+          initialKm: initialKm,
+          startTime: startTime,
+          // Lançamento manual (retroativo) já entra como definitivo — não
+          // passa pelos estados intermediários do fluxo "ao vivo".
+          status: ShiftStatus.submitted,
+          finalKm: finalKm,
+          earnings: earnings,
+          endTime: endTime,
+          pauses: pauses,
+        );
+
+    if (!mounted) return;
+
+    final validationFailures = ref.read(shiftNotifierProvider).validationFailures;
+    if (validationFailures.isEmpty) {
+      context.pop();
+      return;
+    }
+
+    setState(() {
+      _formState = _formState.copyWith(
+        failures: validationFailures,
+        isSubmitting: false,
+      );
+    });
+  }
+
+  String _formatDateTime(DateTime date) {
+    String two(int n) => n.toString().padLeft(2, '0');
+    return '${two(date.day)}/${two(date.month)}/${date.year} '
+        '${two(date.hour)}:${two(date.minute)}';
+  }
+}
