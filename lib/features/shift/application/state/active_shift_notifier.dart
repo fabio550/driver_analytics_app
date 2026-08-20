@@ -1,7 +1,11 @@
 import 'package:driver_analytics_app/core/domain/result/result.dart';
 import 'package:driver_analytics_app/features/shift/application/providers/active_shift_dependency.dart';
 import 'package:driver_analytics_app/features/shift/application/state/active_shift_state.dart';
+import 'package:driver_analytics_app/features/shift/application/providers/shift_dependency.dart';
 import 'package:driver_analytics_app/features/shift/application/use_cases/pause_shift_use_case.dart';
+import 'package:driver_analytics_app/features/shift/application/use_cases/confirm_shift_use_case.dart';
+import 'package:driver_analytics_app/features/shift/application/use_cases/delete_shift_use_case.dart';
+import 'package:driver_analytics_app/features/shift/application/use_cases/finish_shift_use_case.dart';
 import 'package:driver_analytics_app/features/shift/application/use_cases/resume_shift_use_case.dart';
 import 'package:driver_analytics_app/features/shift/application/use_cases/start_shift_use_case.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -10,12 +14,18 @@ class ActiveShiftNotifier extends Notifier<ActiveShiftState> {
   late final StartShiftUseCase _startShiftUseCase;
   late final PauseShiftUseCase _pauseShiftUseCase;
   late final ResumeShiftUseCase _resumeShiftUseCase;
+  late final FinishShiftUseCase _finishShiftUseCase;
+  late final ConfirmShiftUseCase _confirmShiftUseCase;
+  late final DeleteShiftUseCase _deleteShiftUseCase;
 
   @override
   ActiveShiftState build() {
     _startShiftUseCase = ref.read(startShiftUseCaseProvider);
     _pauseShiftUseCase = ref.read(pauseShiftUseCaseProvider);
     _resumeShiftUseCase = ref.read(resumeShiftUseCaseProvider);
+    _finishShiftUseCase = ref.read(finishShiftUseCaseProvider);
+    _confirmShiftUseCase = ref.read(confirmShiftUseCaseProvider);
+    _deleteShiftUseCase = ref.read(deleteShiftUseCaseProvider);
     return const ActiveShiftState();
   }
 
@@ -58,6 +68,59 @@ class ActiveShiftNotifier extends Notifier<ActiveShiftState> {
       clearError: true,
       clearValidationFailures: true,
     );
+  }
+
+    Future<void> finish({
+    required double finalKm,
+    double? earnings,
+  }) async {
+    final shift = state.shift;
+    if (shift == null) return;
+
+    _startSubmitting();
+    final result = await _finishShiftUseCase.execute(
+      shift: shift,
+      now: DateTime.now(),
+      finalKm: finalKm,
+      earnings: earnings,
+    );
+    _applyResult(result);
+  }
+
+  /// Envia a jornada finalizada como definitiva (status `submitted`).
+  /// Retorna `true` em caso de sucesso, já limpando o estado local.
+  Future<bool> confirm() async {
+    final shift = state.shift;
+    if (shift == null) return false;
+
+    state = state.copyWith(isSubmitting: true, clearError: true);
+    final result = await _confirmShiftUseCase.execute(shift: shift);
+    switch (result) {
+      case Success():
+        state = const ActiveShiftState();
+        return true;
+      case Failure(:final error):
+        state = state.copyWith(isSubmitting: false, error: error);
+        return false;
+    }
+  }
+
+  /// Descarta a jornada (finalizada ou não), apagando o rascunho já
+  /// persistido. Retorna `true` em caso de sucesso, já limpando o estado.
+  Future<bool> discard() async {
+    final shift = state.shift;
+    if (shift == null) return false;
+
+    state = state.copyWith(isSubmitting: true, clearError: true);
+    final result = await _deleteShiftUseCase.execute(shiftId: shift.id);
+    switch (result) {
+      case Success():
+        state = const ActiveShiftState();
+        return true;
+      case Failure(:final error):
+        state = state.copyWith(isSubmitting: false, error: error);
+        return false;
+    }
   }
 
   void _applyResult(_ShiftResult result) {
