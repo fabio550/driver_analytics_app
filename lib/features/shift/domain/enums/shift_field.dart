@@ -4,4 +4,7 @@ enum ShiftField {
   earnings,
   startTime,
   endTime,
+  pauseStartTime,
+  pauseEndTime,
+  pauseOverlap,
 }
