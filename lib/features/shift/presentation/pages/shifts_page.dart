@@ -1,5 +1,6 @@
 import 'package:driver_analytics_app/features/shift/application/providers/active_shift_provider.dart';
 import 'package:driver_analytics_app/features/shift/application/state/shift_load_status.dart';
+import 'package:driver_analytics_app/features/shift/domain/entities/shift_entity.dart';
 import 'package:driver_analytics_app/features/shift/presentation/widgets/shifts_list_view.dart';
 import 'package:driver_analytics_app/features/shift/presentation/widgets/start_shift_dialog.dart';
 import 'package:flutter/material.dart';
@@ -31,6 +32,7 @@ class _ShiftsPageState extends ConsumerState<ShiftsPage> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(shiftNotifierProvider);
+    final activeShift = ref.watch(activeShiftNotifierProvider).shift;
 
     return Scaffold(
       appBar: AppBar(
@@ -42,7 +44,6 @@ class _ShiftsPageState extends ConsumerState<ShiftsPage> {
             // andamento (recuperada ou não).
             onPressed:
                 activeShift != null ? null : () => _startShift(context, ref),
-            ),
           ),
         ],
       ),
@@ -63,7 +64,8 @@ class _ShiftsPageState extends ConsumerState<ShiftsPage> {
                 const Center(child: CircularProgressIndicator()),
               ShiftLoadStatus.loaded => ShiftsListView(shifts: state.shifts),
               ShiftLoadStatus.error => const ShiftsErrorView(),
-          },
+            },
+          ),
         ],
       ),
     );
@@ -75,20 +77,6 @@ class _ShiftsPageState extends ConsumerState<ShiftsPage> {
 
     await ref.read(activeShiftNotifierProvider.notifier).start(initialKm);
     if (!context.mounted) return;
-
-    final activeShift = ref.read(activeShiftNotifierProvider).shift;
-    if (activeShift != null) {
-      context.push('/shifts/active');
-    }
-  }
-}
-
-              final activeShift = ref.read(activeShiftNotifierProvider).shift;
-    if (activeShift != null) {
-      context.push('/shifts/active');
-    }
-  }
-}
 
     final activeShift = ref.read(activeShiftNotifierProvider).shift;
     if (activeShift != null) {
