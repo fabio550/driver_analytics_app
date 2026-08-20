@@ -1,5 +1,7 @@
 import 'package:driver_analytics_app/core/infrastructure/services/uuid_generator_provider.dart';
 import 'package:driver_analytics_app/features/shift/application/providers/shift_dependency.dart';
+import 'package:driver_analytics_app/features/shift/application/use_cases/confirm_shift_use_case.dart';
+import 'package:driver_analytics_app/features/shift/application/use_cases/finish_shift_use_case.dart';
 import 'package:driver_analytics_app/features/shift/application/use_cases/pause_shift_use_case.dart';
 import 'package:driver_analytics_app/features/shift/application/use_cases/resume_shift_use_case.dart';
 import 'package:driver_analytics_app/features/shift/application/use_cases/start_shift_use_case.dart';
