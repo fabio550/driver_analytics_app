@@ -57,8 +57,6 @@ class ShiftEntity {
 
   bool get isPaused => pauses.isNotEmpty && pauses.last.isRunning;
 
-    bool get isPaused => pauses.isNotEmpty && pauses.last.isRunning;
-
   /// Cria uma jornada recém-iniciada (status [ShiftStatus.active]).
   factory ShiftEntity.start({
     required String id,
