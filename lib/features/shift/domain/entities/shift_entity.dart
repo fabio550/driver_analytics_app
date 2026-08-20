@@ -103,6 +103,22 @@ class ShiftEntity {
       pauses: updatedPauses,
     );
   }
+  /// Finaliza a jornada. Se houver uma pausa em andamento, ela é fechada
+  /// junto (reaproveitando [resume]) antes de marcar a jornada como
+  /// [ShiftStatus.finished].
+  ShiftEntity finish({
+    required DateTime now,
+    required double finalKm,
+    double? earnings,
+  }) {
+    final withClosedPause = isPaused ? resume(now: now) : this;
+    return withClosedPause.copyWith(
+      status: ShiftStatus.finished,
+      finalKm: finalKm,
+      earnings: earnings,
+      endTime: now,
+    );
+  }
 
   ShiftEntity copyWith({
     ShiftStatus? status,
