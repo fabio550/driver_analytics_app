@@ -6,6 +6,7 @@ import 'package:driver_analytics_app/features/shift/presentation/widgets/shift_p
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'dart:ui';
 
 class ActiveShiftPage extends ConsumerWidget {
   const ActiveShiftPage({super.key});
