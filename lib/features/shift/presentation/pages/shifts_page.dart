@@ -28,7 +28,15 @@ class _ShiftsPageState extends ConsumerState<ShiftsPage> {
     final state = ref.watch(shiftNotifierProvider);
 
     return Scaffold(
-      appBar: AppBar(),
+      appBar: AppBar(
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.play_arrow),
+            tooltip: 'Iniciar jornada',
+            onPressed: () => _startShift(context, ref),
+          ),
+        ],
+      ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
           context.push('/shifts/create');
