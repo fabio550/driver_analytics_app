@@ -8,7 +8,11 @@ class GetShiftsUseCase {
     required this._repository,
   });
 
-  Future<List<ShiftEntity>> execute() {
-    return _repository.getAll();
+  /// Só retorna jornadas [ShiftStatus.submitted] — rascunhos em andamento
+  /// (idle/active/paused) ou finalizados mas ainda não confirmados
+  /// (finished) não devem aparecer no histórico.
+  Future<List<ShiftEntity>> execute() async {
+    final shifts = await _repository.getAll();
+    return shifts.where((s) => s.status == ShiftStatus.submitted).toList();
   }
 }
