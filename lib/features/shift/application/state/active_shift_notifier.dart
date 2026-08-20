@@ -6,6 +6,7 @@ import 'package:driver_analytics_app/features/shift/application/providers/active
 import 'package:driver_analytics_app/features/shift/application/state/active_shift_state.dart';
 import 'package:driver_analytics_app/features/shift/application/providers/shift_dependency.dart';
 import 'package:driver_analytics_app/features/shift/application/use_cases/pause_shift_use_case.dart';
+import 'package:driver_analytics_app/features/shift/application/use_cases/get_active_shift_use_case.dart';
 import 'package:driver_analytics_app/features/shift/application/use_cases/confirm_shift_use_case.dart';
 import 'package:driver_analytics_app/features/shift/application/use_cases/delete_shift_use_case.dart';
 import 'package:driver_analytics_app/features/shift/application/use_cases/finish_shift_use_case.dart';
@@ -24,6 +25,7 @@ class ActiveShiftNotifier extends Notifier<ActiveShiftState> {
   late final FinishShiftUseCase _finishShiftUseCase;
   late final ConfirmShiftUseCase _confirmShiftUseCase;
   late final DeleteShiftUseCase _deleteShiftUseCase;
+  late final GetActiveShiftUseCase _getActiveShiftUseCase;
 
   @override
   ActiveShiftState build() {
@@ -33,7 +35,19 @@ class ActiveShiftNotifier extends Notifier<ActiveShiftState> {
     _finishShiftUseCase = ref.read(finishShiftUseCaseProvider);
     _confirmShiftUseCase = ref.read(confirmShiftUseCaseProvider);
     _deleteShiftUseCase = ref.read(deleteShiftUseCaseProvider);
+    _getActiveShiftUseCase = ref.read(getActiveShiftUseCaseProvider);
     return const ActiveShiftState();
+  }
+  /// Recupera uma jornada em andamento já persistida (ex: app foi reaberto
+  /// no meio de uma jornada). Não faz nada se já houver uma shift carregada
+  /// em memória ou se nenhuma jornada em andamento for encontrada.
+  Future<void> restore() async {
+    if (state.shift != null) return;
+
+    final shift = await _getActiveShiftUseCase.execute();
+    if (shift != null) {
+      state = state.copyWith(shift: shift);
+    }
   }
 
   Future<void> start(double initialKm) async {
