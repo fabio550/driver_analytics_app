@@ -60,7 +60,7 @@ class ActiveShiftNotifier extends Notifier<ActiveShiftState> {
     );
   }
 
-  void _applyResult(Result result) {
+  void _applyResult(_ShiftResult result) {
     switch (result) {
       case Success(:final value):
         state = state.copyWith(
