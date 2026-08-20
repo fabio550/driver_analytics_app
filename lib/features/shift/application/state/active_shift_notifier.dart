@@ -1,4 +1,7 @@
 import 'package:driver_analytics_app/core/domain/result/result.dart';
+import 'package:driver_analytics_app/core/domain/failures/validation_failure.dart';
+import 'package:driver_analytics_app/features/shift/domain/entities/shift_entity.dart';
+import 'package:driver_analytics_app/features/shift/domain/enums/shift_field.dart';
 import 'package:driver_analytics_app/features/shift/application/providers/active_shift_dependency.dart';
 import 'package:driver_analytics_app/features/shift/application/state/active_shift_state.dart';
 import 'package:driver_analytics_app/features/shift/application/providers/shift_dependency.dart';
@@ -8,7 +11,11 @@ import 'package:driver_analytics_app/features/shift/application/use_cases/delete
 import 'package:driver_analytics_app/features/shift/application/use_cases/finish_shift_use_case.dart';
 import 'package:driver_analytics_app/features/shift/application/use_cases/resume_shift_use_case.dart';
 import 'package:driver_analytics_app/features/shift/application/use_cases/start_shift_use_case.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+typedef _ShiftResult
+    = Result<ShiftEntity, List<ValidationFailure<ShiftField>>>;
 
 class ActiveShiftNotifier extends Notifier<ActiveShiftState> {
   late final StartShiftUseCase _startShiftUseCase;
