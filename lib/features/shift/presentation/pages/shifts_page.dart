@@ -1,5 +1,7 @@
+import 'package:driver_analytics_app/features/shift/application/providers/active_shift_provider.dart';
 import 'package:driver_analytics_app/features/shift/application/state/shift_load_status.dart';
 import 'package:driver_analytics_app/features/shift/presentation/widgets/shifts_list_view.dart';
+import 'package:driver_analytics_app/features/shift/presentation/widgets/start_shift_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -53,17 +55,17 @@ class _ShiftsPageState extends ConsumerState<ShiftsPage> {
       },
     );
   }
-}
 
-Future<void> _startShift(BuildContext context, WidgetRef ref) async {
-  final initialKm = await StartShiftDialog.show(context);
-  if (initialKm == null || !context.mounted) return;
+  Future<void> _startShift(BuildContext context, WidgetRef ref) async {
+    final initialKm = await StartShiftDialog.show(context);
+    if (initialKm == null || !context.mounted) return;
 
-  await ref.read(activeShiftNotifierProvider.notifier).start(initialKm);
-  if (!context.mounted) return;
+    await ref.read(activeShiftNotifierProvider.notifier).start(initialKm);
+    if (!context.mounted) return;
 
-  final activeShift = ref.read(activeShiftNotifierProvider).shift;
-  if (activeShift != null) {
-    context.push('/shifts/active');
+    final activeShift = ref.read(activeShiftNotifierProvider).shift;
+    if (activeShift != null) {
+      context.push('/shifts/active');
+    }
   }
 }
