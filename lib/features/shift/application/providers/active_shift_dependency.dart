@@ -2,6 +2,7 @@ import 'package:driver_analytics_app/core/infrastructure/services/uuid_generator
 import 'package:driver_analytics_app/features/shift/application/providers/shift_dependency.dart';
 import 'package:driver_analytics_app/features/shift/application/use_cases/confirm_shift_use_case.dart';
 import 'package:driver_analytics_app/features/shift/application/use_cases/finish_shift_use_case.dart';
+import 'package:driver_analytics_app/features/shift/application/use_cases/get_active_shift_use_case.dart';
 import 'package:driver_analytics_app/features/shift/application/use_cases/pause_shift_use_case.dart';
 import 'package:driver_analytics_app/features/shift/application/use_cases/resume_shift_use_case.dart';
 import 'package:driver_analytics_app/features/shift/application/use_cases/start_shift_use_case.dart';
@@ -45,6 +46,11 @@ final finishShiftUseCaseProvider = Provider<FinishShiftUseCase>((ref) {
     repository: repository,
     validator: validator,
   );
+});
+
+final getActiveShiftUseCaseProvider = Provider<GetActiveShiftUseCase>((ref) {
+  final repository = ref.watch(shiftRepositoryProvider);
+  return GetActiveShiftUseCase(repository: repository);
 });
 
 final confirmShiftUseCaseProvider = Provider<ConfirmShiftUseCase>((ref) {
