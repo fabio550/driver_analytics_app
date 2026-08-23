@@ -1,3 +1,5 @@
+import 'package:driver_analytics_app/core/presentation/formatters/currency_input_formatter.dart';
+import 'package:driver_analytics_app/core/presentation/widgets/currency_field.dart';
 import 'package:flutter/material.dart';
 
 /// Pergunta km final e ganho bruto. Devolve `(finalKm, earnings)` ou `null`
@@ -28,14 +30,25 @@ class _FinishShiftDialogState extends State<FinishShiftDialog> {
   double? get _finalKm =>
       double.tryParse(_finalKmController.text.replaceAll(',', '.'));
 
-  double? get _earnings =>
-      double.tryParse(_earningsController.text.replaceAll(',', '.'));
+  double get _earnings => CurrencyInputFormatter.toDouble(_earningsController.text);
 
   bool get _isValid =>
-      _finalKm != null && _finalKm! > widget.initialKm && _earnings != null;
+      _finalKm != null &&
+      _finalKm! > widget.initialKm &&
+      _earningsController.text.isNotEmpty;
+
+  void initState() {
+    super.initState();
+    // CurrencyField não expõe onChanged — escuta o controller direto pra
+    // reavaliar _isValid a cada dígito digitado.
+    _earningsController.addListener(_onEarningsChanged);
+  }
+
+  void _onEarningsChanged() => setState(() {});
 
   @override
   void dispose() {
+    _earningsController.removeListener(_onEarningsChanged);
     _finalKmController.dispose();
     _earningsController.dispose();
     super.dispose();
@@ -72,14 +85,11 @@ class _FinishShiftDialogState extends State<FinishShiftDialog> {
             onChanged: (_) => setState(() {}),
           ),
           const SizedBox(height: 12),
-          TextField(
-            controller: _earningsController,
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            decoration: const InputDecoration(labelText: 'Ganho bruto (R\$)'),
-            onChanged: (_) => setState(() {}),
-            onSubmitted: (_) => _confirm(),
-          ),
-        ],
+                    Text('Ganho bruto', style: Theme.of(context).textTheme.bodySmall),
+          const SizedBox(height: 4),
+          Text('Ganho bruto', style: Theme.of(context).textTheme.bodySmall),
+          const SizedBox(height: 4),
+          CurrencyField(controller: _earningsController),        ],
       ),
       actions: [
         TextButton(

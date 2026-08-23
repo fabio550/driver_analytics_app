@@ -1,4 +1,6 @@
 import 'package:driver_analytics_app/core/domain/failures/validation_failure.dart';
+import 'package:driver_analytics_app/core/presentation/formatters/currency_input_formatter.dart';
+import 'package:driver_analytics_app/core/presentation/widgets/currency_field.dart';
 import 'package:driver_analytics_app/features/shift/application/providers/shift_provider.dart';
 import 'package:driver_analytics_app/features/shift/application/use_cases/inputs/pause_input.dart';
 import 'package:driver_analytics_app/features/shift/domain/enums/shift_field.dart';
@@ -88,17 +90,26 @@ class _ShiftCreatePageState extends ConsumerState<ShiftCreatePage> {
               ),
             ),
             const SizedBox(height: 12),
-            TextFormField(
-              controller: _earningsController,
-              keyboardType:
-                  const TextInputType.numberWithOptions(decimal: true),
-              decoration: InputDecoration(
-                labelText: 'Ganhos (opcional)',
-                errorText: _errorTextFor(ShiftField.earnings),
-              ),
-              onChanged: (value) => setState(
-                () => _formState = _formState.copyWith(earnings: value),
-              ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Ganhos (opcional)',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+                const SizedBox(height: 4),
+                CurrencyField(controller: _earningsController),
+                if (_errorTextFor(ShiftField.earnings) != null) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    _errorTextFor(ShiftField.earnings)!,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.error,
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ],
             ),
             const SizedBox(height: 24),
             Row(
@@ -300,11 +311,9 @@ class _ShiftCreatePageState extends ConsumerState<ShiftCreatePage> {
     final finalKm = _formState.finalKm.trim().isEmpty
         ? null
         : double.tryParse(_formState.finalKm.replaceAll(',', '.'));
-    final earnings = _formState.earnings.trim().isEmpty
+    final earnings = _earningsController.text.trim().isEmpty
         ? null
-        : double.tryParse(_formState.earnings.replaceAll(',', '.'));
-    final endTime = _formState.endTime;
-
+        : CurrencyInputFormatter.toDouble(_earningsController.text);    final endTime = _formState.endTime;
     final pauses = _formState.pauses
         .where((p) => p.startTime != null)
         .map((p) => PauseInput(startTime: p.startTime!, endTime: p.endTime))
