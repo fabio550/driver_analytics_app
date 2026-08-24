@@ -18,16 +18,9 @@ class ShiftsListView extends StatelessWidget {
       );
     }
 
-    return ListView.separated(
-      padding: const EdgeInsets.only(bottom: 24),
+    return ListView.builder(
+      padding: const EdgeInsets.symmetric(vertical: 6),
       itemCount: shifts.length,
-      separatorBuilder: (context, i) => const Divider(
-        height: 1,
-        thickness: 0.5,
-        indent: 20,
-        endIndent: 20,
-        color: Color(0xff474747),
-      ),
       itemBuilder: (context, i) => ShiftListTile(shift: shifts[i]),
     );
   }
