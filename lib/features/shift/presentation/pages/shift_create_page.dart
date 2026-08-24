@@ -58,7 +58,7 @@ class _ShiftCreatePageState extends ConsumerState<ShiftCreatePage> {
             ),
             const SizedBox(height: 12),
             _buildDateTimeTile(
-              label: 'Fim (opcional)',
+              label: 'Fim',
               value: _formState.endTime,
               errors: _formState.failuresFor(ShiftField.endTime),
               onTap: () => _pickEndTime(),
@@ -82,7 +82,7 @@ class _ShiftCreatePageState extends ConsumerState<ShiftCreatePage> {
               keyboardType:
                   const TextInputType.numberWithOptions(decimal: true),
               decoration: InputDecoration(
-                labelText: 'Km final (opcional)',
+                labelText: 'Km final',
                 errorText: _errorTextFor(ShiftField.finalKm),
               ),
               onChanged: (value) => setState(
@@ -94,7 +94,7 @@ class _ShiftCreatePageState extends ConsumerState<ShiftCreatePage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Ganhos (opcional)',
+                  'Ganhos',
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
                 const SizedBox(height: 4),
@@ -198,7 +198,7 @@ class _ShiftCreatePageState extends ConsumerState<ShiftCreatePage> {
             ),
             const SizedBox(height: 8),
             _buildDateTimeTile(
-              label: 'Fim da pausa (opcional)',
+              label: 'Fim da pausa',
               value: entry.endTime,
               errors: const [],
               onTap: () => _pickPauseTime(entry.id, isStart: false),
@@ -251,20 +251,82 @@ class _ShiftCreatePageState extends ConsumerState<ShiftCreatePage> {
     setState(() => _formState = _formState.copyWith(startTime: picked));
   }
 
+  /// Combina [time] com a data de [anchor], assumindo que é o mesmo dia —
+  /// e avançando pro dia seguinte se o horário "voltar no tempo" em
+  /// relação ao anchor (turno que passa da meia-noite, ex: começou 17:00
+  /// e terminou 03:40 → assume que o fim foi no dia seguinte).
+  DateTime _resolveDateTime({
+    required DateTime anchor,
+    required TimeOfDay time,
+  }) {
+    var result = DateTime(
+      anchor.year,
+      anchor.month,
+      anchor.day,
+      time.hour,
+      time.minute,
+    );
+    if (!result.isAfter(anchor)) {
+      result = result.add(const Duration(days: 1));
+    }
+    return result;
+  }
+
   Future<void> _pickEndTime() async {
-    final picked = await _pickDateTime(_formState.endTime);
-    if (picked == null) return;
-    setState(() => _formState = _formState.copyWith(endTime: picked));
+    final startTime = _formState.startTime;
+    if (startTime == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Selecione o horário de início primeiro.'),
+        ),
+      );
+      return;
+    }
+
+    // Jornada é sempre no mesmo dia (ou vira a noite pro seguinte) — só
+    // pergunta a hora, o dia é deduzido a partir do início.
+    final time = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.fromDateTime(_formState.endTime ?? startTime),
+    );
+    if (time == null || !mounted) return;
+
+    final endTime = _resolveDateTime(anchor: startTime, time: time);
+    setState(() => _formState = _formState.copyWith(endTime: endTime));
   }
 
   Future<void> _pickPauseTime(int pauseId, {required bool isStart}) async {
+
+    final startTime = _formState.startTime;
+
+    if (startTime == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Selecione o horário de início da jornada primeiro.'),
+        ),
+      );
+      return;
+    }
+
     final pauseIndex = _formState.pauses.indexWhere((p) => p.id == pauseId);
     if (pauseIndex == -1) return;
 
     final entry = _formState.pauses[pauseIndex];
-    final picked = await _pickDateTime(isStart ? entry.startTime : entry.endTime);
-    if (picked == null) return;
 
+        // Início da pausa é ancorado no início da jornada; fim da pausa é
+    // ancorado no próprio início dela.
+    final anchor = isStart ? startTime : (entry.startTime ?? startTime);
+
+    final time = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.fromDateTime(
+        (isStart ? entry.startTime : entry.endTime) ?? anchor,
+      ),
+    );
+    if (time == null || !mounted) return;
+
+    final picked = _resolveDateTime(anchor: anchor, time: time);
+    
     final updatedEntry = isStart
         ? entry.copyWith(startTime: picked)
         : entry.copyWith(endTime: picked);
@@ -298,22 +360,27 @@ class _ShiftCreatePageState extends ConsumerState<ShiftCreatePage> {
   Future<void> _submit() async {
     final initialKm = double.tryParse(_formState.initialKm.replaceAll(',', '.'));
     final startTime = _formState.startTime;
-
-    if (initialKm == null || startTime == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Preencha a km inicial e o horário de início.'),
-        ),
-      );
-      return;
-    }
-
+    final endTime = _formState.endTime;
     final finalKm = _formState.finalKm.trim().isEmpty
         ? null
         : double.tryParse(_formState.finalKm.replaceAll(',', '.'));
-    final earnings = _earningsController.text.trim().isEmpty
-        ? null
-        : CurrencyInputFormatter.toDouble(_earningsController.text);    final endTime = _formState.endTime;
+    final earningsFilled = _earningsController.text.trim().isNotEmpty;
+
+    // Lançamento manual já entra como jornada definitiva (submitted) — não
+    // faz sentido salvar um registro histórico incompleto, então todos os
+    // campos são obrigatórios aqui (diferente do fluxo "ao vivo", que
+    // preenche km final/ganhos só no fim).
+    if (initialKm == null || startTime == null ||
+        endTime == null || finalKm == null || !earningsFilled) {
+      ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Preencha todos os campos.'),        ),
+      );
+        return;
+    }
+    
+    final earnings = CurrencyInputFormatter.toDouble(_earningsController.text);
+
     final pauses = _formState.pauses
         .where((p) => p.startTime != null)
         .map((p) => PauseInput(startTime: p.startTime!, endTime: p.endTime))
@@ -324,8 +391,6 @@ class _ShiftCreatePageState extends ConsumerState<ShiftCreatePage> {
     await ref.read(shiftNotifierProvider.notifier).createShift(
           initialKm: initialKm,
           startTime: startTime,
-          // Lançamento manual (retroativo) já entra como definitivo — não
-          // passa pelos estados intermediários do fluxo "ao vivo".
           status: ShiftStatus.submitted,
           finalKm: finalKm,
           earnings: earnings,
