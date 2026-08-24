@@ -239,6 +239,7 @@ class _ShiftCreatePageState extends ConsumerState<ShiftCreatePage> {
     final time = await showTimePicker(
       context: context,
       initialTime: TimeOfDay.fromDateTime(initial ?? now),
+      initialEntryMode: TimePickerEntryMode.input,
     );
     if (time == null) return null;
 
@@ -288,6 +289,7 @@ class _ShiftCreatePageState extends ConsumerState<ShiftCreatePage> {
     final time = await showTimePicker(
       context: context,
       initialTime: TimeOfDay.fromDateTime(_formState.endTime ?? startTime),
+      initialEntryMode: TimePickerEntryMode.input,
     );
     if (time == null || !mounted) return;
 
@@ -322,6 +324,7 @@ class _ShiftCreatePageState extends ConsumerState<ShiftCreatePage> {
       initialTime: TimeOfDay.fromDateTime(
         (isStart ? entry.startTime : entry.endTime) ?? anchor,
       ),
+      initialEntryMode: TimePickerEntryMode.input,
     );
     if (time == null || !mounted) return;
 
