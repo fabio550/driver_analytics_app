@@ -1,5 +1,5 @@
 import 'package:driver_analytics_app/features/shift/application/providers/active_shift_provider.dart';
-import 'package:driver_analytics_app/features/shift/application/state/shift_load_status.dart';
+import 'package:driver_analytics_app/core/domain/enums/load_status.dart';
 import 'package:driver_analytics_app/features/shift/domain/entities/shift_entity.dart';
 import 'package:driver_analytics_app/features/shift/presentation/widgets/shifts_list_view.dart';
 import 'package:driver_analytics_app/features/shift/presentation/widgets/start_shift_dialog.dart';
@@ -59,11 +59,11 @@ class _ShiftsPageState extends ConsumerState<ShiftsPage> {
           if (activeShift != null) _ActiveShiftBanner(shift: activeShift),
           Expanded(
             child: switch (state.status) {
-              ShiftLoadStatus.initial ||
-              ShiftLoadStatus.loading =>
+              LoadStatus.initial ||
+              LoadStatus.loading =>
                 const Center(child: CircularProgressIndicator()),
-              ShiftLoadStatus.loaded => ShiftsListView(shifts: state.shifts),
-              ShiftLoadStatus.error => const ShiftsErrorView(),
+              LoadStatus.loaded => ShiftsListView(shifts: state.shifts),
+              LoadStatus.error => const ShiftsErrorView(),
             },
           ),
         ],
