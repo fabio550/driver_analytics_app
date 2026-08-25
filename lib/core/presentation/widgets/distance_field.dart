@@ -1,18 +1,19 @@
 import 'package:driver_analytics_app/core/domain/failures/validation_failure.dart';
-import 'package:driver_analytics_app/core/presentation/formatters/currency_input_formatter.dart';
 import 'package:driver_analytics_app/features/shift/domain/enums/shift_field.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-class CurrencyField extends StatelessWidget {
+class DistanceField extends StatelessWidget {
   final String label;
   final List<ValidationFailure<ShiftField>> errors;
+  final void Function(String)? onChanged;
   final TextEditingController controller;
 
-  const CurrencyField({
+  const DistanceField({
     super.key,
     required this.label,
     required this.errors,
+    required this.onChanged,
     required this.controller,
   });
 
@@ -45,25 +46,19 @@ class CurrencyField extends StatelessWidget {
                   ),
                 ),
               ),
-              child: const Text(
-                'R\$',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Color(0xFF6B6B6B),
-                ),
-              ),
+              child: const Icon(Icons.car_repair_sharp),
             ),
             Expanded(
               child: TextField(
+                onChanged: onChanged,
                 controller: controller,
                 keyboardType: const TextInputType.numberWithOptions(
                   decimal: true,
                 ),
                 inputFormatters: [
                   FilteringTextInputFormatter.digitsOnly,
-                  CurrencyInputFormatter(),
                 ],
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   border: InputBorder.none,
                   contentPadding: EdgeInsets.symmetric(horizontal: 12),
                 ),
@@ -75,3 +70,4 @@ class CurrencyField extends StatelessWidget {
     );
   }
 }
+

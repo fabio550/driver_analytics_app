@@ -2,33 +2,54 @@ import 'package:driver_analytics_app/features/shift/domain/entities/shift_entity
 import 'package:driver_analytics_app/features/shift/domain/entities/shift_pause_entity.dart';
 import 'package:flutter/material.dart';
 
-class ShiftListTile extends StatelessWidget {
+class ShiftListTile extends StatefulWidget {
   final ShiftEntity shift;
 
-  const ShiftListTile({super.key, required this.shift});
+  const ShiftListTile({
+    super.key,
+    required this.shift,
+  });
+
+  @override
+  State<ShiftListTile> createState() => _ShiftListTileState();
+}
+
+class _ShiftListTileState extends State<ShiftListTile> {
+  
+  bool isExpanded = false;
 
   @override
   Widget build(BuildContext context) {
     final now = DateTime.now();
 
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildHeader(context),
-            const SizedBox(height: 14),
-            _buildTimeline(context),
-            const SizedBox(height: 16),
-            Divider(
-              height: 1,
-              color: Theme.of(context).colorScheme.outlineVariant,
-            ),
-            const SizedBox(height: 12),
-            _buildStats(context, now),
-          ],
+    return InkWell(
+      onTap: () {
+        setState(() {
+          isExpanded = !isExpanded;
+        });
+      },
+      child: Card(
+        margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildHeader(context),
+              const SizedBox(height: 14),
+              _buildTimeline(context),
+              const SizedBox(height: 16),
+              _buildStats(context, now, isExpanded),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Icon(
+                    isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down
+                  )
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -37,20 +58,20 @@ class ShiftListTile extends StatelessWidget {
   Widget _buildHeader(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
-
+    
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Expanded(
           child: Text(
-            _formatFullDate(shift.startTime),
+            _formatFullDate(widget.shift.startTime),
             style: textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.w600,
             ),
           ),
         ),
         Text(
-          _formatCurrency(shift.earnings ?? 0),
+          _formatCurrency(widget.shift.earnings ?? 0),
           style: textTheme.titleLarge?.copyWith(
             fontWeight: FontWeight.bold,
             color: colorScheme.primary,
@@ -71,18 +92,18 @@ class ShiftListTile extends StatelessWidget {
         _TimelinePoint(
           icon: Icons.play_circle_fill,
           color: colorScheme.primary,
-          label: _formatTime(shift.startTime),
+          label: _formatTime(widget.shift.startTime),
         ),
-        for (final pause in shift.pauses) ...[
+        for (final pause in widget.shift.pauses) ...[
           _timelineArrow(colorScheme),
           _TimelinePauseChip(pause: pause, colorScheme: colorScheme),
         ],
-        if (shift.endTime != null) ...[
+        if (widget.shift.endTime != null) ...[
           _timelineArrow(colorScheme),
           _TimelinePoint(
-            icon: Icons.flag_circle,
-            color: colorScheme.tertiary,
-            label: _formatTime(shift.endTime!),
+            icon: Icons.stop_circle,
+            color: colorScheme.primary,
+            label: _formatTime(widget.shift.endTime!),
           ),
         ],
       ],
@@ -93,24 +114,38 @@ class ShiftListTile extends StatelessWidget {
     return Icon(Icons.arrow_right_alt, size: 16, color: colorScheme.outline);
   }
 
-  Widget _buildStats(BuildContext context, DateTime now) {
-    final stats = <(String, String)>[
-      ('Ganho total', _formatCurrency(shift.earnings ?? 0)),
-      ('Km total', _formatKm(shift.distanceKm)),
-      ('Tempo total', _formatDuration(shift.elapsedTime(now))),
-      ('Tempo pausado', _formatDuration(shift.totalPausedTime(now))),
-      ('Tempo ativo', _formatDuration(shift.workedTime(now))),
-      ('Ganho/km', _formatCurrencyOrDash(shift.earningsPerKm())),
-      ('Ganho/hora', _formatCurrencyOrDash(shift.earningsPerHour(now))),
-    ];
-
-    return Wrap(
-      spacing: 20,
-      runSpacing: 12,
-      children: [
-        for (final (label, value) in stats)
-          _StatItem(label: label, value: value),
-      ],
+  Widget _buildStats(BuildContext context, DateTime now, bool isExpanded) {
+    return AnimatedSize(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+        child: isExpanded ? Column(
+        children: [
+          Divider(
+            height: 1,
+            color: Theme.of(context).colorScheme.outlineVariant,
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              _StatItem(label: 'Ganho total', value: _formatCurrency(widget.shift.earnings ?? 0)),
+              _StatItem(label: 'Km total', value: _formatKm(widget.shift.distanceKm)),
+            ],
+          ),
+          Row(
+            children: [
+              _StatItem(label: 'Tempo total', value: _formatDuration(widget.shift.elapsedTime(now))),
+              _StatItem(label: 'Tempo pausado', value: _formatDuration(widget.shift.totalPausedTime(now))),
+              _StatItem(label: 'Tempo ativo', value: _formatDuration(widget.shift.workedTime(now))),
+            ],
+          ),
+          Row(
+            children: [
+              _StatItem(label: 'Ganho/km', value: _formatCurrencyOrDash(widget.shift.earningsPerKm())),
+              _StatItem(label: 'Ganho/hora', value: _formatCurrencyOrDash(widget.shift.earningsPerHour(now))),
+            ],
+          ),
+        ]
+      ) : SizedBox.shrink(),
     );
   }
 
@@ -228,22 +263,25 @@ class _StatItem extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(
-          label,
-          style: textTheme.bodySmall?.copyWith(
-            color: colorScheme.onSurfaceVariant,
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(0, 0, 12, 10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            label,
+            style: textTheme.bodySmall?.copyWith(
+              color: colorScheme.onSurfaceVariant,
+            ),
           ),
-        ),
-        const SizedBox(height: 2),
-        Text(
-          value,
-          style: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
-        ),
-      ],
+          const SizedBox(height: 2),
+          Text(
+            value,
+            style: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+          ),
+        ],
+      ),
     );
   }
 }

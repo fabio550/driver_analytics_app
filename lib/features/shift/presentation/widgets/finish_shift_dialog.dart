@@ -89,7 +89,11 @@ class _FinishShiftDialogState extends State<FinishShiftDialog> {
           const SizedBox(height: 4),
           Text('Ganho bruto', style: Theme.of(context).textTheme.bodySmall),
           const SizedBox(height: 4),
-          CurrencyField(controller: _earningsController),        ],
+          CurrencyField(
+            label: 'Ganhos',
+            errors: [],
+            controller: _earningsController,
+          ),        ],
       ),
       actions: [
         TextButton(
