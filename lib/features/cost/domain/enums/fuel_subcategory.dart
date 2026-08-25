@@ -14,7 +14,7 @@ enum FuelSubcategory {
   gasolinePremium(FuelFamily.gasoline),
   diesel(FuelFamily.diesel),
   energy(FuelFamily.electric);
-  GNV(FuelFamily.gas);
+  gnv(FuelFamily.gas);
 
   final FuelFamily family;
   const FuelSubcategory(this.family);
