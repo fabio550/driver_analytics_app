@@ -2,7 +2,7 @@ enum ExpenseSubcategory {
   parking,
   financing,
   taxes,
-  car_wash,
+  carWash,
   fine,
   toll,
   insurance,
