@@ -105,7 +105,11 @@ class _ShiftCreatePageState extends ConsumerState<ShiftCreatePage> {
                 child: Text('Nenhuma pausa adicionada.'),
               ),
             for (var i = 0; i < _formState.pauses.length; i++)
-              PauseCard(index: i, state: _formState),
+              PauseCard(
+                index: i,
+                state: _formState,
+                onChanged: (updated) => setState(() => _formState = updated),
+              ),
             const SizedBox(height: 24),
             FilledButton(
               onPressed: _formState.isSubmitting ? null : _submit,

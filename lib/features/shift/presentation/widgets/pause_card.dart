@@ -2,26 +2,24 @@ import 'package:driver_analytics_app/core/presentation/widgets/date_time_field.d
 import 'package:driver_analytics_app/features/shift/presentation/state/shift_form_state.dart';
 import 'package:flutter/material.dart';
 
-class PauseCard extends StatefulWidget {
+class PauseCard extends StatelessWidget {
   final int index;
-  ShiftFormState state;
+  final ShiftFormState state;
+  final ValueChanged<ShiftFormState> onChanged;
 
   PauseCard({
     super.key,
     required this.index,
     required this.state,
+    required this.onChanged,
   });
 
-  @override
-  State<PauseCard> createState() => _PauseCardState();
-}
 
-class _PauseCardState extends State<PauseCard> {
   @override
   Widget build(BuildContext context) {
 
-    final entry = widget.state.pauses[widget.index];
-    final errors = widget.state.failuresForPause(widget.index);
+    final entry = state.pauses[index];
+    final errors = state.failuresForPause(index);
 
     return Card(
       margin: const EdgeInsets.only(top: 8),
@@ -32,7 +30,7 @@ class _PauseCardState extends State<PauseCard> {
           children: [
             Row(
               children: [
-                Text('Pausa ${widget.index + 1}'),
+                Text('Pausa ${index + 1}'),
                 const Spacer(),
                 IconButton(
                   icon: const Icon(Icons.delete_outline),
@@ -44,13 +42,13 @@ class _PauseCardState extends State<PauseCard> {
               label: 'Início',
               value: entry.startTime,
               errors: [],
-              onTap: () => _pickPauseTime(entry.id, isStart: true),
+              onTap: () => _pickPauseTime(context, entry.id, isStart: true),
             ),
             DateTimeField(
               label: 'Fim',
               value: entry.endTime,
               errors: [],
-              onTap: () => _pickPauseTime(entry.id, isStart: false),
+              onTap: () => _pickPauseTime(context, entry.id, isStart: false),
             ),
             if (errors.isNotEmpty) ...[
               const SizedBox(height: 4),
@@ -71,16 +69,20 @@ class _PauseCardState extends State<PauseCard> {
   }
 
   void _removePause(int id) {
-    setState(() {
-      widget.state = widget.state.copyWith(
-        pauses: widget.state.pauses.where((p) => p.id != id).toList(),
-      );
-    });
+    onChanged(
+      state.copyWith(
+        pauses: state.pauses.where((p) => p.id != id).toList(),
+      ),
+    );
   }
 
-  Future<void> _pickPauseTime(int pauseId, {required bool isStart}) async {
+  Future<void> _pickPauseTime(
+    BuildContext context,
+    int pauseId,
+    {required bool isStart}
+  ) async {
 
-    final startTime = widget.state.startTime;
+    final startTime = state.startTime;
 
     if (startTime == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -91,10 +93,10 @@ class _PauseCardState extends State<PauseCard> {
       return;
     }
 
-    final pauseIndex = widget.state.pauses.indexWhere((p) => p.id == pauseId);
+    final pauseIndex = state.pauses.indexWhere((p) => p.id == pauseId);
     if (pauseIndex == -1) return;
 
-    final entry = widget.state.pauses[pauseIndex];
+    final entry = state.pauses[pauseIndex];
 
         // Início da pausa é ancorado no início da jornada; fim da pausa é
     // ancorado no próprio início dela.
@@ -107,7 +109,7 @@ class _PauseCardState extends State<PauseCard> {
       ),
       initialEntryMode: TimePickerEntryMode.input,
     );
-    if (time == null || !mounted) return;
+    if (time == null || !context.mounted) return;
 
     final picked = _resolveDateTime(anchor: anchor, time: time);
     
@@ -115,10 +117,10 @@ class _PauseCardState extends State<PauseCard> {
         ? entry.copyWith(startTime: picked)
         : entry.copyWith(endTime: picked);
 
-    final updatedPauses = [...widget.state.pauses];
+    final updatedPauses = [...state.pauses];
     updatedPauses[pauseIndex] = updatedEntry;
 
-    setState(() => widget.state = widget.state.copyWith(pauses: updatedPauses));
+    onChanged(state.copyWith(pauses: updatedPauses));
   }
 
   DateTime _resolveDateTime({
