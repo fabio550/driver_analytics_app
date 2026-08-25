@@ -1,6 +1,6 @@
 import 'package:driver_analytics_app/core/domain/result/result.dart';
 import 'package:driver_analytics_app/features/cost/application/providers/cost_dependency.dart';
-import 'package:driver_analytics_app/features/cost/application/state/cost_load_status.dart';
+import 'package:driver_analytics_app/core/domain/enums/load_status.dart';
 import 'package:driver_analytics_app/features/cost/application/state/cost_state.dart';
 import 'package:driver_analytics_app/features/cost/application/use_cases/create_expense_cost_use_case.dart';
 import 'package:driver_analytics_app/features/cost/application/use_cases/create_fuel_cost_use_case.dart';
@@ -39,7 +39,7 @@ class CostNotifier extends Notifier<CostState> {
     try {
       final costs = await _getCostsUseCase.execute();
       state = state.copyWith(
-        status: CostLoadStatus.loaded,
+        status: LoadStatus.loaded,
         costs: costs,
         clearError: true,
         clearValidationFailures: true,
@@ -146,7 +146,7 @@ class CostNotifier extends Notifier<CostState> {
 
   void _startLoading() {
     state = state.copyWith(
-      status: CostLoadStatus.loading,
+      status: LoadStatus.loading,
       clearError: true,
       clearValidationFailures: true,
     );
@@ -161,7 +161,7 @@ class CostNotifier extends Notifier<CostState> {
 
   void _setError(Object error) {
     state = state.copyWith(
-      status: CostLoadStatus.error,
+      status: LoadStatus.error,
       error: error,
     );
   }
