@@ -1,5 +1,5 @@
 import 'package:driver_analytics_app/core/domain/result/result.dart';
-import 'package:driver_analytics_app/features/shift/application/state/shift_load_status.dart';
+import 'package:driver_analytics_app/core/domain/enums/load_status.dart';
 import 'package:driver_analytics_app/features/shift/application/use_cases/inputs/pause_input.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:driver_analytics_app/features/shift/application/providers/shift_dependency.dart';
@@ -31,7 +31,7 @@ class ShiftNotifier extends Notifier<ShiftState> {
     try {
       final shifts = await _getShiftsUseCase.execute();
       state = state.copyWith(
-        status: ShiftLoadStatus.loaded,
+        status: LoadStatus.loaded,
         shifts: shifts,
         clearError: true,
         clearValidationFailures: true,
@@ -100,7 +100,7 @@ class ShiftNotifier extends Notifier<ShiftState> {
 
   void _startLoading() {
     state = state.copyWith(
-      status: ShiftLoadStatus.loading,
+      status: LoadStatus.loading,
       clearError: true,
       clearValidationFailures: true,
     );
@@ -115,7 +115,7 @@ class ShiftNotifier extends Notifier<ShiftState> {
 
   void _setError(Object error) {
     state = state.copyWith(
-      status: ShiftLoadStatus.error,
+      status: LoadStatus.error,
       error: error,
     );
   }
