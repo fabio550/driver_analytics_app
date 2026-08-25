@@ -275,10 +275,25 @@ class _ShiftCreatePageState extends ConsumerState<ShiftCreatePage> {
   }
 
   void _addPause() {
+    final pauses = _formState.pauses;
+    if (pauses.isNotEmpty) {
+      final last = pauses.last;
+      if (last.startTime == null || last.endTime == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Preencha o início e o fim da pausa anterior antes de adicionar outra.',
+            ),
+          ),
+        );
+        return;
+      }
+    }
+    
     setState(() {
       _formState = _formState.copyWith(
         pauses: [
-          ..._formState.pauses,
+          ...pauses,
           ShiftPauseFormEntry(id: _formState.nextPauseId),
         ],
         nextPauseId: _formState.nextPauseId + 1,
