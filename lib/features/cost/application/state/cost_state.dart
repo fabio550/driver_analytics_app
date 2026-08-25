@@ -1,23 +1,23 @@
 import 'package:driver_analytics_app/core/domain/failures/validation_failure.dart';
-import 'package:driver_analytics_app/features/cost/application/state/cost_load_status.dart';
+import 'package:driver_analytics_app/core/domain/enums/load_status.dart';
 import 'package:driver_analytics_app/features/cost/domain/entities/cost_entity.dart';
 import 'package:driver_analytics_app/features/cost/domain/enums/cost_field.dart';
 
 class CostState {
-  final CostLoadStatus status;
+  final LoadStatus status;
   final List<CostEntity> costs;
   final Object? error;
   final List<ValidationFailure<CostField>> validationFailures;
 
   const CostState({
-    this.status = CostLoadStatus.initial,
+    this.status = LoadStatus.initial,
     this.costs = const [],
     this.error,
     this.validationFailures = const [],
   });
 
   CostState copyWith({
-    CostLoadStatus? status,
+    LoadStatus? status,
     List<CostEntity>? costs,
     Object? error,
     List<ValidationFailure<CostField>>? validationFailures,
