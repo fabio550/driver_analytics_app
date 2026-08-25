@@ -1,6 +1,7 @@
 import 'package:driver_analytics_app/core/domain/failures/validation_failure.dart';
 import 'package:driver_analytics_app/features/shift/domain/entities/shift_entity.dart';
 import 'package:driver_analytics_app/features/shift/domain/enums/shift_field.dart';
+import 'package:driver_analytics_app/features/shift/domain/enums/shift_status.dart';
 
 class ShiftValidator {
   const ShiftValidator();
@@ -12,7 +13,8 @@ class ShiftValidator {
     _validateFinalKm(shift, failures);
     _validateTimeRange(shift, failures);
     _validatePauses(shift, failures);
-
+    _validateSubmittedCompleteness(shift, failures);
+    
     return failures;
   }
 
@@ -28,6 +30,32 @@ class ShiftValidator {
         ),
       );
       return;
+    }
+  }
+
+  void _validateSubmittedCompleteness(
+    ShiftEntity shift,
+    List<ValidationFailure<ShiftField>> failures,
+  ) {
+    if (shift.status != ShiftStatus.submitted) return;
+
+    if (shift.endTime == null) {
+      failures.add(const ValidationFailure(
+        field: ShiftField.endTime,
+        message: 'Horário de fim é obrigatório.',
+      ));
+    }
+    if (shift.finalKm == null) {
+      failures.add(const ValidationFailure(
+        field: ShiftField.finalKm,
+        message: 'Km final é obrigatório.',
+      ));
+    }
+    if (shift.earnings == null) {
+      failures.add(const ValidationFailure(
+        field: ShiftField.earnings,
+        message: 'Ganhos é obrigatório.',
+      ));
     }
   }
 
