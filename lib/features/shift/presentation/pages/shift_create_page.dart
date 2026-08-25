@@ -294,29 +294,37 @@ class _ShiftCreatePageState extends ConsumerState<ShiftCreatePage> {
     });
   }
 
-  Future<void> _submit() async {
+    Future<void> _submit() async {
     final initialKm = double.tryParse(_formState.initialKm.replaceAll(',', '.'));
     final startTime = _formState.startTime;
+
+    if (initialKm == null || startTime == null) {
+      setState(() {
+        _formState = _formState.copyWith(
+          failures: [
+            if (initialKm == null)
+              const ValidationFailure(
+                field: ShiftField.initialKm,
+                message: 'Km inicial é obrigatório.',
+              ),
+            if (startTime == null)
+              const ValidationFailure(
+                field: ShiftField.startTime,
+                message: 'Horário de início é obrigatório.',
+              ),
+          ],
+        );
+      });
+      return;
+    }
+
     final endTime = _formState.endTime;
     final finalKm = _formState.finalKm.trim().isEmpty
         ? null
         : double.tryParse(_formState.finalKm.replaceAll(',', '.'));
-    final earningsFilled = _earningsController.text.trim().isNotEmpty;
-
-    // Lançamento manual já entra como jornada definitiva (submitted) — não
-    // faz sentido salvar um registro histórico incompleto, então todos os
-    // campos são obrigatórios aqui (diferente do fluxo "ao vivo", que
-    // preenche km final/ganhos só no fim).
-    if (initialKm == null || startTime == null ||
-        endTime == null || finalKm == null || !earningsFilled) {
-      ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Preencha todos os campos.'),        ),
-      );
-        return;
-    }
-    
-    final earnings = CurrencyInputFormatter.toDouble(_earningsController.text);
+    final earnings = _earningsController.text.trim().isEmpty
+        ? null
+        : CurrencyInputFormatter.toDouble(_earningsController.text);
 
     final pauses = _formState.pauses
         .where((p) => p.startTime != null)
