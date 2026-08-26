@@ -1,4 +1,5 @@
 import 'package:driver_analytics_app/core/domain/failures/validation_failure.dart';
+import 'package:driver_analytics_app/core/extensions/datetime_extensions.dart';
 import 'package:flutter/material.dart';
 
 class DateTimeField extends StatelessWidget {
@@ -54,7 +55,7 @@ class DateTimeField extends StatelessWidget {
                     border: InputBorder.none,
                     contentPadding: EdgeInsets.symmetric(horizontal: 12),
                   ),
-                  child: Text(value != null ? _formatDateTime(value!) : 'Selecionar'),
+                  child: Text(value != null ? value!.formattedMMhh : 'Selecionar'),
                 )
               )
             ],
@@ -64,9 +65,3 @@ class DateTimeField extends StatelessWidget {
     );
   }
 }
-
-  String _formatDateTime(DateTime date) {
-    String two(int n) => n.toString().padLeft(2, '0');
-    return '${two(date.day)}/${two(date.month)}/${date.year} '
-        '${two(date.hour)}:${two(date.minute)}';
-  }
