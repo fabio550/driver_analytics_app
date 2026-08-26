@@ -1,11 +1,10 @@
 import 'package:driver_analytics_app/core/domain/failures/validation_failure.dart';
-import 'package:driver_analytics_app/features/shift/domain/enums/shift_field.dart';
 import 'package:flutter/material.dart';
 
 class DateTimeField extends StatelessWidget {
   final String label;
   final DateTime? value;
-  final List<ValidationFailure<ShiftField>> errors;
+  final List<ValidationFailure<TField>> errors;
   final VoidCallback onTap;
   
   const DateTimeField({
