@@ -4,15 +4,15 @@ import 'package:flutter/material.dart';
 class StartShiftDialog extends StatefulWidget {
   const StartShiftDialog({super.key});
 
-  @override
-  State<StartShiftDialog> createState() => _StartShiftDialogState();
-
   static Future<double?> show(BuildContext context) {
     return showDialog<double>(
       context: context,
       builder: (context) => const StartShiftDialog(),
     );
   }
+
+  @override
+  State<StartShiftDialog> createState() => _StartShiftDialogState();
 }
 
 class _StartShiftDialogState extends State<StartShiftDialog> {
@@ -34,8 +34,12 @@ class _StartShiftDialogState extends State<StartShiftDialog> {
       content: TextField(
         controller: _controller,
         autofocus: true,
-        keyboardType: const TextInputType.numberWithOptions(decimal: true),
-        decoration: const InputDecoration(labelText: 'Km inicial'),
+        keyboardType: const TextInputType.numberWithOptions(
+          decimal: true,
+        ),
+        decoration: const InputDecoration(
+          labelText: 'Km inicial',
+        ),
         onChanged: (_) => setState(() {}),
         onSubmitted: (_) {
           if (_parsedValue != null) {
