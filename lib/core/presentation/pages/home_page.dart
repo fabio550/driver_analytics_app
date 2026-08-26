@@ -22,6 +22,7 @@ class HomePage extends StatelessWidget {
                 },
                 child: Text('Jornadas')
               ),
+              SizedBox(height: 24),
               ElevatedButton(
                 onPressed: () {
                   context.push('/costs');
