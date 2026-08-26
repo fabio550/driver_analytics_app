@@ -87,3 +87,4 @@ class _ShiftListTileState extends State<ShiftListTile> {
       ],
     );
   }
+}
