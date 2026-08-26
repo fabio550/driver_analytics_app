@@ -1,9 +1,13 @@
+import 'package:driver_analytics_app/features/cost/application/providers/cost_provider.dart';
 import 'package:driver_analytics_app/features/cost/domain/entities/cost_entity.dart';
 import 'package:driver_analytics_app/features/cost/domain/enums/cost_category.dart';
+import 'package:driver_analytics_app/features/cost/presentation/dialogs/delete_cost_dialog.dart';
 import 'package:driver_analytics_app/features/cost/presentation/widgets/cost_list_tile.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
-class CostListView extends StatelessWidget {
+class CostListView extends ConsumerWidget {
   final List<CostEntity> costs;
   final CostCategory category;
 
@@ -14,7 +18,7 @@ class CostListView extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final filtered = costs.where((cost) => cost.category == category).toList();
 
     if (filtered.isEmpty) {
@@ -24,8 +28,45 @@ class CostListView extends StatelessWidget {
     return ListView.builder(
       padding: const EdgeInsets.symmetric(vertical: 6),
       itemCount: filtered.length,
-      itemBuilder: (context, i) => CostListTile(cost: filtered[i]),
+      itemBuilder: (context, i) {
+        final cost = filtered[i];
+
+        return Dismissible(
+          key: ValueKey(cost.id),
+          direction: DismissDirection.endToStart,
+          background: Container(
+            margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            alignment: Alignment.centerRight,
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.errorContainer,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(
+              Icons.delete,
+              color: Theme.of(context).colorScheme.onErrorContainer,
+            ),
+          ),
+          confirmDismiss: (_) => DeleteCostDialog.show(context),
+          onDismissed: (_) {
+            ref.read(costNotifierProvider.notifier).deleteCost(cost.id);
+          },
+          child: CostListTile(
+            cost: cost,
+            onTap: () => _navigateToEdit(context, cost),
+          ),
+        );
+      },
     );
+  }
+
+  void _navigateToEdit(BuildContext context, CostEntity cost) {
+    final route = switch (cost) {
+      FuelCostEntity() => '/costs/fuel/edit',
+      MaintenanceCostEntity() => '/costs/maintenance/edit',
+      ExpenseCostEntity() => '/costs/expense/edit',
+    };
+    context.push(route, extra: cost);
   }
 
   String get _emptyMessage {
