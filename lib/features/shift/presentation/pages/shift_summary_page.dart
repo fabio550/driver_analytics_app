@@ -1,6 +1,9 @@
+import 'package:driver_analytics_app/core/extensions/duration_extensions.dart';
+import 'package:driver_analytics_app/core/extensions/datetime_extensions.dart';
 import 'package:driver_analytics_app/features/shift/application/providers/active_shift_provider.dart';
 import 'package:driver_analytics_app/features/shift/application/providers/shift_provider.dart';
 import 'package:driver_analytics_app/features/shift/domain/entities/shift_entity.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -96,10 +99,10 @@ class _SummaryCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final now = DateTime.now();
     final rows = <(String, String)>[
-      ('Início', _formatDateTime(shift.startTime)),
-      ('Fim', shift.endTime != null ? _formatDateTime(shift.endTime!) : '--'),
-      ('Tempo trabalhado', _formatDuration(shift.workedTime(now))),
-      ('Tempo pausado', _formatDuration(shift.totalPausedTime(now))),
+      ('Início', shift.startTime.formattedHHmm),
+      ('Fim', shift.endTime != null ? shift.endTime!.formattedHHmmss : '--'),
+      ('Tempo trabalhado', shift.workedTime(now).formattedHHmmss),
+      ('Tempo pausado', shift.totalPausedTime(now).formattedHHmm),
       ('Km percorrido', '${shift.distanceKm.toStringAsFixed(0)} km'),
       ('Ganho bruto', 'R\$ ${(shift.earnings ?? 0).toStringAsFixed(2)}'),
       if (shift.earningsPerKm() != null)
@@ -126,16 +129,5 @@ class _SummaryCard extends StatelessWidget {
         },
       ),
     );
-  }
-
-  String _formatDateTime(DateTime date) {
-    String two(int n) => n.toString().padLeft(2, '0');
-    return '${two(date.day)}/${two(date.month)}/${date.year} '
-        '${two(date.hour)}:${two(date.minute)}';
-  }
-
-  String _formatDuration(Duration duration) {
-    String two(int n) => n.toString().padLeft(2, '0');
-    return '${two(duration.inHours)}:${two(duration.inMinutes % 60)}';
   }
 }
