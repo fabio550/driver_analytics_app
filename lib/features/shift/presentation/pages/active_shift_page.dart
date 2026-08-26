@@ -110,10 +110,8 @@ class _ActiveShiftBody extends ConsumerWidget {
     final shift = ref.read(activeShiftNotifierProvider).shift;
     if (shift == null) return;
 
-    final result = await FinishShiftDialog.show(
-      context,
-      initialKm: shift.initialKm,
-    );
+    final result = await FinishShiftDialog.show(context, initialKm: shift.initialKm);
+    
     if (result == null || !context.mounted) return;
 
     final (finalKm, earnings) = result;
