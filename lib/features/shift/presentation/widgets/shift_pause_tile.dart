@@ -1,3 +1,5 @@
+import 'package:driver_analytics_app/core/extensions/duration_extensions.dart';
+import 'package:driver_analytics_app/core/extensions/datetime_extensions.dart';
 import 'package:driver_analytics_app/features/shift/domain/entities/shift_pause_entity.dart';
 import 'package:flutter/material.dart';
 
@@ -27,29 +29,16 @@ class ShiftPauseTile extends StatelessWidget {
       title: Text('Pausa #${index + 1}'),
       subtitle: Text(
         isRunning
-            ? '${_formatTime(pause.startTime)} → em andamento'
-            : '${_formatTime(pause.startTime)} → ${_formatTime(pause.endTime!)}',
+            ? '${pause.startTime.formattedHHmm} → em andamento'
+            : '${pause.startTime.formattedHHmm} → ${pause.endTime!.formattedHHmm}',
       ),
       trailing: Text(
-        _formatDuration(duration),
+        duration.formattedHHmmss,
         style: TextStyle(
           fontWeight: FontWeight.w600,
           color: isRunning ? Theme.of(context).colorScheme.tertiary : null,
         ),
       ),
     );
-  }
-
-  String _formatTime(DateTime date) {
-    String two(int n) => n.toString().padLeft(2, '0');
-    return '${two(date.hour)}:${two(date.minute)}';
-  }
-
-  String _formatDuration(Duration duration) {
-    String two(int n) => n.toString().padLeft(2, '0');
-    final hours = two(duration.inHours);
-    final minutes = two(duration.inMinutes % 60);
-    final seconds = two(duration.inSeconds % 60);
-    return '$hours:$minutes:$seconds';
   }
 }
