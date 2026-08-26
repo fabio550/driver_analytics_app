@@ -1,5 +1,6 @@
 import 'package:driver_analytics_app/core/extensions/duration_extensions.dart';
 import 'package:driver_analytics_app/core/extensions/datetime_extensions.dart';
+import 'package:driver_analytics_app/core/extensions/num_extensions.dart';
 import 'package:driver_analytics_app/features/shift/domain/entities/shift_entity.dart';
 import 'package:driver_analytics_app/features/shift/domain/entities/shift_pause_entity.dart';
 import 'package:flutter/material.dart';
@@ -73,7 +74,7 @@ class _ShiftListTileState extends State<ShiftListTile> {
           ),
         ),
         Text(
-          _formatCurrency(widget.shift.earnings ?? 0),
+          (widget.shift.earnings ?? 0).formattedCurrency,
           style: textTheme.titleLarge?.copyWith(
             fontWeight: FontWeight.bold,
             color: colorScheme.primary,
@@ -129,8 +130,8 @@ class _ShiftListTileState extends State<ShiftListTile> {
           const SizedBox(height: 12),
           Row(
             children: [
-              _StatItem(label: 'Ganho total', value: _formatCurrency(widget.shift.earnings ?? 0)),
-              _StatItem(label: 'Km total', value: _formatKm(widget.shift.distanceKm)),
+              _StatItem(label: 'Ganho total', value: (widget.shift.earnings ?? 0).formattedCurrency,
+              _StatItem(label: 'Km total', value: widget.shift.distanceKm.formattedKm),
             ],
           ),
           Row(
@@ -142,24 +143,13 @@ class _ShiftListTileState extends State<ShiftListTile> {
           ),
           Row(
             children: [
-              _StatItem(label: 'Ganho/km', value: _formatCurrencyOrDash(widget.shift.earningsPerKm())),
-              _StatItem(label: 'Ganho/hora', value: _formatCurrencyOrDash(widget.shift.earningsPerHour(now))),
+              _StatItem(label: 'Ganho/km', value: widget.shift.earningsPerKm().formattedCurrencyOrDash),
+              _StatItem(label: 'Ganho/hora', value: widget.shift.earningsPerHour(now).formattedCurrencyOrDash),
             ],
           ),
         ]
       ) : SizedBox.shrink(),
     );
-  }
-
-  String _formatKm(double km) => '${km.toStringAsFixed(0)} km';
-
-  String _formatCurrency(double value) {
-    return 'R\$ ${value.toStringAsFixed(2).replaceAll('.', ',')}';
-  }
-
-  String _formatCurrencyOrDash(double? value) {
-    if (value == null) return '—';
-    return _formatCurrency(value);
   }
 }
 
