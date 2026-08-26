@@ -8,10 +8,10 @@ import 'package:driver_analytics_app/features/cost/application/use_cases/get_cos
 import 'package:driver_analytics_app/features/cost/application/use_cases/update_cost_use_case.dart';
 import 'package:driver_analytics_app/features/cost/domain/repositories/cost_repository.dart';
 import 'package:driver_analytics_app/features/cost/domain/validators/cost_validator.dart';
-import 'package:driver_analytics_app/features/cost/infrastructure/database/cost_repository_impl.dart';
 import 'package:driver_analytics_app/features/cost/infrastructure/database/mappers/cost_mapper.dart';
 import 'package:driver_analytics_app/features/cost/infrastructure/database/mappers/fuel_cost_mapper.dart';
 import 'package:driver_analytics_app/features/cost/infrastructure/database/mappers/maintenance_cost_mapper.dart';
+import 'package:driver_analytics_app/features/cost/infrastructure/repositories/cost_repository_impl.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final costMapperProvider = Provider<CostMapper>((ref) {

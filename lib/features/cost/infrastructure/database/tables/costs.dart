@@ -1,3 +1,5 @@
+import 'package:drift/drift.dart';
+
 class Costs extends Table {
   TextColumn get id => text()();
 

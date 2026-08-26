@@ -1,3 +1,5 @@
+part of 'cost_entity.dart';
+
 class MaintenanceCostEntity extends CostEntity {
   final MaintenanceSubcategory subcategory;
 

@@ -1,3 +1,5 @@
+part of 'cost_entity.dart';
+
 class FuelCostEntity extends CostEntity {
   final FuelSubcategory subcategory;
   final double odometerKm;

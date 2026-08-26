@@ -13,7 +13,7 @@ enum FuelSubcategory {
   gasolineAdditized(FuelFamily.gasoline),
   gasolinePremium(FuelFamily.gasoline),
   diesel(FuelFamily.diesel),
-  energy(FuelFamily.electric);
+  energy(FuelFamily.electric),
   gnv(FuelFamily.gas);
 
   final FuelFamily family;

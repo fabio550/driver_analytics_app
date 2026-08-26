@@ -1,5 +1,4 @@
 import 'package:drift/drift.dart';
-
 import 'shifts.dart';
 
 class ShiftPauses extends Table {
