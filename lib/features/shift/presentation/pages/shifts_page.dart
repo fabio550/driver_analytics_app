@@ -3,7 +3,7 @@ import 'package:driver_analytics_app/core/domain/enums/load_status.dart';
 import 'package:driver_analytics_app/features/shift/domain/entities/shift_entity.dart';
 import 'package:driver_analytics_app/features/shift/presentation/widgets/shifts_list_view.dart';
 import 'package:driver_analytics_app/features/shift/presentation/widgets/active_shift_banner.dart';
-import 'package:driver_analytics_app/features/shift/presentation/widgets/start_shift_dialog.dart';
+import 'package:driver_analytics_app/features/shift/presentation/dialogs/start_shift_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
