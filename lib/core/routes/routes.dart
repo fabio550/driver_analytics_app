@@ -1,4 +1,5 @@
 import 'package:driver_analytics_app/core/presentation/pages/home_page.dart';
+import 'package:driver_analytics_app/features/cost/domain/entities/cost_entity.dart';
 import 'package:driver_analytics_app/features/cost/presentation/pages/costs_page.dart';
 import 'package:driver_analytics_app/features/cost/presentation/pages/expense_cost_create_page.dart';
 import 'package:driver_analytics_app/features/cost/presentation/pages/fuel_cost_create_page.dart';
@@ -39,11 +40,25 @@ final routes = [
     builder: (context, state) => const FuelCostCreatePage(),
   ),
   GoRoute(
+    path: '/costs/fuel/edit',
+    builder: (context, state) => FuelCostCreatePage(existing: state.extra as FuelCostEntity),
+  ),
+  GoRoute(
     path: '/costs/maintenance/create',
     builder: (context, state) => const MaintenanceCostCreatePage(),
   ),
   GoRoute(
+    path: '/costs/maintenance/edit',
+    builder: (context, state) =>
+        MaintenanceCostCreatePage(existing: state.extra as MaintenanceCostEntity),
+  ),
+  GoRoute(
     path: '/costs/expense/create',
     builder: (context, state) => const ExpenseCostCreatePage(),
+  ),
+  GoRoute(
+    path: '/costs/expense/edit',
+    builder: (context, state) =>
+        ExpenseCostCreatePage(existing: state.extra as ExpenseCostEntity),
   ),
 ];
