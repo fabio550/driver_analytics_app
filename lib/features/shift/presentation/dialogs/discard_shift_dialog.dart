@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 class DiscardShiftDialog extends StatelessWidget {
   const DiscardShiftDialog({super.key});
 
