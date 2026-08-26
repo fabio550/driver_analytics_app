@@ -7,8 +7,13 @@ import 'package:flutter/material.dart';
 
 class CostListTile extends StatelessWidget {
   final CostEntity cost;
-
-  const CostListTile({super.key, required this.cost});
+  final VoidCallback? onTap;
+  
+  const CostListTile({
+    super.key,
+    required this.cost,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -16,25 +21,29 @@ class CostListTile extends StatelessWidget {
     final hasDescription = description != null && description.trim().isNotEmpty;
 
     return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildHeader(context),
-            ..._buildStats(context),
-            if (hasDescription) ...[
-              const SizedBox(height: 10),
-              Text(
-                '"$description"',
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      fontStyle: FontStyle.italic,
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
-              ),
+      child: InkWell(
+        onTap: onTap,
+        margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        child: Padding(
+          borderRadius: BorderRadius.circular(12),
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildHeader(context),
+              ..._buildStats(context),
+              if (hasDescription) ...[
+                const SizedBox(height: 10),
+                Text(
+                  '"$description"',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        fontStyle: FontStyle.italic,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                ),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );
