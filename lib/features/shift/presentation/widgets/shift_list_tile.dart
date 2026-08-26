@@ -64,7 +64,7 @@ class _ShiftListTileState extends State<ShiftListTile> {
       children: [
         Expanded(
           child: Text(
-            _formatFullDate(widget.shift.startTime),
+            widget.shift.startTime.formattedFullDate,
             style: textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.w600,
             ),
@@ -92,7 +92,7 @@ class _ShiftListTileState extends State<ShiftListTile> {
         _TimelinePoint(
           icon: Icons.play_circle_fill,
           color: colorScheme.primary,
-          label: _formatTime(widget.shift.startTime),
+          label: widget.shift.startTime.formattedHHmm,
         ),
         for (final pause in widget.shift.pauses) ...[
           _timelineArrow(colorScheme),
@@ -103,7 +103,7 @@ class _ShiftListTileState extends State<ShiftListTile> {
           _TimelinePoint(
             icon: Icons.stop_circle,
             color: colorScheme.primary,
-            label: _formatTime(widget.shift.endTime!),
+            label: widget.shift.endTime!.formattedHHmm ,
           ),
         ],
       ],
@@ -133,9 +133,9 @@ class _ShiftListTileState extends State<ShiftListTile> {
           ),
           Row(
             children: [
-              _StatItem(label: 'Tempo total', value: _formatDuration(widget.shift.elapsedTime(now))),
-              _StatItem(label: 'Tempo pausado', value: _formatDuration(widget.shift.totalPausedTime(now))),
-              _StatItem(label: 'Tempo ativo', value: _formatDuration(widget.shift.workedTime(now))),
+              _StatItem(label: 'Tempo total', value: widget.shift.elapsedTime(now).formattedHHmmss),
+              _StatItem(label: 'Tempo pausado', value: widget.shift.totalPausedTime(now).formattedHHmmss),
+              _StatItem(label: 'Tempo ativo', value: widget.shift.workedTime(now).formattedHHmmss),
             ],
           ),
           Row(
@@ -147,23 +147,6 @@ class _ShiftListTileState extends State<ShiftListTile> {
         ]
       ) : SizedBox.shrink(),
     );
-  }
-
-  String _formatFullDate(DateTime date) {
-    const weekdays = ['seg', 'ter', 'qua', 'qui', 'sex', 'sáb', 'dom'];
-    final weekday = weekdays[date.weekday - 1];
-    String two(int n) => n.toString().padLeft(2, '0');
-    return '${two(date.day)}/${two(date.month)}/${date.year} · $weekday';
-  }
-
-  String _formatTime(DateTime date) {
-    String two(int n) => n.toString().padLeft(2, '0');
-    return '${two(date.hour)}:${two(date.minute)}';
-  }
-
-  String _formatDuration(Duration duration) {
-    String two(int n) => n.toString().padLeft(2, '0');
-    return '${two(duration.inHours)}:${two(duration.inMinutes % 60)}';
   }
 
   String _formatKm(double km) => '${km.toStringAsFixed(0)} km';
@@ -220,8 +203,8 @@ class _TimelinePauseChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final endTime = pause.endTime;
     final label = endTime != null
-        ? '${_time(pause.startTime)}–${_time(endTime)}'
-        : '${_time(pause.startTime)}–em aberto';
+        ? '${pause.startTime.formattedHHmm}–${endTime.formattedHHmm}'
+        : '${pause.startTime.formattedHHmm}–em aberto';
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -245,12 +228,6 @@ class _TimelinePauseChip extends StatelessWidget {
       ),
     );
   }
-
-  String _time(DateTime date) {
-    String two(int n) => n.toString().padLeft(2, '0');
-    return '${two(date.hour)}:${two(date.minute)}';
-  }
-}
 
 class _StatItem extends StatelessWidget {
   final String label;
