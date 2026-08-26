@@ -128,24 +128,6 @@ class _ShiftCreatePageState extends ConsumerState<ShiftCreatePage> {
     );
   }
 
-  Widget _buildDateTimeTile({
-    required String label,
-    required DateTime? value,
-    required List<ValidationFailure<ShiftField>> errors,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      child: InputDecorator(
-        decoration: InputDecoration(
-          labelText: label,
-          errorText: errors.isNotEmpty ? errors.first.message : null,
-        ),
-        child: Text(value != null ? value.formattedDDMMYYYYHHmm : 'Selecionar'),
-      ),
-    );
-  }
-
   Future<DateTime?> _pickDateTime(DateTime? initial) async {
     final now = DateTime.now();
     final date = await showDatePicker(
