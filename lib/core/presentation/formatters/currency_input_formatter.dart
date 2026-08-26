@@ -13,16 +13,13 @@ class CurrencyInputFormatter extends TextInputFormatter {
     TextEditingValue oldValue,
     TextEditingValue newValue,
   ) {
-    // Pega só os dígitos (remove tudo que não é número)
     String digitsOnly = newValue.text.replaceAll(RegExp(r'[^\d]'), '');
 
     if (digitsOnly.isEmpty) {
       return const TextEditingValue(text: '');
     }
 
-    // Interpreta os dígitos como centavos
     double value = double.parse(digitsOnly) / 100;
-
     String newText = _formatter.format(value).trim();
 
     return TextEditingValue(
@@ -31,10 +28,20 @@ class CurrencyInputFormatter extends TextInputFormatter {
     );
   }
 
-  /// Helper pra extrair o valor numérico (double) do texto formatado
+  /// Helper pra extrair o valor numérico (double) do texto formatado.
   static double toDouble(String formattedText) {
     String digitsOnly = formattedText.replaceAll(RegExp(r'[^\d]'), '');
     if (digitsOnly.isEmpty) return 0.0;
     return double.parse(digitsOnly) / 100;
+  }
+
+  /// Helper pra pré-preencher o campo com um valor existente (edição).
+  static String format(double value) {
+    final formatter = NumberFormat.currency(
+      locale: 'pt_BR',
+      symbol: '',
+      decimalDigits: 2,
+    );
+    return formatter.format(value).trim();
   }
 }
