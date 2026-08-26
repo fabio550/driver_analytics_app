@@ -1,4 +1,8 @@
 import 'package:driver_analytics_app/core/presentation/pages/home_page.dart';
+import 'package:driver_analytics_app/features/cost/presentation/pages/costs_page.dart';
+import 'package:driver_analytics_app/features/cost/presentation/pages/expense_cost_create_page.dart';
+import 'package:driver_analytics_app/features/cost/presentation/pages/fuel_cost_create_page.dart';
+import 'package:driver_analytics_app/features/cost/presentation/pages/maintenance_cost_create_page.dart';
 import 'package:driver_analytics_app/features/shift/presentation/pages/shift_create_page.dart';
 import 'package:driver_analytics_app/features/shift/presentation/pages/shifts_page.dart';
 import 'package:driver_analytics_app/features/shift/presentation/pages/active_shift_page.dart';
@@ -25,5 +29,21 @@ final routes = [
   GoRoute(
     path: '/shifts/active/summary',
     builder: (context, state) => const ShiftSummaryPage(),
+  ),
+  GoRoute(
+    path: '/costs',
+    builder: (context, state) => const CostsPage(),
+  ),
+  GoRoute(
+    path: '/costs/fuel/create',
+    builder: (context, state) => const FuelCostCreatePage(),
+  ),
+  GoRoute(
+    path: '/costs/maintenance/create',
+    builder: (context, state) => const MaintenanceCostCreatePage(),
+  ),
+  GoRoute(
+    path: '/costs/expense/create',
+    builder: (context, state) => const ExpenseCostCreatePage(),
   ),
 ];
