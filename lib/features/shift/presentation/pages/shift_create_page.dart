@@ -140,7 +140,7 @@ class _ShiftCreatePageState extends ConsumerState<ShiftCreatePage> {
           labelText: label,
           errorText: errors.isNotEmpty ? errors.first.message : null,
         ),
-        child: Text(value != null ? _formatDateTime(value) : 'Selecionar'),
+        child: Text(value != null ? value.formattedDDMMYYYYHHmm : 'Selecionar'),
       ),
     );
   }
@@ -372,12 +372,6 @@ class _ShiftCreatePageState extends ConsumerState<ShiftCreatePage> {
         isSubmitting: false,
       );
     });
-  }
-
-  String _formatDateTime(DateTime date) {
-    String two(int n) => n.toString().padLeft(2, '0');
-    return '${two(date.day)}/${two(date.month)}/${date.year} '
-        '${two(date.hour)}:${two(date.minute)}';
   }
 }
 
