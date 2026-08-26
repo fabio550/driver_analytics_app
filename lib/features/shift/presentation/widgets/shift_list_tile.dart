@@ -7,10 +7,12 @@ import 'package:flutter/material.dart';
 
 class ShiftListTile extends StatefulWidget {
   final ShiftEntity shift;
+  final VoidCallback? onEdit;
 
   const ShiftListTile({
     super.key,
     required this.shift,
+    this.onEdit,
   });
 
   @override
@@ -18,7 +20,6 @@ class ShiftListTile extends StatefulWidget {
 }
 
 class _ShiftListTileState extends State<ShiftListTile> {
-  
   bool _isExpanded = false;
 
   @override
@@ -51,8 +52,8 @@ class _ShiftListTileState extends State<ShiftListTile> {
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   Icon(
-                    _isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down
-                  )
+                    _isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+                  ),
                 ],
               ),
             ],
@@ -65,7 +66,7 @@ class _ShiftListTileState extends State<ShiftListTile> {
   Widget _buildHeader(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
-    
+
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -84,6 +85,12 @@ class _ShiftListTileState extends State<ShiftListTile> {
             color: colorScheme.primary,
           ),
         ),
+        if (widget.onEdit != null)
+          IconButton(
+            icon: const Icon(Icons.edit_outlined, size: 20),
+            visualDensity: VisualDensity.compact,
+            onPressed: widget.onEdit,
+          ),
       ],
     );
   }
