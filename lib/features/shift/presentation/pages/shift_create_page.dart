@@ -1,3 +1,4 @@
+import 'package:driver_analytics_app/core/extensions/datetime_extensions.dart';
 import 'package:driver_analytics_app/core/domain/failures/validation_failure.dart';
 import 'package:driver_analytics_app/core/presentation/formatters/currency_input_formatter.dart';
 import 'package:driver_analytics_app/core/presentation/widgets/currency_field.dart';
@@ -145,21 +146,6 @@ class _ShiftCreatePageState extends ConsumerState<ShiftCreatePage> {
     );
   }
 
-  /*Widget _buildPauseCard({
-    required int index,
-    required ShiftPauseFormEntry entry,
-  }) {
-    final errors = _formState.failuresForPause(index);
-    return PauseCard(
-      index: index,
-      entry: entry,
-      errors: errors,
-      onPressed: () => _removePause(entry.id),
-      onStartTimeTap: () => _pickPauseTime(entry.id, isStart: true),
-      onEndTimeTap: () => _pickPauseTime(entry.id, isStart: false),
-    );
-  }*/
-  
   Future<DateTime?> _pickDateTime(DateTime? initial) async {
     final now = DateTime.now();
     final date = await showDatePicker(
