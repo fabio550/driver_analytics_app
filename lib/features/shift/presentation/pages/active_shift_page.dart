@@ -1,3 +1,4 @@
+import 'package:driver_analytics_app/core/extensions/duration_extensions.dart';
 import 'package:driver_analytics_app/core/presentation/providers/clock_provider.dart';
 import 'package:driver_analytics_app/features/shift/application/providers/active_shift_provider.dart';
 import 'package:driver_analytics_app/features/shift/domain/enums/shift_status.dart';
@@ -43,7 +44,7 @@ class _ActiveShiftBody extends ConsumerWidget {
         const SizedBox(height: 24),
         Center(
           child: Text(
-            _formatDuration(shift.workedTime(now)),
+            shift.workedTime(now).formattedHHmm,
             style: Theme.of(context).textTheme.displayMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                   fontFeatures: const [FontFeature.tabularFigures()],
@@ -124,13 +125,5 @@ class _ActiveShiftBody extends ConsumerWidget {
     if (updated?.status == ShiftStatus.finished) {
       context.push('/shifts/active/summary');
     }
-  }
-
-  String _formatDuration(Duration duration) {
-    String two(int n) => n.toString().padLeft(2, '0');
-    final hours = two(duration.inHours);
-    final minutes = two(duration.inMinutes % 60);
-    final seconds = two(duration.inSeconds % 60);
-    return '$hours:$minutes:$seconds';
   }
 }
