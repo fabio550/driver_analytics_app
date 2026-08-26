@@ -1,12 +1,11 @@
 import 'package:driver_analytics_app/core/domain/failures/validation_failure.dart';
 import 'package:driver_analytics_app/core/presentation/formatters/currency_input_formatter.dart';
-import 'package:driver_analytics_app/features/shift/domain/enums/shift_field.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 class CurrencyField extends StatelessWidget {
   final String label;
-  final List<ValidationFailure<ShiftField>> errors;
+  final List<ValidationFailure<TField>> errors;
   final TextEditingController controller;
 
   const CurrencyField({
