@@ -8,4 +8,10 @@ extension DurationExtensions on Duration {
 
     return '$hours:$minutes:$seconds';
   }
+
+  String get formattedHHmm {
+    String two(int n) => n.toString().padLeft(2, '0');
+
+    return '${two(inHours)}:${two(inMinutes % 60)}';
+  }
 }
