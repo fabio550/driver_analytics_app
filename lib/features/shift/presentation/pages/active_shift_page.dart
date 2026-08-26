@@ -2,7 +2,7 @@ import 'package:driver_analytics_app/core/extensions/duration_extensions.dart';
 import 'package:driver_analytics_app/core/presentation/providers/clock_provider.dart';
 import 'package:driver_analytics_app/features/shift/application/providers/active_shift_provider.dart';
 import 'package:driver_analytics_app/features/shift/domain/enums/shift_status.dart';
-import 'package:driver_analytics_app/features/shift/presentation/widgets/finish_shift_dialog.dart';
+import 'package:driver_analytics_app/features/shift/presentation/dialogs/finish_shift_dialog.dart';
 import 'package:driver_analytics_app/features/shift/presentation/widgets/shift_pause_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
