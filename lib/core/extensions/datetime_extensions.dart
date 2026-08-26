@@ -15,10 +15,10 @@ extension DateTimeExtensions on DateTime {
   String get formattedFullDate {
     const weekdays = ['segunda','terça','quarta','quinta','sexta','sábado','domingo',];
 
-    final weekday = weekdays[weekday - 1];
+    final weekdayName = weekdays[weekday - 1];
 
     String two(int n) => n.toString().padLeft(2, '0');
 
-    return '${two(day)}/${two(month)}/$year · $weekday';
+    return '${two(day)}/${two(month)}/$year · $weekdayName';
   }
 }

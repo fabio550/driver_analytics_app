@@ -23,9 +23,7 @@ class CostListTile extends StatelessWidget {
     return Card(
       child: InkWell(
         onTap: onTap,
-        margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         child: Padding(
-          borderRadius: BorderRadius.circular(12),
           padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

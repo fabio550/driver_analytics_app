@@ -3,7 +3,7 @@ import 'package:driver_analytics_app/core/presentation/formatters/currency_input
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-class CurrencyField extends StatelessWidget {
+class CurrencyField<TField> extends StatelessWidget {
   final String label;
   final List<ValidationFailure<TField>> errors;
   final TextEditingController controller;

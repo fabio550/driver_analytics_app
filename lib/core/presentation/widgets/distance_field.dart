@@ -2,7 +2,7 @@ import 'package:driver_analytics_app/core/domain/failures/validation_failure.dar
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-class DistanceField extends StatelessWidget {
+class DistanceField<TField> extends StatelessWidget {
   final String label;
   final List<ValidationFailure<TField>> errors;
   final void Function(String)? onChanged;

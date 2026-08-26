@@ -2,7 +2,7 @@ import 'package:driver_analytics_app/core/domain/failures/validation_failure.dar
 import 'package:driver_analytics_app/core/extensions/datetime_extensions.dart';
 import 'package:flutter/material.dart';
 
-class DateTimeField extends StatelessWidget {
+class DateTimeField<TField> extends StatelessWidget {
   final String label;
   final DateTime? value;
   final List<ValidationFailure<TField>> errors;
@@ -55,7 +55,7 @@ class DateTimeField extends StatelessWidget {
                     border: InputBorder.none,
                     contentPadding: EdgeInsets.symmetric(horizontal: 12),
                   ),
-                  child: Text(value != null ? value!.formattedMMhh : 'Selecionar'),
+                  child: Text(value != null ? value!.formattedHHmm : 'Selecionar'),
                 )
               )
             ],

@@ -166,20 +166,20 @@ class _FuelCostCreatePageState extends ConsumerState<FuelCostCreatePage> {
               },
             ),
             const SizedBox(height: 16),
-            DateTimeField<CostField>(
+            DateTimeField(
               label: 'Data',
               value: _date,
               errors: errorsFor(CostField.date),
               onTap: _pickDate,
             ),
             const SizedBox(height: 16),
-            CurrencyField<CostField>(
+            CurrencyField(
               label: 'Valor pago',
               errors: errorsFor(CostField.amount),
               controller: _amountController,
             ),
             const SizedBox(height: 16),
-            DistanceField<CostField>(
+            DistanceField(
               label: 'Km do odômetro',
               errors: errorsFor(CostField.odometerKm),
               onChanged: (_) {},

@@ -120,7 +120,7 @@ class _ExpenseCostCreatePageState extends ConsumerState<ExpenseCostCreatePage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             DropdownButtonFormField<ExpenseSubcategory>(
-              value: _subcategory,
+              initialValue: _subcategory,
               decoration: const InputDecoration(labelText: 'Tipo de despesa'),
               items: [
                 for (final subcategory in ExpenseSubcategory.values)
@@ -135,14 +135,14 @@ class _ExpenseCostCreatePageState extends ConsumerState<ExpenseCostCreatePage> {
               },
             ),
             const SizedBox(height: 16),
-            DateTimeField<CostField>(
+            DateTimeField(
               label: 'Data',
               value: _date,
               errors: errorsFor(CostField.date),
               onTap: _pickDate,
             ),
             const SizedBox(height: 16),
-            CurrencyField<CostField>(
+            CurrencyField(
               label: 'Valor pago',
               errors: errorsFor(CostField.amount),
               controller: _amountController,

@@ -19,7 +19,7 @@ class SummaryCard extends StatelessWidget {
     final rows = <(String, String)>[
       ('Início', shift.startTime.formattedHHmm),
       ('Fim', shift.endTime != null
-          ? shift.endTime!.formattedHHmmss
+          ? shift.endTime!.formattedHHmm
           : '--'),
       ('Tempo trabalhado', shift.workedTime(now).formattedHHmmss),
       ('Tempo pausado', shift.totalPausedTime(now).formattedHHmm),
