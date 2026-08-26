@@ -1,8 +1,8 @@
-import 'package:driver_analytics_app/core/extensions/duration_extensions.dart';
 import 'package:driver_analytics_app/core/extensions/datetime_extensions.dart';
 import 'package:driver_analytics_app/core/extensions/num_extensions.dart';
+import 'package:driver_analytics_app/features/shift/presentation/widgets/shift_stats.dart';
+import 'package:driver_analytics_app/features/shift/presentation/widgets/shift_timeline.dart';
 import 'package:driver_analytics_app/features/shift/domain/entities/shift_entity.dart';
-import 'package:driver_analytics_app/features/shift/domain/entities/shift_pause_entity.dart';
 import 'package:flutter/material.dart';
 
 class ShiftListTile extends StatefulWidget {
@@ -19,7 +19,7 @@ class ShiftListTile extends StatefulWidget {
 
 class _ShiftListTileState extends State<ShiftListTile> {
   
-  bool isExpanded = false;
+  bool _isExpanded = false;
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +28,7 @@ class _ShiftListTileState extends State<ShiftListTile> {
     return InkWell(
       onTap: () {
         setState(() {
-          isExpanded = !isExpanded;
+          _isExpanded = !_isExpanded;
         });
       },
       child: Card(
@@ -45,13 +45,13 @@ class _ShiftListTileState extends State<ShiftListTile> {
               ShiftStats(
                 shift: widget.shift,
                 now: now,
-                isExpanded: isExpanded,
+                isExpanded: _isExpanded,
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   Icon(
-                    isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down
+                    _isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down
                   )
                 ],
               ),
