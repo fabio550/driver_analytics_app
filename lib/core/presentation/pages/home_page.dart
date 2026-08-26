@@ -17,10 +17,17 @@ class HomePage extends StatelessWidget {
           child: Column(
             children: [
               ElevatedButton(
-                  onPressed: () {
-                    context.push('/shifts');
-                  },
-                  child: Text('Jornadas')),
+                onPressed: () {
+                  context.push('/shifts');
+                },
+                child: Text('Jornadas')
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  context.push('/costs');
+                },
+                child: Text('Custos')
+              ),
             ],
           ),
         ),
