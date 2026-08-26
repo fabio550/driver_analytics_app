@@ -1,5 +1,5 @@
 import 'package:driver_analytics_app/core/infrastructure/database/app_database_provider.dart';
-import 'package:driver_analytics_app/features/shift/infrastructure/database/shift_repository_impl.dart';
+import 'package:driver_analytics_app/features/shift/infrastructure/repositories/shift_repository_impl.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:driver_analytics_app/core/infrastructure/services/uuid_generator_provider.dart';
 

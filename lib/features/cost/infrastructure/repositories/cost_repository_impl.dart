@@ -1,3 +1,5 @@
+// ignore_for_file: prefer_initializing_formals
+
 import 'package:driver_analytics_app/core/infrastructure/database/app_database.dart';
 import 'package:driver_analytics_app/features/cost/domain/entities/cost_entity.dart';
 import 'package:driver_analytics_app/features/cost/domain/enums/cost_category.dart';
@@ -13,11 +15,14 @@ class CostRepositoryImpl implements CostRepository {
   final MaintenanceCostMapper _maintenanceMapper;
 
   const CostRepositoryImpl({
-    required this._database,
-    required this._mapper,
-    required this._fuelMapper,
-    required this._maintenanceMapper,
-  });
+  required AppDatabase database,
+  required CostMapper mapper,
+  required FuelCostMapper fuelMapper,
+  required MaintenanceCostMapper maintenanceMapper,
+})  : _database = database,
+      _mapper = mapper,
+      _fuelMapper = fuelMapper,
+      _maintenanceMapper = maintenanceMapper;
 
   @override
   Future<List<CostEntity>> getAll() async {
