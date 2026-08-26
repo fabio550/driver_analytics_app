@@ -2,8 +2,6 @@ import 'package:driver_analytics_app/core/presentation/formatters/currency_input
 import 'package:driver_analytics_app/core/presentation/widgets/currency_field.dart';
 import 'package:flutter/material.dart';
 
-/// Pergunta km final e ganho bruto. Devolve `(finalKm, earnings)` ou `null`
-/// se cancelado.
 class FinishShiftDialog extends StatefulWidget {
   final double initialKm;
 
@@ -85,8 +83,6 @@ class _FinishShiftDialogState extends State<FinishShiftDialog> {
             onChanged: (_) => setState(() {}),
           ),
           const SizedBox(height: 12),
-                    Text('Ganho bruto', style: Theme.of(context).textTheme.bodySmall),
-          const SizedBox(height: 4),
           Text('Ganho bruto', style: Theme.of(context).textTheme.bodySmall),
           const SizedBox(height: 4),
           CurrencyField(
