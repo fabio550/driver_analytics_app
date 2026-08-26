@@ -1,5 +1,6 @@
 import 'package:driver_analytics_app/core/extensions/duration_extensions.dart';
 import 'package:driver_analytics_app/core/extensions/datetime_extensions.dart';
+import 'package:driver_analytics_app/core/extensions/num_extensions.dart';
 import 'package:driver_analytics_app/features/shift/application/providers/active_shift_provider.dart';
 import 'package:driver_analytics_app/features/shift/application/providers/shift_provider.dart';
 import 'package:driver_analytics_app/features/shift/domain/entities/shift_entity.dart';
@@ -103,12 +104,12 @@ class _SummaryCard extends StatelessWidget {
       ('Fim', shift.endTime != null ? shift.endTime!.formattedHHmmss : '--'),
       ('Tempo trabalhado', shift.workedTime(now).formattedHHmmss),
       ('Tempo pausado', shift.totalPausedTime(now).formattedHHmm),
-      ('Km percorrido', '${shift.distanceKm.toStringAsFixed(0)} km'),
-      ('Ganho bruto', 'R\$ ${(shift.earnings ?? 0).toStringAsFixed(2)}'),
+      ('Km percorrido', shift.distanceKm.formattedKm),
+      ('Ganho bruto', (shift.earnings ?? 0).formattedCurrency),
       if (shift.earningsPerKm() != null)
-        ('R\$/km', shift.earningsPerKm()!.toStringAsFixed(2)),
+        ('R\$/km', shift.earningsPerKm()!.formattedCurrency),
       if (shift.earningsPerHour(now) != null)
-        ('R\$/hora', shift.earningsPerHour(now)!.toStringAsFixed(2)),
+        ('R\$/hora', shift.earningsPerHour(now)!.formattedCurrency),
       ('Pausas', '${shift.pauses.length}'),
     ];
 
