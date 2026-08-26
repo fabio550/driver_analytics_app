@@ -4,6 +4,7 @@ import 'package:driver_analytics_app/core/presentation/widgets/currency_field.da
 import 'package:driver_analytics_app/core/presentation/widgets/date_time_field.dart';
 import 'package:driver_analytics_app/core/presentation/widgets/distance_field.dart';
 import 'package:driver_analytics_app/features/cost/application/providers/cost_provider.dart';
+import 'package:driver_analytics_app/features/cost/domain/entities/cost_entity.dart';
 import 'package:driver_analytics_app/features/cost/domain/enums/cost_field.dart';
 import 'package:driver_analytics_app/features/cost/domain/enums/maintenance_subcategory.dart';
 import 'package:driver_analytics_app/features/cost/presentation/extensions/subcategory_extensions.dart';
@@ -11,7 +12,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class MaintenanceCostCreatePage extends ConsumerStatefulWidget {
-  const MaintenanceCostCreatePage({super.key});
+  final MaintenanceCostEntity? existing;
+
+  const MaintenanceCostCreatePage({super.key, this.existing});
 
   @override
   ConsumerState<MaintenanceCostCreatePage> createState() =>
@@ -20,13 +23,32 @@ class MaintenanceCostCreatePage extends ConsumerStatefulWidget {
 
 class _MaintenanceCostCreatePageState
     extends ConsumerState<MaintenanceCostCreatePage> {
-  MaintenanceSubcategory _subcategory = MaintenanceSubcategory.oilChange;
-  DateTime _date = DateTime.now();
+  late MaintenanceSubcategory _subcategory;
+  late DateTime _date;
   bool _isSubmitting = false;
 
-  final _amountController = TextEditingController();
-  final _odometerController = TextEditingController();
-  final _descriptionController = TextEditingController();
+  late final TextEditingController _amountController;
+  late final TextEditingController _odometerController;
+  late final TextEditingController _descriptionController;
+
+  bool get _isEditing => widget.existing != null;
+
+  @override
+  void initState() {
+    super.initState();
+    final existing = widget.existing;
+
+    _subcategory = existing?.subcategory ?? MaintenanceSubcategory.oilChange;
+    _date = existing?.date ?? DateTime.now();
+
+    _amountController = TextEditingController(
+      text: existing != null ? CurrencyInputFormatter.format(existing.amount) : '',
+    );
+    _odometerController = TextEditingController(
+      text: existing?.odometerKm?.toStringAsFixed(0) ?? '',
+    );
+    _descriptionController = TextEditingController(text: existing?.description ?? '');
+  }
 
   @override
   void dispose() {
@@ -63,14 +85,29 @@ class _MaintenanceCostCreatePageState
     final odometerKm =
         odometerText.isEmpty ? null : double.tryParse(odometerText.replaceAll(',', '.'));
     final description = _descriptionController.text.trim();
+    final amount = CurrencyInputFormatter.toDouble(_amountController.text);
+    final notifier = ref.read(costNotifierProvider.notifier);
 
-    await ref.read(costNotifierProvider.notifier).createMaintenanceCost(
-          subcategory: _subcategory,
-          amount: CurrencyInputFormatter.toDouble(_amountController.text),
+    if (_isEditing) {
+      await notifier.updateCost(
+        MaintenanceCostEntity(
+          id: widget.existing!.id,
+          amount: amount,
           date: _date,
-          odometerKm: odometerKm,
           description: description.isEmpty ? null : description,
-        );
+          subcategory: _subcategory,
+          odometerKm: odometerKm,
+        ),
+      );
+    } else {
+      await notifier.createMaintenanceCost(
+        subcategory: _subcategory,
+        amount: amount,
+        date: _date,
+        odometerKm: odometerKm,
+        description: description.isEmpty ? null : description,
+      );
+    }
 
     if (!mounted) return;
     setState(() => _isSubmitting = false);
@@ -88,7 +125,9 @@ class _MaintenanceCostCreatePageState
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Nova manutenção')),
+      appBar: AppBar(
+        title: Text(_isEditing ? 'Editar manutenção' : 'Nova manutenção'),
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -146,12 +185,12 @@ class _MaintenanceCostCreatePageState
             FilledButton(
               onPressed: _isSubmitting ? null : _submit,
               child: _isSubmitting
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const Text('Salvar'),
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : Text(_isEditing ? 'Salvar alterações' : 'Salvar'),
             ),
           ],
         ),
