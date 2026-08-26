@@ -3,6 +3,7 @@ import 'package:driver_analytics_app/core/presentation/formatters/currency_input
 import 'package:driver_analytics_app/core/presentation/widgets/currency_field.dart';
 import 'package:driver_analytics_app/core/presentation/widgets/date_time_field.dart';
 import 'package:driver_analytics_app/features/cost/application/providers/cost_provider.dart';
+import 'package:driver_analytics_app/features/cost/domain/entities/cost_entity.dart';
 import 'package:driver_analytics_app/features/cost/domain/enums/cost_field.dart';
 import 'package:driver_analytics_app/features/cost/domain/enums/expense_subcategory.dart';
 import 'package:driver_analytics_app/features/cost/presentation/extensions/subcategory_extensions.dart';
@@ -10,7 +11,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class ExpenseCostCreatePage extends ConsumerStatefulWidget {
-  const ExpenseCostCreatePage({super.key});
+  final ExpenseCostEntity? existing;
+
+  const ExpenseCostCreatePage({super.key, this.existing});
 
   @override
   ConsumerState<ExpenseCostCreatePage> createState() =>
@@ -18,12 +21,28 @@ class ExpenseCostCreatePage extends ConsumerStatefulWidget {
 }
 
 class _ExpenseCostCreatePageState extends ConsumerState<ExpenseCostCreatePage> {
-  ExpenseSubcategory _subcategory = ExpenseSubcategory.toll;
-  DateTime _date = DateTime.now();
+  late ExpenseSubcategory _subcategory;
+  late DateTime _date;
   bool _isSubmitting = false;
 
-  final _amountController = TextEditingController();
-  final _descriptionController = TextEditingController();
+  late final TextEditingController _amountController;
+  late final TextEditingController _descriptionController;
+
+  bool get _isEditing => widget.existing != null;
+
+  @override
+  void initState() {
+    super.initState();
+    final existing = widget.existing;
+
+    _subcategory = existing?.subcategory ?? ExpenseSubcategory.toll;
+    _date = existing?.date ?? DateTime.now();
+
+    _amountController = TextEditingController(
+      text: existing != null ? CurrencyInputFormatter.format(existing.amount) : '',
+    );
+    _descriptionController = TextEditingController(text: existing?.description ?? '');
+  }
 
   @override
   void dispose() {
@@ -56,13 +75,27 @@ class _ExpenseCostCreatePageState extends ConsumerState<ExpenseCostCreatePage> {
     setState(() => _isSubmitting = true);
 
     final description = _descriptionController.text.trim();
+    final amount = CurrencyInputFormatter.toDouble(_amountController.text);
+    final notifier = ref.read(costNotifierProvider.notifier);
 
-    await ref.read(costNotifierProvider.notifier).createExpenseCost(
-          subcategory: _subcategory,
-          amount: CurrencyInputFormatter.toDouble(_amountController.text),
+    if (_isEditing) {
+      await notifier.updateCost(
+        ExpenseCostEntity(
+          id: widget.existing!.id,
+          amount: amount,
           date: _date,
           description: description.isEmpty ? null : description,
-        );
+          subcategory: _subcategory,
+        ),
+      );
+    } else {
+      await notifier.createExpenseCost(
+        subcategory: _subcategory,
+        amount: amount,
+        date: _date,
+        description: description.isEmpty ? null : description,
+      );
+    }
 
     if (!mounted) return;
     setState(() => _isSubmitting = false);
@@ -80,7 +113,7 @@ class _ExpenseCostCreatePageState extends ConsumerState<ExpenseCostCreatePage> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Nova despesa')),
+      appBar: AppBar(title: Text(_isEditing ? 'Editar despesa' : 'Nova despesa')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -136,7 +169,7 @@ class _ExpenseCostCreatePageState extends ConsumerState<ExpenseCostCreatePage> {
                       height: 20,
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
-                  : const Text('Salvar'),
+                  : Text(_isEditing ? 'Salvar alterações' : 'Salvar'),
             ),
           ],
         ),
