@@ -1,5 +1,6 @@
 import 'package:driver_analytics_app/core/domain/failures/validation_failure.dart';
 import 'package:driver_analytics_app/core/extensions/datetime_extensions.dart';
+import 'package:driver_analytics_app/core/presentation/theme/app_spacing.dart';
 import 'package:driver_analytics_app/core/presentation/widgets/bordered_field_shell.dart';
 import 'package:flutter/material.dart';
 
@@ -43,7 +44,7 @@ class DateField<TField> extends StatelessWidget {
       child: InputDecorator(
         decoration: const InputDecoration(
           border: InputBorder.none,
-          contentPadding: EdgeInsets.symmetric(horizontal: 12),
+          contentPadding: EdgeInsets.symmetric(horizontal: AppSpacing.fieldPadding),
         ),
         child: Text(value != null ? value!.formattedDDMMYYYY : 'Selecionar'),
       ),
