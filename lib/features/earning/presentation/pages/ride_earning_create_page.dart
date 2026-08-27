@@ -289,7 +289,12 @@ class _RideEarningCreatePageState extends ConsumerState<RideEarningCreatePage> {
                 const SizedBox(height: 16),
                 _buildDurationField(errorsFor(EarningField.durationSeconds)),
                 const SizedBox(height: 16),
-                _buildDistanceField(errorsFor(EarningField.distanceKm)),
+                DecimalField<EarningField>(
+                  label: 'Distância (km)',
+                  errors: errorsFor(EarningField.distanceKm),
+                  controller: _distanceController,
+                  leading: const Icon(Icons.route),
+                ),
                 const SizedBox(height: 16),
                 TextField(
                   controller: _pickupCepController,
@@ -337,32 +342,6 @@ class _RideEarningCreatePageState extends ConsumerState<RideEarningCreatePage> {
       ),
       keyboardType: TextInputType.number,
       inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-    );
-  }
-
-  Widget _buildDistanceField(List<ValidationFailure<EarningField>> errors) {
-    return InputDecorator(
-      decoration: InputDecoration(
-        border: InputBorder.none,
-        labelText: 'Distância (km)',
-        errorText: errors.isNotEmpty ? errors.first.message : null,
-      ),
-      child: Container(
-        height: 48,
-        decoration: BoxDecoration(
-          border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: TextField(
-          controller: _distanceController,
-          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9,]'))],
-          decoration: const InputDecoration(
-            border: InputBorder.none,
-            contentPadding: EdgeInsets.symmetric(horizontal: 12),
-          ),
-        ),
-      ),
     );
   }
 }
