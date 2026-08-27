@@ -120,7 +120,7 @@ class CostListTile extends StatelessWidget {
       const SizedBox(height: 10),
       Wrap(
         spacing: 18,
-        runSpacing: 8,
+        runSpacing: AppSpacing.sm,
         children: [
           for (final (label, value) in stats)
             _StatItem(label: label, value: value),
