@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-class CostListView extends ConsumerWidget {
+class CostListView extends ConsumerStatefulWidget {
   final List<CostEntity> costs;
   final CostCategory category;
 
@@ -18,8 +18,19 @@ class CostListView extends ConsumerWidget {
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final filtered = costs.where((cost) => cost.category == category).toList();
+  ConsumerState<CostListView> createState() => _CostListViewState();
+}
+
+class _CostListViewState extends ConsumerState<CostListView> {
+  // Mesmo motivo do ShiftsListView: remove da tela antes do delete no
+  // banco confirmar, pra o Dismissible não sobrar na árvore já dispensado.
+  final _hiddenIds = <String>{};
+
+  @override
+  Widget build(BuildContext context) {
+    final filtered = widget.costs
+        .where((cost) => cost.category == widget.category && !_hiddenIds.contains(cost.id))
+        .toList();
 
     if (filtered.isEmpty) {
       return Center(child: Text(_emptyMessage));
@@ -49,6 +60,7 @@ class CostListView extends ConsumerWidget {
           ),
           confirmDismiss: (_) => DeleteCostDialog.show(context),
           onDismissed: (_) {
+            setState(() => _hiddenIds.add(cost.id));
             ref.read(costNotifierProvider.notifier).deleteCost(cost.id);
           },
           child: CostListTile(
@@ -70,7 +82,7 @@ class CostListView extends ConsumerWidget {
   }
 
   String get _emptyMessage {
-    return switch (category) {
+    return switch (widget.category) {
       CostCategory.fuel => 'Nenhum abastecimento lançado.',
       CostCategory.maintenance => 'Nenhuma manutenção lançada.',
       CostCategory.expense => 'Nenhuma despesa lançada.',

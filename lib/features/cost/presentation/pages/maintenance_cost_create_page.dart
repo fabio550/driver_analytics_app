@@ -3,6 +3,7 @@ import 'package:driver_analytics_app/core/presentation/formatters/currency_input
 import 'package:driver_analytics_app/core/presentation/widgets/currency_field.dart';
 import 'package:driver_analytics_app/core/presentation/widgets/date_time_field.dart';
 import 'package:driver_analytics_app/core/presentation/widgets/distance_field.dart';
+import 'package:driver_analytics_app/core/presentation/widgets/primary_button.dart';
 import 'package:driver_analytics_app/features/cost/application/providers/cost_provider.dart';
 import 'package:driver_analytics_app/features/cost/domain/entities/cost_entity.dart';
 import 'package:driver_analytics_app/features/cost/domain/enums/cost_field.dart';
@@ -125,8 +126,11 @@ class _MaintenanceCostCreatePageState
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(_isEditing ? 'Editar manutenção' : 'Nova manutenção'),
+      appBar: AppBar(title: Text(_isEditing ? 'Editar manutenção' : 'Nova manutenção'),),
+      bottomNavigationBar: PrimaryButton(
+        label: _isEditing ? 'Salvar alterações' : 'Salvar',
+        isLoading: _isSubmitting,
+        onPressed: _isSubmitting ? null : _submit,
       ),
       body: SafeArea(
         child: SingleChildScrollView(

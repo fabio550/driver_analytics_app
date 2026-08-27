@@ -1,4 +1,4 @@
-import 'package:driver_analytics_app/core/extensions/datetime_extensions.dart';
+import 'package:driver_analytics_app/core/presentation/widgets/primary_button.dart';
 import 'package:driver_analytics_app/core/domain/failures/validation_failure.dart';
 import 'package:driver_analytics_app/core/infrastructure/services/uuid_generator_provider.dart';
 import 'package:driver_analytics_app/core/presentation/formatters/currency_input_formatter.dart';
@@ -83,6 +83,11 @@ class _ShiftCreatePageState extends ConsumerState<ShiftCreatePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text(_isEditing ? 'Editar Jornada' : 'Nova Jornada')),
+      bottomNavigationBar: PrimaryButton(
+        label: _isEditing ? 'Salvar alterações' : 'Salvar',
+        isLoading: _formState.isSubmitting,
+        onPressed: _formState.isSubmitting ? null : _submit,
+      ),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16),
@@ -144,17 +149,6 @@ class _ShiftCreatePageState extends ConsumerState<ShiftCreatePage> {
                   state: _formState,
                   onChanged: (updated) => setState(() => _formState = updated),
                 ),
-              const SizedBox(height: 24),
-              FilledButton(
-                onPressed: _formState.isSubmitting ? null : _submit,
-                child: _formState.isSubmitting
-                    ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : Text(_isEditing ? 'Salvar alterações' : 'Salvar'),
-              ),
             ],
           ),
         ),

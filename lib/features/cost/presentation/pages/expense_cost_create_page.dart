@@ -2,6 +2,7 @@ import 'package:driver_analytics_app/core/domain/failures/validation_failure.dar
 import 'package:driver_analytics_app/core/presentation/formatters/currency_input_formatter.dart';
 import 'package:driver_analytics_app/core/presentation/widgets/currency_field.dart';
 import 'package:driver_analytics_app/core/presentation/widgets/date_time_field.dart';
+import 'package:driver_analytics_app/core/presentation/widgets/primary_button.dart';
 import 'package:driver_analytics_app/features/cost/application/providers/cost_provider.dart';
 import 'package:driver_analytics_app/features/cost/domain/entities/cost_entity.dart';
 import 'package:driver_analytics_app/features/cost/domain/enums/cost_field.dart';
@@ -114,6 +115,11 @@ class _ExpenseCostCreatePageState extends ConsumerState<ExpenseCostCreatePage> {
 
     return Scaffold(
       appBar: AppBar(title: Text(_isEditing ? 'Editar despesa' : 'Nova despesa')),
+      bottomNavigationBar: PrimaryButton(
+        label: _isEditing ? 'Salvar alterações' : 'Salvar',
+        isLoading: _isSubmitting,
+        onPressed: _isSubmitting ? null : _submit,
+      ),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16),
@@ -160,17 +166,6 @@ class _ExpenseCostCreatePageState extends ConsumerState<ExpenseCostCreatePage> {
                       : null,
                 ),
                 maxLines: 2,
-              ),
-              const SizedBox(height: 24),
-              FilledButton(
-                onPressed: _isSubmitting ? null : _submit,
-                child: _isSubmitting
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : Text(_isEditing ? 'Salvar alterações' : 'Salvar'),
               ),
             ],
           ),

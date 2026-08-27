@@ -6,17 +6,27 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-class ShiftsListView extends ConsumerWidget {
+class ShiftsListView extends ConsumerStatefulWidget {
   final List<ShiftEntity> shifts;
 
-  const ShiftsListView({
-    super.key,
-    required this.shifts,
-  });
+  const ShiftsListView({super.key, required this.shifts});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    if (shifts.isEmpty) {
+  ConsumerState<ShiftsListView> createState() => _ShiftsListViewState();
+}
+
+class _ShiftsListViewState extends ConsumerState<ShiftsListView> {
+  // Ids removidos otimisticamente na tela, antes da exclusão no banco
+  // confirmar — evita o Dismissible reaparecer no rebuild seguinte
+  // enquanto o delete ainda está em andamento (ele lança erro se o item
+  // continuar na árvore depois de dispensado).
+  final _hiddenIds = <String>{};
+
+  @override
+  Widget build(BuildContext context) {
+    final visible = widget.shifts.where((s) => !_hiddenIds.contains(s.id)).toList();
+
+    if (visible.isEmpty) {
       return const Center(
         child: Text('Nenhum lançamento encontrado.'),
       );
@@ -24,9 +34,9 @@ class ShiftsListView extends ConsumerWidget {
 
     return ListView.builder(
       padding: const EdgeInsets.symmetric(vertical: 6),
-      itemCount: shifts.length,
+      itemCount: visible.length,
       itemBuilder: (context, i) {
-        final shift = shifts[i];
+        final shift = visible[i];
 
         return Dismissible(
           key: ValueKey(shift.id),
@@ -46,6 +56,7 @@ class ShiftsListView extends ConsumerWidget {
           ),
           confirmDismiss: (_) => DeleteShiftDialog.show(context),
           onDismissed: (_) {
+            setState(() => _hiddenIds.add(shift.id));
             ref.read(shiftNotifierProvider.notifier).deleteShift(shift.id);
           },
           child: ShiftListTile(

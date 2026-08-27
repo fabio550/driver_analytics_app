@@ -18,6 +18,8 @@ class DistanceField<TField> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final borderColor = Theme.of(context).colorScheme.outlineVariant;
+    
     return InputDecorator(
       decoration: InputDecoration(
         border: InputBorder.none,
@@ -27,9 +29,7 @@ class DistanceField<TField> extends StatelessWidget {
       child: Container(
         height: 48,
         decoration: BoxDecoration(
-          border: Border.all(
-            color: const Color(0xFFE0DED8),
-          ),
+          border: Border.all(color: borderColor),
           borderRadius: BorderRadius.circular(8),
         ),
         child: Row(

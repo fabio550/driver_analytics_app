@@ -3,6 +3,7 @@ import 'package:driver_analytics_app/core/presentation/formatters/currency_input
 import 'package:driver_analytics_app/core/presentation/widgets/currency_field.dart';
 import 'package:driver_analytics_app/core/presentation/widgets/date_time_field.dart';
 import 'package:driver_analytics_app/core/presentation/widgets/distance_field.dart';
+import 'package:driver_analytics_app/core/presentation/widgets/primary_button.dart';
 import 'package:driver_analytics_app/features/cost/application/providers/cost_provider.dart';
 import 'package:driver_analytics_app/features/cost/domain/entities/cost_entity.dart';
 import 'package:driver_analytics_app/features/cost/domain/enums/cost_field.dart';
@@ -40,7 +41,7 @@ class _FuelCostCreatePageState extends ConsumerState<FuelCostCreatePage> {
     super.initState();
     final existing = widget.existing;
 
-    _subcategory = existing?.subcategory ?? FuelSubcategory.gasolineCommon;
+    _subcategory = existing?.subcategory ?? FuelSubcategory.ethanolCommon;
     _date = existing?.date ?? DateTime.now();
     _isFullTank = existing?.isFullTank ?? false;
     _previousFillUpMissing = existing?.previousFillUpMissing ?? false;
@@ -142,8 +143,11 @@ class _FuelCostCreatePageState extends ConsumerState<FuelCostCreatePage> {
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(_isEditing ? 'Editar abastecimento' : 'Novo abastecimento'),
+      appBar: AppBar(title: Text(_isEditing ? 'Editar abastecimento' : 'Novo abastecimento'),),
+      bottomNavigationBar: PrimaryButton(
+        label: _isEditing ? 'Salvar alterações' : 'Salvar',
+        isLoading: _isSubmitting,
+        onPressed: _isSubmitting ? null : _submit,
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -152,7 +156,7 @@ class _FuelCostCreatePageState extends ConsumerState<FuelCostCreatePage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               DropdownButtonFormField<FuelSubcategory>(
-                value: _subcategory,
+                initialValue: _subcategory,
                 decoration: const InputDecoration(labelText: 'Combustível'),
                 items: [
                   for (final subcategory in FuelSubcategory.values)
