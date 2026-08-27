@@ -1,3 +1,5 @@
+import 'package:driver_analytics_app/core/presentation/theme/app_sizes.dart';
+import 'package:driver_analytics_app/core/presentation/theme/app_spacing.dart';
 import 'package:flutter/material.dart';
 
 /// Botão de ação primária padronizado para formulários — full-width, fixo
@@ -21,10 +23,10 @@ class PrimaryButton extends StatelessWidget {
 
     return SafeArea(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppSpacing.md),
         child: SizedBox(
           width: double.infinity,
-          height: 56,
+          height: AppSizes.buttonHeight,
           child: FilledButton(
             onPressed: isLoading ? null : onPressed,
             child: isLoading
