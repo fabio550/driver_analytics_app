@@ -1,5 +1,6 @@
 import 'package:driver_analytics_app/core/domain/failures/validation_failure.dart';
 import 'package:driver_analytics_app/core/extensions/datetime_extensions.dart';
+import 'package:driver_analytics_app/core/presentation/widgets/bordered_field_shell.dart';
 import 'package:flutter/material.dart';
 
 class DateField<TField> extends StatelessWidget {
@@ -17,8 +18,7 @@ class DateField<TField> extends StatelessWidget {
   });
 
   /// Abre o date picker e devolve a data escolhida com a hora zerada, ou
-  /// `null` se cancelado. Método estático porque a lógica não depende de
-  /// nada além do valor atual — reaproveitado nas 3 telas de Custo.
+  /// `null` se cancelado.
   static Future<DateTime?> pick(
     BuildContext context, {
     required DateTime initialDate,
@@ -35,47 +35,17 @@ class DateField<TField> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final borderColor = Theme.of(context).colorScheme.outlineVariant;
-
-    return InkWell(
+    return BorderedFieldShell(
+      label: label,
+      errorText: errors.isNotEmpty ? errors.first.message : null,
+      leading: const Icon(Icons.date_range),
       onTap: onTap,
       child: InputDecorator(
-        decoration: InputDecoration(
+        decoration: const InputDecoration(
           border: InputBorder.none,
-          labelText: label,
-          errorText: errors.isNotEmpty ? errors.first.message : null,
+          contentPadding: EdgeInsets.symmetric(horizontal: 12),
         ),
-        child: Container(
-          height: 48,
-          decoration: BoxDecoration(
-            border: Border.all(color: borderColor),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Row(
-            children: [
-              Container(
-                height: double.infinity,
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  border: Border(right: BorderSide(color: borderColor)),
-                ),
-                child: const Icon(Icons.date_range),
-              ),
-              Expanded(
-                child: InputDecorator(
-                  decoration: const InputDecoration(
-                    border: InputBorder.none,
-                    contentPadding: EdgeInsets.symmetric(horizontal: 12),
-                  ),
-                  child: Text(
-                    value != null ? value!.formattedDDMMYYYY : 'Selecionar',
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
+        child: Text(value != null ? value!.formattedDDMMYYYY : 'Selecionar'),
       ),
     );
   }
