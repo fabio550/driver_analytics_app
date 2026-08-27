@@ -114,64 +114,66 @@ class _ExpenseCostCreatePageState extends ConsumerState<ExpenseCostCreatePage> {
 
     return Scaffold(
       appBar: AppBar(title: Text(_isEditing ? 'Editar despesa' : 'Nova despesa')),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            DropdownButtonFormField<ExpenseSubcategory>(
-              initialValue: _subcategory,
-              decoration: const InputDecoration(labelText: 'Tipo de despesa'),
-              items: [
-                for (final subcategory in ExpenseSubcategory.values)
-                  DropdownMenuItem(
-                    value: subcategory,
-                    child: Text(subcategory.label),
-                  ),
-              ],
-              onChanged: (value) {
-                if (value == null) return;
-                setState(() => _subcategory = value);
-              },
-            ),
-            const SizedBox(height: 16),
-            DateTimeField(
-              label: 'Data',
-              value: _date,
-              errors: errorsFor(CostField.date),
-              onTap: _pickDate,
-            ),
-            const SizedBox(height: 16),
-            CurrencyField(
-              label: 'Valor pago',
-              errors: errorsFor(CostField.amount),
-              controller: _amountController,
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _descriptionController,
-              decoration: InputDecoration(
-                labelText: _subcategory == ExpenseSubcategory.other
-                    ? 'Descrição (obrigatória para "Outros")'
-                    : 'Observação (opcional)',
-                errorText: errorsFor(CostField.description).isNotEmpty
-                    ? errorsFor(CostField.description).first.message
-                    : null,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              DropdownButtonFormField<ExpenseSubcategory>(
+                initialValue: _subcategory,
+                decoration: const InputDecoration(labelText: 'Tipo de despesa'),
+                items: [
+                  for (final subcategory in ExpenseSubcategory.values)
+                    DropdownMenuItem(
+                      value: subcategory,
+                      child: Text(subcategory.label),
+                    ),
+                ],
+                onChanged: (value) {
+                  if (value == null) return;
+                  setState(() => _subcategory = value);
+                },
               ),
-              maxLines: 2,
-            ),
-            const SizedBox(height: 24),
-            FilledButton(
-              onPressed: _isSubmitting ? null : _submit,
-              child: _isSubmitting
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : Text(_isEditing ? 'Salvar alterações' : 'Salvar'),
-            ),
-          ],
+              const SizedBox(height: 16),
+              DateTimeField(
+                label: 'Data',
+                value: _date,
+                errors: errorsFor(CostField.date),
+                onTap: _pickDate,
+              ),
+              const SizedBox(height: 16),
+              CurrencyField(
+                label: 'Valor pago',
+                errors: errorsFor(CostField.amount),
+                controller: _amountController,
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: _descriptionController,
+                decoration: InputDecoration(
+                  labelText: _subcategory == ExpenseSubcategory.other
+                      ? 'Descrição (obrigatória para "Outros")'
+                      : 'Observação (opcional)',
+                  errorText: errorsFor(CostField.description).isNotEmpty
+                      ? errorsFor(CostField.description).first.message
+                      : null,
+                ),
+                maxLines: 2,
+              ),
+              const SizedBox(height: 24),
+              FilledButton(
+                onPressed: _isSubmitting ? null : _submit,
+                child: _isSubmitting
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : Text(_isEditing ? 'Salvar alterações' : 'Salvar'),
+              ),
+            ],
+          ),
         ),
       ),
     );

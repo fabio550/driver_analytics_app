@@ -83,78 +83,80 @@ class _ShiftCreatePageState extends ConsumerState<ShiftCreatePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text(_isEditing ? 'Editar Jornada' : 'Nova Jornada')),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            DateTimeField(
-              label: 'Início',
-              value: _formState.startTime,
-              errors: _formState.failuresFor(ShiftField.startTime),
-              onTap: () => _pickStartTime(),
-            ),
-            DateTimeField(
-              label: 'Fim',
-              value: _formState.endTime,
-              errors: _formState.failuresFor(ShiftField.endTime),
-              onTap: () => _pickEndTime(),
-            ),
-            DistanceField(
-              label: 'Km inicial',
-              errors: _formState.failuresFor(ShiftField.initialKm),
-              onChanged: (value) => setState(
-                () => _formState = _formState.copyWith(initialKm: value),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              DateTimeField(
+                label: 'Início',
+                value: _formState.startTime,
+                errors: _formState.failuresFor(ShiftField.startTime),
+                onTap: () => _pickStartTime(),
               ),
-              controller: _initialKmController,
-            ),
-            DistanceField(
-              label: 'Km final',
-              errors: _formState.failuresFor(ShiftField.finalKm),
-              onChanged: (value) => setState(
-                () => _formState = _formState.copyWith(finalKm: value),
+              DateTimeField(
+                label: 'Fim',
+                value: _formState.endTime,
+                errors: _formState.failuresFor(ShiftField.endTime),
+                onTap: () => _pickEndTime(),
               ),
-              controller: _finalKmController,
-            ),
-            CurrencyField(
-              label: 'Ganhos',
-              errors: _formState.failuresFor(ShiftField.earnings),
-              controller: _earningsController,
-            ),
-            const SizedBox(height: 24),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                TextButton.icon(
-                  onPressed: _addPause,
-                  icon: const Icon(Icons.add),
-                  label: const Text('Pausa'),
+              DistanceField(
+                label: 'Km inicial',
+                errors: _formState.failuresFor(ShiftField.initialKm),
+                onChanged: (value) => setState(
+                  () => _formState = _formState.copyWith(initialKm: value),
                 ),
-              ],
-            ),
-            if (_formState.pauses.isEmpty)
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 8),
-                child: Text('Nenhuma pausa adicionada.'),
+                controller: _initialKmController,
               ),
-            for (var i = 0; i < _formState.pauses.length; i++)
-              PauseCard(
-                index: i,
-                state: _formState,
-                onChanged: (updated) => setState(() => _formState = updated),
+              DistanceField(
+                label: 'Km final',
+                errors: _formState.failuresFor(ShiftField.finalKm),
+                onChanged: (value) => setState(
+                  () => _formState = _formState.copyWith(finalKm: value),
+                ),
+                controller: _finalKmController,
               ),
-            const SizedBox(height: 24),
-            FilledButton(
-              onPressed: _formState.isSubmitting ? null : _submit,
-              child: _formState.isSubmitting
-                  ? const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : Text(_isEditing ? 'Salvar alterações' : 'Salvar'),
-            ),
-          ],
+              CurrencyField(
+                label: 'Ganhos',
+                errors: _formState.failuresFor(ShiftField.earnings),
+                controller: _earningsController,
+              ),
+              const SizedBox(height: 24),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  TextButton.icon(
+                    onPressed: _addPause,
+                    icon: const Icon(Icons.add),
+                    label: const Text('Pausa'),
+                  ),
+                ],
+              ),
+              if (_formState.pauses.isEmpty)
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 8),
+                  child: Text('Nenhuma pausa adicionada.'),
+                ),
+              for (var i = 0; i < _formState.pauses.length; i++)
+                PauseCard(
+                  index: i,
+                  state: _formState,
+                  onChanged: (updated) => setState(() => _formState = updated),
+                ),
+              const SizedBox(height: 24),
+              FilledButton(
+                onPressed: _formState.isSubmitting ? null : _submit,
+                child: _formState.isSubmitting
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : Text(_isEditing ? 'Salvar alterações' : 'Salvar'),
+              ),
+            ],
+          ),
         ),
       ),
     );
