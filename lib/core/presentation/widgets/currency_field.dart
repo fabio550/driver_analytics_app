@@ -1,5 +1,6 @@
 import 'package:driver_analytics_app/core/domain/failures/validation_failure.dart';
 import 'package:driver_analytics_app/core/presentation/formatters/currency_input_formatter.dart';
+import 'package:driver_analytics_app/core/presentation/widgets/bordered_field_shell.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -17,58 +18,26 @@ class CurrencyField<TField> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final borderColor = Theme.of(context).colorScheme.outlineVariant;
-
-    return InputDecorator(
-      decoration: InputDecoration(
-        border: InputBorder.none,
-        labelText: label,
-        errorText: errors.isNotEmpty ? errors.first.message : null,
-      ),
-      child: Container(
-        height: 48,
-        decoration: BoxDecoration(
-          border: Border.all(color: borderColor),
-          borderRadius: BorderRadius.circular(8),
+    return BorderedFieldShell(
+      label: label,
+      errorText: errors.isNotEmpty ? errors.first.message : null,
+      leading: Text(
+        'R\$',
+        style: TextStyle(
+          fontSize: 14,
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
         ),
-        child: Row(
-          children: [
-            Container(
-              height: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              alignment: Alignment.center,
-              decoration: const BoxDecoration(
-                border: Border(
-                  right: BorderSide(
-                    color: Color(0xFFE0DED8),
-                  ),
-                ),
-              ),
-              child: const Text(
-                'R\$',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Color(0xFF6B6B6B),
-                ),
-              ),
-            ),
-            Expanded(
-              child: TextField(
-                controller: controller,
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-                inputFormatters: [
-                  FilteringTextInputFormatter.digitsOnly,
-                  CurrencyInputFormatter(),
-                ],
-                decoration: const InputDecoration(
-                  border: InputBorder.none,
-                  contentPadding: EdgeInsets.symmetric(horizontal: 12),
-                ),
-              ),
-            )
-          ],
+      ),
+      child: TextField(
+        controller: controller,
+        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+        inputFormatters: [
+          FilteringTextInputFormatter.digitsOnly,
+          CurrencyInputFormatter(),
+        ],
+        decoration: const InputDecoration(
+          border: InputBorder.none,
+          contentPadding: EdgeInsets.symmetric(horizontal: 12),
         ),
       ),
     );
