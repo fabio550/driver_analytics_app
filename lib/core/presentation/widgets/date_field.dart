@@ -2,19 +2,36 @@ import 'package:driver_analytics_app/core/domain/failures/validation_failure.dar
 import 'package:driver_analytics_app/core/extensions/datetime_extensions.dart';
 import 'package:flutter/material.dart';
 
-class DateTimeField<TField> extends StatelessWidget {
+class DateField<TField> extends StatelessWidget {
   final String label;
   final DateTime? value;
   final List<ValidationFailure<TField>> errors;
   final VoidCallback onTap;
-  
-  const DateTimeField({
+
+  const DateField({
     super.key,
     required this.label,
     required this.value,
     required this.errors,
     required this.onTap,
   });
+
+  /// Abre o date picker e devolve a data escolhida com a hora zerada, ou
+  /// `null` se cancelado. Método estático porque a lógica não depende de
+  /// nada além do valor atual — reaproveitado nas 3 telas de Custo.
+  static Future<DateTime?> pick(
+    BuildContext context, {
+    required DateTime initialDate,
+  }) async {
+    final date = await showDatePicker(
+      context: context,
+      initialDate: initialDate,
+      firstDate: DateTime(2000),
+      lastDate: DateTime.now().add(const Duration(days: 1)),
+    );
+    if (date == null) return null;
+    return DateTime(date.year, date.month, date.day);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -40,24 +57,22 @@ class DateTimeField<TField> extends StatelessWidget {
                 height: double.infinity,
                 padding: const EdgeInsets.symmetric(horizontal: 12),
                 alignment: Alignment.center,
-                decoration: const BoxDecoration(
-                  border: Border(
-                    right: BorderSide(
-                      color: Color(0xFFE0DED8),
-                    ),
-                  ),
+                decoration: BoxDecoration(
+                  border: Border(right: BorderSide(color: borderColor)),
                 ),
-                child: Icon(Icons.date_range),
+                child: const Icon(Icons.date_range),
               ),
               Expanded(
                 child: InputDecorator(
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     border: InputBorder.none,
                     contentPadding: EdgeInsets.symmetric(horizontal: 12),
                   ),
-                  child: Text(value != null ? value!.formattedDDMMYYYYHHmm : 'Selecionar'),
-                )
-              )
+                  child: Text(
+                    value != null ? value!.formattedDDMMYYYY : 'Selecionar',
+                  ),
+                ),
+              ),
             ],
           ),
         ),

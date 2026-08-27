@@ -1,7 +1,7 @@
 import 'package:driver_analytics_app/core/domain/failures/validation_failure.dart';
 import 'package:driver_analytics_app/core/presentation/formatters/currency_input_formatter.dart';
 import 'package:driver_analytics_app/core/presentation/widgets/currency_field.dart';
-import 'package:driver_analytics_app/core/presentation/widgets/date_time_field.dart';
+import 'package:driver_analytics_app/core/presentation/widgets/date_field.dart';
 import 'package:driver_analytics_app/core/presentation/widgets/primary_button.dart';
 import 'package:driver_analytics_app/features/cost/application/providers/cost_provider.dart';
 import 'package:driver_analytics_app/features/cost/domain/entities/cost_entity.dart';
@@ -53,25 +53,11 @@ class _ExpenseCostCreatePageState extends ConsumerState<ExpenseCostCreatePage> {
   }
 
   Future<void> _pickDate() async {
-    final date = await showDatePicker(
-      context: context,
-      initialDate: _date,
-      firstDate: DateTime(2000),
-      lastDate: DateTime.now().add(const Duration(days: 1)),
-    );
+    final date = await DateField.pick(context, initialDate: _date);
     if (date == null || !mounted) return;
-
-    final time = await showTimePicker(
-      context: context,
-      initialTime: TimeOfDay.fromDateTime(_date),
-    );
-    if (time == null) return;
-
-    setState(() {
-      _date = DateTime(date.year, date.month, date.day, time.hour, time.minute);
-    });
+    setState(() => _date = date);
   }
-
+  
   Future<void> _submit() async {
     setState(() => _isSubmitting = true);
 
@@ -142,7 +128,7 @@ class _ExpenseCostCreatePageState extends ConsumerState<ExpenseCostCreatePage> {
                 },
               ),
               const SizedBox(height: 16),
-              DateTimeField(
+              DateField(
                 label: 'Data',
                 value: _date,
                 errors: errorsFor(CostField.date),

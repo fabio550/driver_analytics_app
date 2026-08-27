@@ -1,7 +1,7 @@
 import 'package:driver_analytics_app/core/domain/failures/validation_failure.dart';
 import 'package:driver_analytics_app/core/presentation/formatters/currency_input_formatter.dart';
 import 'package:driver_analytics_app/core/presentation/widgets/currency_field.dart';
-import 'package:driver_analytics_app/core/presentation/widgets/date_time_field.dart';
+import 'package:driver_analytics_app/core/presentation/widgets/date_field.dart';
 import 'package:driver_analytics_app/core/presentation/widgets/distance_field.dart';
 import 'package:driver_analytics_app/core/presentation/widgets/primary_button.dart';
 import 'package:driver_analytics_app/features/cost/application/providers/cost_provider.dart';
@@ -72,23 +72,9 @@ class _FuelCostCreatePageState extends ConsumerState<FuelCostCreatePage> {
   String get _quantityUnit => _subcategory == FuelSubcategory.energy ? 'kWh' : 'L';
 
   Future<void> _pickDate() async {
-    final date = await showDatePicker(
-      context: context,
-      initialDate: _date,
-      firstDate: DateTime(2000),
-      lastDate: DateTime.now().add(const Duration(days: 1)),
-    );
+    final date = await DateField.pick(context, initialDate: _date);
     if (date == null || !mounted) return;
-
-    final time = await showTimePicker(
-      context: context,
-      initialTime: TimeOfDay.fromDateTime(_date),
-    );
-    if (time == null) return;
-
-    setState(() {
-      _date = DateTime(date.year, date.month, date.day, time.hour, time.minute);
-    });
+    setState(() => _date = date);
   }
 
   Future<void> _submit() async {
@@ -150,84 +136,76 @@ class _FuelCostCreatePageState extends ConsumerState<FuelCostCreatePage> {
         onPressed: _isSubmitting ? null : _submit,
       ),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              DropdownButtonFormField<FuelSubcategory>(
-                initialValue: _subcategory,
-                decoration: const InputDecoration(labelText: 'Combustível'),
-                items: [
-                  for (final subcategory in FuelSubcategory.values)
-                    DropdownMenuItem(
-                      value: subcategory,
-                      child: Text(subcategory.label),
-                    ),
-                ],
-                onChanged: (value) {
-                  if (value == null) return;
-                  setState(() => _subcategory = value);
-                },
-              ),
-              const SizedBox(height: 16),
-              DateTimeField(
-                label: 'Data',
-                value: _date,
-                errors: errorsFor(CostField.date),
-                onTap: _pickDate,
-              ),
-              const SizedBox(height: 16),
-              CurrencyField(
-                label: 'Valor pago',
-                errors: errorsFor(CostField.amount),
-                controller: _amountController,
-              ),
-              const SizedBox(height: 16),
-              DistanceField(
-                label: 'Km do odômetro',
-                errors: errorsFor(CostField.odometerKm),
-                onChanged: (_) {},
-                controller: _odometerController,
-              ),
-              const SizedBox(height: 16),
-              _buildQuantityField(errorsFor(CostField.quantity)),
-              const SizedBox(height: 8),
-              CheckboxListTile(
-                value: _isFullTank,
-                onChanged: (value) => setState(() => _isFullTank = value ?? false),
-                title: const Text('Tanque cheio'),
-                subtitle: const Text('Referência confiável pro cálculo de consumo.'),
-                controlAffinity: ListTileControlAffinity.leading,
-                contentPadding: EdgeInsets.zero,
-              ),
-              CheckboxListTile(
-                value: _previousFillUpMissing,
-                onChanged: (value) =>
-                    setState(() => _previousFillUpMissing = value ?? false),
-                title: const Text('Abastecimento anterior em falta'),
-                subtitle: const Text('Quebra a cadeia de cálculo de consumo aqui.'),
-                controlAffinity: ListTileControlAffinity.leading,
-                contentPadding: EdgeInsets.zero,
-              ),
-              const SizedBox(height: 8),
-              TextField(
-                controller: _descriptionController,
-                decoration: const InputDecoration(labelText: 'Observação (opcional)'),
-                maxLines: 2,
-              ),
-              const SizedBox(height: 24),
-              FilledButton(
-                onPressed: _isSubmitting ? null : _submit,
-                child: _isSubmitting
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : Text(_isEditing ? 'Salvar alterações' : 'Salvar'),
-              ),
-            ],
+        child: Scrollbar(
+          thumbVisibility: true,
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                DropdownButtonFormField<FuelSubcategory>(
+                  initialValue: _subcategory,
+                  decoration: const InputDecoration(labelText: 'Combustível'),
+                  items: [
+                    for (final subcategory in FuelSubcategory.values)
+                      DropdownMenuItem(
+                        value: subcategory,
+                        child: Text(subcategory.label),
+                      ),
+                  ],
+                  onChanged: (value) {
+                    if (value == null) return;
+                    setState(() => _subcategory = value);
+                  },
+                ),
+                const SizedBox(height: 16),
+                DateField(
+                  label: 'Data',
+                  value: _date,
+                  errors: errorsFor(CostField.date),
+                  onTap: _pickDate,
+                ),
+                const SizedBox(height: 16),
+                CurrencyField(
+                  label: 'Valor pago',
+                  errors: errorsFor(CostField.amount),
+                  controller: _amountController,
+                ),
+                const SizedBox(height: 16),
+                DistanceField(
+                  label: 'Km do odômetro',
+                  errors: errorsFor(CostField.odometerKm),
+                  onChanged: (_) {},
+                  controller: _odometerController,
+                ),
+                const SizedBox(height: 16),
+                _buildQuantityField(errorsFor(CostField.quantity)),
+                const SizedBox(height: 8),
+                CheckboxListTile(
+                  value: _isFullTank,
+                  onChanged: (value) => setState(() => _isFullTank = value ?? false),
+                  title: const Text('Tanque cheio'),
+                  subtitle: const Text('Referência confiável pro cálculo de consumo.'),
+                  controlAffinity: ListTileControlAffinity.leading,
+                  contentPadding: EdgeInsets.zero,
+                ),
+                CheckboxListTile(
+                  value: _previousFillUpMissing,
+                  onChanged: (value) =>
+                      setState(() => _previousFillUpMissing = value ?? false),
+                  title: const Text('Abastecimento anterior em falta'),
+                  subtitle: const Text('Quebra a cadeia de cálculo de consumo aqui.'),
+                  controlAffinity: ListTileControlAffinity.leading,
+                  contentPadding: EdgeInsets.zero,
+                ),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: _descriptionController,
+                  decoration: const InputDecoration(labelText: 'Observação (opcional)'),
+                  maxLines: 2,
+                ),
+              ],
+            ),
           ),
         ),
       ),

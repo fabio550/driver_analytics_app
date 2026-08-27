@@ -5,6 +5,12 @@ extension DateTimeExtensions on DateTime {
     return '${two(hour)}:${two(minute)}';
   }
 
+  String get formattedDDMMYYYY {
+    String two(int n) => n.toString().padLeft(2, '0');
+
+    return '${two(day)}/${two(month)}/$year';
+  }
+
   String get formattedDDMMYYYYHHmm {
     String two(int n) => n.toString().padLeft(2, '0');
 
