@@ -1,10 +1,13 @@
+import 'package:driver_analytics_app/core/presentation/theme/app_radius.dart';
+import 'package:driver_analytics_app/core/presentation/theme/app_sizes.dart';
+import 'package:driver_analytics_app/core/presentation/theme/app_spacing.dart';
 import 'package:flutter/material.dart';
 
 /// Casca visual compartilhada por todo campo com prefixo (ícone/texto) +
-/// borda — CurrencyField, DistanceField, DecimalField, DateField,
-/// DateTimeField. A cor da borda mora só aqui: antes, cada campo tinha
-/// sua própria cópia, e uma correção de tema escuro passou batido em 3
-/// das 5.
+/// borda — CurrencyField, DistanceField, DecimalField, IntegerField,
+/// DateField, DateTimeField. A cor da borda mora só aqui: antes, cada
+/// campo tinha sua própria cópia, e uma correção de tema escuro passou
+/// batido em 3 das 5.
 class BorderedFieldShell extends StatelessWidget {
   final String label;
   final String? errorText;
@@ -32,16 +35,16 @@ class BorderedFieldShell extends StatelessWidget {
         errorText: errorText,
       ),
       child: Container(
-        height: 48,
+        height: AppSizes.fieldHeight,
         decoration: BoxDecoration(
           border: Border.all(color: borderColor),
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(AppRadius.sm),
         ),
         child: Row(
           children: [
             Container(
               height: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 12),
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.fieldPadding),
               alignment: Alignment.center,
               decoration: BoxDecoration(
                 border: Border(right: BorderSide(color: borderColor)),
