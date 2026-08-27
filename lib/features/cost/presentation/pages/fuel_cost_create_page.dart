@@ -138,6 +138,9 @@ class _FuelCostCreatePageState extends ConsumerState<FuelCostCreatePage> {
       body: SafeArea(
         child: Scrollbar(
           thumbVisibility: true,
+          trackVisibility: true,
+          thickness: 10,
+          interactive: true,
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(16),
             child: Column(
