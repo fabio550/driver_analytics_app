@@ -2,6 +2,8 @@ import 'package:driver_analytics_app/core/domain/failures/validation_failure.dar
 import 'package:driver_analytics_app/core/presentation/formatters/currency_input_formatter.dart';
 import 'package:driver_analytics_app/core/presentation/widgets/currency_field.dart';
 import 'package:driver_analytics_app/core/presentation/widgets/date_time_field.dart';
+import 'package:driver_analytics_app/core/presentation/widgets/decimal_field.dart';
+import 'package:driver_analytics_app/core/presentation/widgets/integer_field.dart';
 import 'package:driver_analytics_app/core/presentation/widgets/primary_button.dart';
 import 'package:driver_analytics_app/features/earning/application/providers/earning_provider.dart';
 import 'package:driver_analytics_app/features/earning/domain/entities/earning_entity.dart';
@@ -287,7 +289,12 @@ class _RideEarningCreatePageState extends ConsumerState<RideEarningCreatePage> {
                   controller: _tipController,
                 ),
                 const SizedBox(height: 16),
-                _buildDurationField(errorsFor(EarningField.durationSeconds)),
+                IntegerField<EarningField>(
+                  label: 'Duração (min)',
+                  errors: errorsFor(EarningField.durationSeconds),
+                  controller: _durationController,
+                  leading: const Icon(Icons.timer),
+                ),
                 const SizedBox(height: 16),
                 DecimalField<EarningField>(
                   label: 'Distância (km)',
@@ -330,18 +337,6 @@ class _RideEarningCreatePageState extends ConsumerState<RideEarningCreatePage> {
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildDurationField(List<ValidationFailure<EarningField>> errors) {
-    return TextField(
-      controller: _durationController,
-      decoration: InputDecoration(
-        labelText: 'Duração (min)',
-        errorText: errors.isNotEmpty ? errors.first.message : null,
-      ),
-      keyboardType: TextInputType.number,
-      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
     );
   }
 }
