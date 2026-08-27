@@ -93,7 +93,11 @@ class _EarningsPageState extends ConsumerState<EarningsPage> {
             shiftStartTime: shift.startTime,
             informedAmount: shift.earnings,
             earnings: byShift[shift.id]!,
-            // Edição fica pra quando os formulários existirem, na próxima rodada.
+            onTapEarning: (earning) {
+              if (earning is RideEarningEntity) {
+                context.push('/earnings/ride/edit', extra: earning);
+              }
+            },
           ),
       ],
     );
