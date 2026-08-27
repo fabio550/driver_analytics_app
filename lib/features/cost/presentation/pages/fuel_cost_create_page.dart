@@ -1,8 +1,11 @@
 import 'package:driver_analytics_app/core/domain/failures/validation_failure.dart';
 import 'package:driver_analytics_app/core/presentation/formatters/currency_input_formatter.dart';
+import 'package:driver_analytics_app/core/presentation/theme/app_spacing.dart';
 import 'package:driver_analytics_app/core/presentation/widgets/currency_field.dart';
 import 'package:driver_analytics_app/core/presentation/widgets/date_field.dart';
+import 'package:driver_analytics_app/core/presentation/widgets/decimal_field.dart';
 import 'package:driver_analytics_app/core/presentation/widgets/distance_field.dart';
+import 'package:driver_analytics_app/core/presentation/widgets/form_scroll_view.dart';
 import 'package:driver_analytics_app/core/presentation/widgets/primary_button.dart';
 import 'package:driver_analytics_app/features/cost/application/providers/cost_provider.dart';
 import 'package:driver_analytics_app/features/cost/domain/entities/cost_entity.dart';
@@ -10,7 +13,6 @@ import 'package:driver_analytics_app/features/cost/domain/enums/cost_field.dart'
 import 'package:driver_analytics_app/features/cost/domain/enums/fuel_subcategory.dart';
 import 'package:driver_analytics_app/features/cost/presentation/extensions/subcategory_extensions.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class FuelCostCreatePage extends ConsumerStatefulWidget {
@@ -129,93 +131,81 @@ class _FuelCostCreatePageState extends ConsumerState<FuelCostCreatePage> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: Text(_isEditing ? 'Editar abastecimento' : 'Novo abastecimento'),),
+      appBar: AppBar(title: Text(_isEditing ? 'Editar abastecimento' : 'Novo abastecimento')),
       bottomNavigationBar: PrimaryButton(
         label: _isEditing ? 'Salvar alterações' : 'Salvar',
         isLoading: _isSubmitting,
         onPressed: _isSubmitting ? null : _submit,
       ),
-      body: SafeArea(
-        child: Scrollbar(
-          thumbVisibility: true,
-          trackVisibility: true,
-          thickness: 10,
-          interactive: true,
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                DropdownButtonFormField<FuelSubcategory>(
-                  initialValue: _subcategory,
-                  decoration: const InputDecoration(labelText: 'Combustível'),
-                  items: [
-                    for (final subcategory in FuelSubcategory.values)
-                      DropdownMenuItem(
-                        value: subcategory,
-                        child: Text(subcategory.label),
-                      ),
-                  ],
-                  onChanged: (value) {
-                    if (value == null) return;
-                    setState(() => _subcategory = value);
-                  },
+      body: FormScrollView(
+        children: [
+          DropdownButtonFormField<FuelSubcategory>(
+            initialValue: _subcategory,
+            decoration: const InputDecoration(labelText: 'Combustível'),
+            items: [
+              for (final subcategory in FuelSubcategory.values)
+                DropdownMenuItem(
+                  value: subcategory,
+                  child: Text(subcategory.label),
                 ),
-                const SizedBox(height: 16),
-                DateField(
-                  label: 'Data',
-                  value: _date,
-                  errors: errorsFor(CostField.date),
-                  onTap: _pickDate,
-                ),
-                const SizedBox(height: 16),
-                CurrencyField(
-                  label: 'Valor pago',
-                  errors: errorsFor(CostField.amount),
-                  controller: _amountController,
-                ),
-                const SizedBox(height: 16),
-                DistanceField(
-                  label: 'Km do odômetro',
-                  errors: errorsFor(CostField.odometerKm),
-                  onChanged: (_) {},
-                  controller: _odometerController,
-                ),
-                const SizedBox(height: 16),
-                DecimalField<CostField>(
-                  label: 'Quantidade ($_quantityUnit)',
-                  errors: errorsFor(CostField.quantity),
-                  controller: _quantityController,
-                  leading: const Icon(Icons.local_gas_station),
-                ),
-                const SizedBox(height: 8),
-                CheckboxListTile(
-                  value: _isFullTank,
-                  onChanged: (value) => setState(() => _isFullTank = value ?? false),
-                  title: const Text('Tanque cheio'),
-                  subtitle: const Text('Referência confiável pro cálculo de consumo.'),
-                  controlAffinity: ListTileControlAffinity.leading,
-                  contentPadding: EdgeInsets.zero,
-                ),
-                CheckboxListTile(
-                  value: _previousFillUpMissing,
-                  onChanged: (value) =>
-                      setState(() => _previousFillUpMissing = value ?? false),
-                  title: const Text('Abastecimento anterior em falta'),
-                  subtitle: const Text('Quebra a cadeia de cálculo de consumo aqui.'),
-                  controlAffinity: ListTileControlAffinity.leading,
-                  contentPadding: EdgeInsets.zero,
-                ),
-                const SizedBox(height: 8),
-                TextField(
-                  controller: _descriptionController,
-                  decoration: const InputDecoration(labelText: 'Observação (opcional)'),
-                  maxLines: 2,
-                ),
-              ],
-            ),
+            ],
+            onChanged: (value) {
+              if (value == null) return;
+              setState(() => _subcategory = value);
+            },
           ),
-        ),
+          const SizedBox(height: AppSpacing.md),
+          DateField(
+            label: 'Data',
+            value: _date,
+            errors: errorsFor(CostField.date),
+            onTap: _pickDate,
+          ),
+          const SizedBox(height: AppSpacing.md),
+          CurrencyField(
+            label: 'Valor pago',
+            errors: errorsFor(CostField.amount),
+            controller: _amountController,
+          ),
+          const SizedBox(height: AppSpacing.md),
+          DistanceField(
+            label: 'Km do odômetro',
+            errors: errorsFor(CostField.odometerKm),
+            onChanged: (_) {},
+            controller: _odometerController,
+          ),
+          const SizedBox(height: AppSpacing.md),
+          DecimalField<CostField>(
+            label: 'Quantidade ($_quantityUnit)',
+            errors: errorsFor(CostField.quantity),
+            controller: _quantityController,
+            leading: const Icon(Icons.local_gas_station),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          CheckboxListTile(
+            value: _isFullTank,
+            onChanged: (value) => setState(() => _isFullTank = value ?? false),
+            title: const Text('Tanque cheio'),
+            subtitle: const Text('Referência confiável pro cálculo de consumo.'),
+            controlAffinity: ListTileControlAffinity.leading,
+            contentPadding: EdgeInsets.zero,
+          ),
+          CheckboxListTile(
+            value: _previousFillUpMissing,
+            onChanged: (value) =>
+                setState(() => _previousFillUpMissing = value ?? false),
+            title: const Text('Abastecimento anterior em falta'),
+            subtitle: const Text('Quebra a cadeia de cálculo de consumo aqui.'),
+            controlAffinity: ListTileControlAffinity.leading,
+            contentPadding: EdgeInsets.zero,
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          TextField(
+            controller: _descriptionController,
+            decoration: const InputDecoration(labelText: 'Observação (opcional)'),
+            maxLines: 2,
+          ),
+        ],
       ),
     );
   }
