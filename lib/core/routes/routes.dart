@@ -14,6 +14,7 @@ import 'package:driver_analytics_app/features/shift/presentation/pages/shift_cre
 import 'package:driver_analytics_app/features/shift/presentation/pages/shifts_page.dart';
 import 'package:driver_analytics_app/features/shift/presentation/pages/active_shift_page.dart';
 import 'package:driver_analytics_app/features/shift/presentation/pages/shift_summary_page.dart';
+import 'package:driver_analytics_app/features/earning/domain/entities/earning_entity.dart';
 import 'package:go_router/go_router.dart';
 
 final routes = [
@@ -75,9 +76,13 @@ final routes = [
     path: '/earnings',
     builder: (context, state) => const EarningsPage(),
   ),
-  GoRoute(
+    GoRoute(
     path: '/earnings/ride/create',
     builder: (context, state) => const RideEarningCreatePage(),
+  ),
+  GoRoute(
+    path: '/earnings/ride/edit',
+    builder: (context, state) => RideEarningCreatePage(existing: state.extra as RideEarningEntity),
   ),
   GoRoute(
     path: '/earnings/promotion/create',
@@ -91,4 +96,5 @@ final routes = [
     path: '/earnings/orphans',
     builder: (context, state) => const OrphanEarningsPage(),
   ),
+  
 ];
