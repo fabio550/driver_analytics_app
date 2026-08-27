@@ -1,3 +1,5 @@
+import 'package:driver_analytics_app/core/presentation/theme/app_radius.dart';
+import 'package:driver_analytics_app/core/presentation/theme/app_spacing.dart';
 import 'package:driver_analytics_app/features/cost/application/providers/cost_provider.dart';
 import 'package:driver_analytics_app/features/cost/domain/entities/cost_entity.dart';
 import 'package:driver_analytics_app/features/cost/domain/enums/cost_category.dart';
@@ -48,10 +50,10 @@ class _CostListViewState extends ConsumerState<CostListView> {
           background: Container(
             margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             alignment: Alignment.centerRight,
-            padding: const EdgeInsets.symmetric(horizontal: 24),
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.errorContainer,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(AppRadius.md),
             ),
             child: Icon(
               Icons.delete,
