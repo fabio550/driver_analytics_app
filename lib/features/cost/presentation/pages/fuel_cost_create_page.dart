@@ -182,7 +182,12 @@ class _FuelCostCreatePageState extends ConsumerState<FuelCostCreatePage> {
                   controller: _odometerController,
                 ),
                 const SizedBox(height: 16),
-                _buildQuantityField(errorsFor(CostField.quantity)),
+                DecimalField<CostField>(
+                  label: 'Quantidade ($_quantityUnit)',
+                  errors: errorsFor(CostField.quantity),
+                  controller: _quantityController,
+                  leading: const Icon(Icons.local_gas_station),
+                ),
                 const SizedBox(height: 8),
                 CheckboxListTile(
                   value: _isFullTank,
@@ -209,32 +214,6 @@ class _FuelCostCreatePageState extends ConsumerState<FuelCostCreatePage> {
                 ),
               ],
             ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildQuantityField(List<ValidationFailure<CostField>> errors) {
-    return InputDecorator(
-      decoration: InputDecoration(
-        border: InputBorder.none,
-        labelText: 'Quantidade ($_quantityUnit)',
-        errorText: errors.isNotEmpty ? errors.first.message : null,
-      ),
-      child: Container(
-        height: 48,
-        decoration: BoxDecoration(
-          border: Border.all(color: const Color(0xFFE0DED8)),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: TextField(
-          controller: _quantityController,
-          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9,]'))],
-          decoration: const InputDecoration(
-            border: InputBorder.none,
-            contentPadding: EdgeInsets.symmetric(horizontal: 12),
           ),
         ),
       ),
