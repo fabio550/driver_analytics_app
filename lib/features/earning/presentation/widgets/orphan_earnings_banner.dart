@@ -1,3 +1,4 @@
+import 'package:driver_analytics_app/core/presentation/theme/app_radius.dart';
 import 'package:flutter/material.dart';
 
 /// Banner fixo pros ganhos sem jornada (§6.2) — sempre visível no topo,
@@ -17,11 +18,11 @@ class OrphanEarningsBanner extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(12, 6, 12, 8),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppRadius.md),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(AppRadius.md),
             border: Border.all(color: colorScheme.outlineVariant, width: 1.5),
           ),
           child: Row(

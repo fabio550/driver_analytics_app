@@ -1,3 +1,4 @@
+import 'package:driver_analytics_app/core/presentation/theme/app_spacing.dart';
 import 'package:driver_analytics_app/features/earning/domain/enums/earning_kind.dart';
 import 'package:driver_analytics_app/features/earning/presentation/widgets/earning_kind_icon.dart';
 import 'package:flutter/material.dart';
@@ -43,7 +44,7 @@ class EarningKindSheet {
               title: 'Ajuste',
               subtitle: 'Correção feita pelo suporte',
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.sm),
           ],
         ),
       ),

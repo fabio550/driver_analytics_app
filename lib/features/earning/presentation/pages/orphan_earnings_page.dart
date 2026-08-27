@@ -1,6 +1,7 @@
 import 'package:driver_analytics_app/core/domain/enums/load_status.dart';
 import 'package:driver_analytics_app/core/extensions/datetime_extensions.dart';
 import 'package:driver_analytics_app/core/extensions/num_extensions.dart';
+import 'package:driver_analytics_app/core/presentation/theme/app_spacing.dart';
 import 'package:driver_analytics_app/features/earning/application/providers/earning_provider.dart';
 import 'package:driver_analytics_app/features/earning/domain/entities/earning_entity.dart';
 import 'package:driver_analytics_app/features/earning/presentation/widgets/earning_row_tile.dart';
@@ -144,7 +145,7 @@ class _OrphanEarningsPageState extends ConsumerState<OrphanEarningsPage> {
     }
 
     return ListView.separated(
-      padding: const EdgeInsets.symmetric(vertical: 6),
+      padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
       itemCount: orphans.length,
       separatorBuilder: (context, i) => const Divider(height: 1),
       itemBuilder: (context, i) {

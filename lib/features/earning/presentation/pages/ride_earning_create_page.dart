@@ -1,8 +1,10 @@
 import 'package:driver_analytics_app/core/domain/failures/validation_failure.dart';
 import 'package:driver_analytics_app/core/presentation/formatters/currency_input_formatter.dart';
+import 'package:driver_analytics_app/core/presentation/theme/app_spacing.dart';
 import 'package:driver_analytics_app/core/presentation/widgets/currency_field.dart';
 import 'package:driver_analytics_app/core/presentation/widgets/date_time_field.dart';
 import 'package:driver_analytics_app/core/presentation/widgets/decimal_field.dart';
+import 'package:driver_analytics_app/core/presentation/widgets/form_scroll_view.dart';
 import 'package:driver_analytics_app/core/presentation/widgets/integer_field.dart';
 import 'package:driver_analytics_app/core/presentation/widgets/primary_button.dart';
 import 'package:driver_analytics_app/features/earning/application/providers/earning_provider.dart';
@@ -220,122 +222,113 @@ class _RideEarningCreatePageState extends ConsumerState<RideEarningCreatePage> {
         isLoading: _isSubmitting,
         onPressed: _isSubmitting ? null : _submit,
       ),
-      body: SafeArea(
-        child: Scrollbar(
-          thumbVisibility: true,
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                DateTimeField<EarningField>(
-                  label: 'Data e hora',
-                  value: _occurredAt,
-                  errors: errorsFor(EarningField.occurredAt),
-                  onTap: _pickDateTime,
-                ),
-                const SizedBox(height: 16),
-                ShiftPickerField(
-                  shifts: shifts,
-                  earningsByShift: earningsByShift,
-                  selectedShiftId: _shiftId,
-                  onChanged: (id) {
-                    setState(() {
-                      _shiftId = id;
-                      _shiftManuallyChanged = true;
-                    });
-                  },
-                ),
-                const SizedBox(height: 16),
-                DropdownButtonFormField<RideServiceType>(
-                  initialValue: _serviceType,
-                  decoration: const InputDecoration(labelText: 'Tipo de serviço'),
-                  items: [
-                    for (final type in RideServiceType.values)
-                      DropdownMenuItem(value: type, child: Text(type.label)),
-                  ],
-                  onChanged: (value) {
-                    if (value == null) return;
-                    setState(() => _serviceType = value);
-                  },
-                ),
-                const SizedBox(height: 16),
-                SegmentedButton<RideStatus>(
-                  segments: [
-                    for (final status in RideStatus.values)
-                      ButtonSegment(value: status, label: Text(status.label)),
-                  ],
-                  selected: {_status},
-                  onSelectionChanged: (selection) {
-                    setState(() => _status = selection.first);
-                  },
-                ),
-                const SizedBox(height: 16),
-                CurrencyField<EarningField>(
-                  label: 'Valor da corrida',
-                  errors: errorsFor(EarningField.fare),
-                  controller: _fareController,
-                ),
-                const SizedBox(height: 16),
-                CurrencyField<EarningField>(
-                  label: 'Dinâmico (opcional)',
-                  errors: const [],
-                  controller: _surgeController,
-                ),
-                const SizedBox(height: 16),
-                CurrencyField<EarningField>(
-                  label: 'Gorjeta (opcional)',
-                  errors: const [],
-                  controller: _tipController,
-                ),
-                const SizedBox(height: 16),
-                IntegerField<EarningField>(
-                  label: 'Duração (min)',
-                  errors: errorsFor(EarningField.durationSeconds),
-                  controller: _durationController,
-                  leading: const Icon(Icons.timer),
-                ),
-                const SizedBox(height: 16),
-                DecimalField<EarningField>(
-                  label: 'Distância (km)',
-                  errors: errorsFor(EarningField.distanceKm),
-                  controller: _distanceController,
-                  leading: const Icon(Icons.route),
-                ),
-                const SizedBox(height: 16),
-                TextField(
-                  controller: _pickupCepController,
-                  decoration: InputDecoration(
-                    labelText: 'CEP de origem (opcional)',
-                    errorText: errorsFor(EarningField.pickupCep).isNotEmpty
-                        ? errorsFor(EarningField.pickupCep).first.message
-                        : null,
-                  ),
-                  keyboardType: TextInputType.number,
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                ),
-                const SizedBox(height: 16),
-                TextField(
-                  controller: _destinationCepController,
-                  decoration: InputDecoration(
-                    labelText: 'CEP de destino (opcional)',
-                    errorText: errorsFor(EarningField.destinationCep).isNotEmpty
-                        ? errorsFor(EarningField.destinationCep).first.message
-                        : null,
-                  ),
-                  keyboardType: TextInputType.number,
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                ),
-                const SizedBox(height: 16),
-                TextField(
-                  controller: _descriptionController,
-                  decoration: const InputDecoration(labelText: 'Observação (opcional)'),
-                  maxLines: 2,
-                ),
-              ],
-            ),
+      body: FormScrollView(
+        children: [
+          DateTimeField<EarningField>(
+            label: 'Data e hora',
+            value: _occurredAt,
+            errors: errorsFor(EarningField.occurredAt),
+            onTap: _pickDateTime,
           ),
-        ),
+          const SizedBox(height: AppSpacing.md),
+          ShiftPickerField(
+            shifts: shifts,
+            earningsByShift: earningsByShift,
+            selectedShiftId: _shiftId,
+            onChanged: (id) {
+              setState(() {
+                _shiftId = id;
+                _shiftManuallyChanged = true;
+              });
+            },
+          ),
+          const SizedBox(height: AppSpacing.md),
+          DropdownButtonFormField<RideServiceType>(
+            initialValue: _serviceType,
+            decoration: const InputDecoration(labelText: 'Tipo de serviço'),
+            items: [
+              for (final type in RideServiceType.values)
+                DropdownMenuItem(value: type, child: Text(type.label)),
+            ],
+            onChanged: (value) {
+              if (value == null) return;
+              setState(() => _serviceType = value);
+            },
+          ),
+          const SizedBox(height: AppSpacing.md),
+          SegmentedButton<RideStatus>(
+            segments: [
+              for (final status in RideStatus.values)
+                ButtonSegment(value: status, label: Text(status.label)),
+            ],
+            selected: {_status},
+            onSelectionChanged: (selection) {
+              setState(() => _status = selection.first);
+            },
+          ),
+          const SizedBox(height: AppSpacing.md),
+          CurrencyField<EarningField>(
+            label: 'Valor da corrida',
+            errors: errorsFor(EarningField.fare),
+            controller: _fareController,
+          ),
+          const SizedBox(height: AppSpacing.md),
+          CurrencyField<EarningField>(
+            label: 'Dinâmico (opcional)',
+            errors: const [],
+            controller: _surgeController,
+          ),
+          const SizedBox(height: AppSpacing.md),
+          CurrencyField<EarningField>(
+            label: 'Gorjeta (opcional)',
+            errors: const [],
+            controller: _tipController,
+          ),
+          const SizedBox(height: AppSpacing.md),
+          IntegerField<EarningField>(
+            label: 'Duração (min)',
+            errors: errorsFor(EarningField.durationSeconds),
+            controller: _durationController,
+            leading: const Icon(Icons.timer),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          DecimalField<EarningField>(
+            label: 'Distância (km)',
+            errors: errorsFor(EarningField.distanceKm),
+            controller: _distanceController,
+            leading: const Icon(Icons.route),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          TextField(
+            controller: _pickupCepController,
+            decoration: InputDecoration(
+              labelText: 'CEP de origem (opcional)',
+              errorText: errorsFor(EarningField.pickupCep).isNotEmpty
+                  ? errorsFor(EarningField.pickupCep).first.message
+                  : null,
+            ),
+            keyboardType: TextInputType.number,
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+          ),
+          const SizedBox(height: AppSpacing.md),
+          TextField(
+            controller: _destinationCepController,
+            decoration: InputDecoration(
+              labelText: 'CEP de destino (opcional)',
+              errorText: errorsFor(EarningField.destinationCep).isNotEmpty
+                  ? errorsFor(EarningField.destinationCep).first.message
+                  : null,
+            ),
+            keyboardType: TextInputType.number,
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+          ),
+          const SizedBox(height: AppSpacing.md),
+          TextField(
+            controller: _descriptionController,
+            decoration: const InputDecoration(labelText: 'Observação (opcional)'),
+            maxLines: 2,
+          ),
+        ],
       ),
     );
   }

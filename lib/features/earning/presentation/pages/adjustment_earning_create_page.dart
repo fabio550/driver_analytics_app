@@ -1,7 +1,9 @@
 import 'package:driver_analytics_app/core/domain/failures/validation_failure.dart';
 import 'package:driver_analytics_app/core/presentation/formatters/currency_input_formatter.dart';
+import 'package:driver_analytics_app/core/presentation/theme/app_spacing.dart';
 import 'package:driver_analytics_app/core/presentation/widgets/currency_field.dart';
 import 'package:driver_analytics_app/core/presentation/widgets/date_time_field.dart';
+import 'package:driver_analytics_app/core/presentation/widgets/form_scroll_view.dart';
 import 'package:driver_analytics_app/core/presentation/widgets/primary_button.dart';
 import 'package:driver_analytics_app/features/earning/application/providers/earning_provider.dart';
 import 'package:driver_analytics_app/features/earning/domain/entities/earning_entity.dart';
@@ -152,50 +154,44 @@ class _AdjustmentEarningCreatePageState
         isLoading: _isSubmitting,
         onPressed: _isSubmitting ? null : _submit,
       ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              DateTimeField<EarningField>(
-                label: 'Data e hora',
-                value: _occurredAt,
-                errors: errorsFor(EarningField.occurredAt),
-                onTap: _pickDateTime,
-              ),
-              const SizedBox(height: 16),
-              ShiftPickerField(
-                shifts: shifts,
-                earningsByShift: earningsByShift,
-                selectedShiftId: _shiftId,
-                onChanged: (id) {
-                  setState(() {
-                    _shiftId = id;
-                    _shiftManuallyChanged = true;
-                  });
-                },
-              ),
-              const SizedBox(height: 16),
-              CurrencyField<EarningField>(
-                label: 'Valor',
-                errors: errorsFor(EarningField.amount),
-                controller: _amountController,
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: _descriptionController,
-                decoration: InputDecoration(
-                  labelText: 'Descrição',
-                  errorText: errorsFor(EarningField.description).isNotEmpty
-                      ? errorsFor(EarningField.description).first.message
-                      : null,
-                ),
-                maxLines: 2,
-              ),
-            ],
+      body: FormScrollView(
+        children: [
+          DateTimeField<EarningField>(
+            label: 'Data e hora',
+            value: _occurredAt,
+            errors: errorsFor(EarningField.occurredAt),
+            onTap: _pickDateTime,
           ),
-        ),
+          const SizedBox(height: AppSpacing.md),
+          ShiftPickerField(
+            shifts: shifts,
+            earningsByShift: earningsByShift,
+            selectedShiftId: _shiftId,
+            onChanged: (id) {
+              setState(() {
+                _shiftId = id;
+                _shiftManuallyChanged = true;
+              });
+            },
+          ),
+          const SizedBox(height: AppSpacing.md),
+          CurrencyField<EarningField>(
+            label: 'Valor',
+            errors: errorsFor(EarningField.amount),
+            controller: _amountController,
+          ),
+          const SizedBox(height: AppSpacing.md),
+          TextField(
+            controller: _descriptionController,
+            decoration: InputDecoration(
+              labelText: 'Descrição',
+              errorText: errorsFor(EarningField.description).isNotEmpty
+                  ? errorsFor(EarningField.description).first.message
+                  : null,
+            ),
+            maxLines: 2,
+          ),
+        ],
       ),
     );
   }
