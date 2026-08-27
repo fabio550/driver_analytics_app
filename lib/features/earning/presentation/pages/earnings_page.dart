@@ -94,9 +94,12 @@ class _EarningsPageState extends ConsumerState<EarningsPage> {
             informedAmount: shift.earnings,
             earnings: byShift[shift.id]!,
             onTapEarning: (earning) {
-              if (earning is RideEarningEntity) {
-                context.push('/earnings/ride/edit', extra: earning);
-              }
+              final route = switch (earning) {
+                RideEarningEntity() => '/earnings/ride/edit',
+                PromotionEarningEntity() => '/earnings/promotion/edit',
+                AdjustmentEarningEntity() => '/earnings/adjustment/edit',
+              };
+              context.push(route, extra: earning);
             },
           ),
       ],
