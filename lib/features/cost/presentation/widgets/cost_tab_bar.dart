@@ -1,4 +1,5 @@
 import 'package:driver_analytics_app/core/presentation/theme/app_spacing.dart';
+import 'package:driver_analytics_app/core/presentation/theme/app_text_styles.dart';
 import 'package:flutter/material.dart';
 
 class CostTabBar extends StatelessWidget implements PreferredSizeWidget {
@@ -18,8 +19,8 @@ class CostTabBar extends StatelessWidget implements PreferredSizeWidget {
       controller: controller,
       tabAlignment: TabAlignment.fill,
       labelPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
-      labelStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
-      unselectedLabelStyle: const TextStyle(fontSize: 12),
+      labelStyle: AppTextStyles.tabLabel,
+      unselectedLabelStyle: AppTextStyles.caption,
       tabs: _tabs,
     );
   }

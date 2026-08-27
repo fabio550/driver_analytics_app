@@ -2,9 +2,11 @@ import 'package:driver_analytics_app/core/presentation/widgets/primary_button.da
 import 'package:driver_analytics_app/core/domain/failures/validation_failure.dart';
 import 'package:driver_analytics_app/core/infrastructure/services/uuid_generator_provider.dart';
 import 'package:driver_analytics_app/core/presentation/formatters/currency_input_formatter.dart';
+import 'package:driver_analytics_app/core/presentation/theme/app_spacing.dart';
 import 'package:driver_analytics_app/core/presentation/widgets/currency_field.dart';
 import 'package:driver_analytics_app/core/presentation/widgets/date_time_field.dart';
 import 'package:driver_analytics_app/core/presentation/widgets/distance_field.dart';
+import 'package:driver_analytics_app/core/presentation/widgets/form_scroll_view.dart';
 import 'package:driver_analytics_app/features/shift/application/providers/shift_provider.dart';
 import 'package:driver_analytics_app/features/shift/application/use_cases/inputs/pause_input.dart';
 import 'package:driver_analytics_app/features/shift/domain/entities/shift_entity.dart';
@@ -88,70 +90,69 @@ class _ShiftCreatePageState extends ConsumerState<ShiftCreatePage> {
         isLoading: _formState.isSubmitting,
         onPressed: _formState.isSubmitting ? null : _submit,
       ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+      body: FormScrollView(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          DateTimeField(
+            label: 'Início',
+            value: _formState.startTime,
+            errors: _formState.failuresFor(ShiftField.startTime),
+            onTap: () => _pickStartTime(),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          DateTimeField(
+            label: 'Fim',
+            value: _formState.endTime,
+            errors: _formState.failuresFor(ShiftField.endTime),
+            onTap: () => _pickEndTime(),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          DistanceField(
+            label: 'Km inicial',
+            errors: _formState.failuresFor(ShiftField.initialKm),
+            onChanged: (value) => setState(
+              () => _formState = _formState.copyWith(initialKm: value),
+            ),
+            controller: _initialKmController,
+          ),
+          const SizedBox(height: AppSpacing.md),
+          DistanceField(
+            label: 'Km final',
+            errors: _formState.failuresFor(ShiftField.finalKm),
+            onChanged: (value) => setState(
+              () => _formState = _formState.copyWith(finalKm: value),
+            ),
+            controller: _finalKmController,
+          ),
+          const SizedBox(height: AppSpacing.md),
+          CurrencyField(
+            label: 'Ganhos',
+            errors: _formState.failuresFor(ShiftField.earnings),
+            controller: _earningsController,
+          ),
+          const SizedBox(height: AppSpacing.lg),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              DateTimeField(
-                label: 'Início',
-                value: _formState.startTime,
-                errors: _formState.failuresFor(ShiftField.startTime),
-                onTap: () => _pickStartTime(),
+              TextButton.icon(
+                onPressed: _addPause,
+                icon: const Icon(Icons.add),
+                label: const Text('Pausa'),
               ),
-              DateTimeField(
-                label: 'Fim',
-                value: _formState.endTime,
-                errors: _formState.failuresFor(ShiftField.endTime),
-                onTap: () => _pickEndTime(),
-              ),
-              DistanceField(
-                label: 'Km inicial',
-                errors: _formState.failuresFor(ShiftField.initialKm),
-                onChanged: (value) => setState(
-                  () => _formState = _formState.copyWith(initialKm: value),
-                ),
-                controller: _initialKmController,
-              ),
-              DistanceField(
-                label: 'Km final',
-                errors: _formState.failuresFor(ShiftField.finalKm),
-                onChanged: (value) => setState(
-                  () => _formState = _formState.copyWith(finalKm: value),
-                ),
-                controller: _finalKmController,
-              ),
-              CurrencyField(
-                label: 'Ganhos',
-                errors: _formState.failuresFor(ShiftField.earnings),
-                controller: _earningsController,
-              ),
-              const SizedBox(height: 24),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  TextButton.icon(
-                    onPressed: _addPause,
-                    icon: const Icon(Icons.add),
-                    label: const Text('Pausa'),
-                  ),
-                ],
-              ),
-              if (_formState.pauses.isEmpty)
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 8),
-                  child: Text('Nenhuma pausa adicionada.'),
-                ),
-              for (var i = 0; i < _formState.pauses.length; i++)
-                PauseCard(
-                  index: i,
-                  state: _formState,
-                  onChanged: (updated) => setState(() => _formState = updated),
-                ),
             ],
           ),
-        ),
+          if (_formState.pauses.isEmpty)
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: AppSpacing.sm),
+              child: Text('Nenhuma pausa adicionada.'),
+            ),
+          for (var i = 0; i < _formState.pauses.length; i++)
+            PauseCard(
+              index: i,
+              state: _formState,
+              onChanged: (updated) => setState(() => _formState = updated),
+            ),
+        ],
       ),
     );
   }
@@ -225,46 +226,6 @@ class _ShiftCreatePageState extends ConsumerState<ShiftCreatePage> {
     setState(() => _formState = _formState.copyWith(endTime: endTime));
   }
 
-  Future<void> _pickPauseTime(int pauseId, {required bool isStart}) async {
-    final startTime = _formState.startTime;
-
-    if (startTime == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Selecione o horário de início da jornada primeiro.'),
-        ),
-      );
-      return;
-    }
-
-    final pauseIndex = _formState.pauses.indexWhere((p) => p.id == pauseId);
-    if (pauseIndex == -1) return;
-
-    final entry = _formState.pauses[pauseIndex];
-
-    final anchor = isStart ? startTime : (entry.startTime ?? startTime);
-
-    final time = await showTimePicker(
-      context: context,
-      initialTime: TimeOfDay.fromDateTime(
-        (isStart ? entry.startTime : entry.endTime) ?? anchor,
-      ),
-      initialEntryMode: TimePickerEntryMode.input,
-    );
-    if (time == null || !mounted) return;
-
-    final picked = _resolveDateTime(anchor: anchor, time: time);
-
-    final updatedEntry = isStart
-        ? entry.copyWith(startTime: picked)
-        : entry.copyWith(endTime: picked);
-
-    final updatedPauses = [..._formState.pauses];
-    updatedPauses[pauseIndex] = updatedEntry;
-
-    setState(() => _formState = _formState.copyWith(pauses: updatedPauses));
-  }
-
   void _addPause() {
     final pauses = _formState.pauses;
     if (pauses.isNotEmpty) {
@@ -288,14 +249,6 @@ class _ShiftCreatePageState extends ConsumerState<ShiftCreatePage> {
           ShiftPauseFormEntry(id: _formState.nextPauseId),
         ],
         nextPauseId: _formState.nextPauseId + 1,
-      );
-    });
-  }
-
-  void _removePause(int id) {
-    setState(() {
-      _formState = _formState.copyWith(
-        pauses: _formState.pauses.where((p) => p.id != id).toList(),
       );
     });
   }

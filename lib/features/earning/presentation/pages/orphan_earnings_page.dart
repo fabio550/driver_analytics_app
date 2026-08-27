@@ -2,6 +2,7 @@ import 'package:driver_analytics_app/core/domain/enums/load_status.dart';
 import 'package:driver_analytics_app/core/extensions/datetime_extensions.dart';
 import 'package:driver_analytics_app/core/extensions/num_extensions.dart';
 import 'package:driver_analytics_app/core/presentation/theme/app_spacing.dart';
+import 'package:driver_analytics_app/core/presentation/theme/app_text_styles.dart';
 import 'package:driver_analytics_app/features/earning/application/providers/earning_provider.dart';
 import 'package:driver_analytics_app/features/earning/domain/entities/earning_entity.dart';
 import 'package:driver_analytics_app/features/earning/presentation/widgets/earning_row_tile.dart';
@@ -45,10 +46,7 @@ class _OrphanEarningsPageState extends ConsumerState<OrphanEarningsPage> {
                   padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
                   child: Text(
                     'ATRIBUIR A UM TURNO',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 1,
+                    style: AppTextStyles.eyebrow.copyWith(
                       color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
                   ),

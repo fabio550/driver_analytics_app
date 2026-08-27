@@ -1,3 +1,5 @@
+import 'package:driver_analytics_app/core/presentation/theme/app_radius.dart';
+import 'package:driver_analytics_app/core/presentation/theme/app_spacing.dart';
 import 'package:driver_analytics_app/features/shift/application/providers/shift_provider.dart';
 import 'package:driver_analytics_app/features/shift/domain/entities/shift_entity.dart';
 import 'package:driver_analytics_app/features/shift/presentation/dialogs/delete_shift_dialog.dart';
@@ -16,10 +18,6 @@ class ShiftsListView extends ConsumerStatefulWidget {
 }
 
 class _ShiftsListViewState extends ConsumerState<ShiftsListView> {
-  // Ids removidos otimisticamente na tela, antes da exclusão no banco
-  // confirmar — evita o Dismissible reaparecer no rebuild seguinte
-  // enquanto o delete ainda está em andamento (ele lança erro se o item
-  // continuar na árvore depois de dispensado).
   final _hiddenIds = <String>{};
 
   @override
@@ -44,10 +42,10 @@ class _ShiftsListViewState extends ConsumerState<ShiftsListView> {
           background: Container(
             margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             alignment: Alignment.centerRight,
-            padding: const EdgeInsets.symmetric(horizontal: 24),
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.errorContainer,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(AppRadius.md),
             ),
             child: Icon(
               Icons.delete,

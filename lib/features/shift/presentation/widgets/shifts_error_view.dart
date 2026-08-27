@@ -1,3 +1,4 @@
+import 'package:driver_analytics_app/core/presentation/theme/app_spacing.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:driver_analytics_app/features/shift/application/providers/shift_provider.dart';
@@ -11,7 +12,7 @@ class ShiftsErrorView extends ConsumerWidget {
 
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(AppSpacing.lg),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -19,12 +20,12 @@ class ShiftsErrorView extends ConsumerWidget {
               'Não foi possível carregar os lançamentos.',
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.sm),
             Text(
               error?.toString() ?? 'Erro desconhecido.',
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.md),
             FilledButton(
               onPressed: () {
                 ref.read(shiftNotifierProvider.notifier).loadShifts();

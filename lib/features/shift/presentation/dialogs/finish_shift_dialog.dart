@@ -1,4 +1,5 @@
 import 'package:driver_analytics_app/core/presentation/formatters/currency_input_formatter.dart';
+import 'package:driver_analytics_app/core/presentation/theme/app_spacing.dart';
 import 'package:driver_analytics_app/core/presentation/widgets/currency_field.dart';
 import 'package:flutter/material.dart';
 
@@ -35,6 +36,7 @@ class _FinishShiftDialogState extends State<FinishShiftDialog> {
       _finalKm! > widget.initialKm &&
       _earningsController.text.isNotEmpty;
 
+  @override
   void initState() {
     super.initState();
     // CurrencyField não expõe onChanged — escuta o controller direto pra
@@ -84,12 +86,13 @@ class _FinishShiftDialogState extends State<FinishShiftDialog> {
           ),
           const SizedBox(height: 12),
           Text('Ganho bruto', style: Theme.of(context).textTheme.bodySmall),
-          const SizedBox(height: 4),
+          const SizedBox(height: AppSpacing.xs),
           CurrencyField(
             label: 'Ganhos',
             errors: [],
             controller: _earningsController,
-          ),        ],
+          ),
+        ],
       ),
       actions: [
         TextButton(

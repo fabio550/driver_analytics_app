@@ -1,5 +1,7 @@
 import 'package:driver_analytics_app/core/extensions/duration_extensions.dart';
 import 'package:driver_analytics_app/core/presentation/providers/clock_provider.dart';
+import 'package:driver_analytics_app/core/presentation/theme/app_sizes.dart';
+import 'package:driver_analytics_app/core/presentation/theme/app_spacing.dart';
 import 'package:driver_analytics_app/features/shift/application/providers/active_shift_provider.dart';
 import 'package:driver_analytics_app/features/shift/domain/enums/shift_status.dart';
 import 'package:driver_analytics_app/features/shift/presentation/dialogs/finish_shift_dialog.dart';
@@ -16,7 +18,7 @@ class ActiveShiftPage extends ConsumerWidget {
     final activeShiftState = ref.watch(activeShiftNotifierProvider);
     final shift = activeShiftState.shift;
     final now = ref.watch(clockProvider).value ?? DateTime.now();
-    
+
     return Scaffold(
       appBar: AppBar(title: const Text('Jornada em andamento')),
       body: shift == null
@@ -39,9 +41,9 @@ class _ActiveShiftBody extends ConsumerWidget {
     final colorScheme = Theme.of(context).colorScheme;
 
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(AppSpacing.md),
       children: [
-        const SizedBox(height: 24),
+        const SizedBox(height: AppSpacing.lg),
         Center(
           child: Text(
             shift.workedTime(now).formattedHHmm,
@@ -52,7 +54,7 @@ class _ActiveShiftBody extends ConsumerWidget {
                 ),
           ),
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: AppSpacing.xs),
         Center(
           child: Text(
             'tempo trabalhado',
@@ -68,7 +70,7 @@ class _ActiveShiftBody extends ConsumerWidget {
             ),
           ),
         ],
-        const SizedBox(height: 24),
+        const SizedBox(height: AppSpacing.lg),
         FilledButton.icon(
           onPressed: state.isSubmitting
               ? null
@@ -78,22 +80,22 @@ class _ActiveShiftBody extends ConsumerWidget {
                 },
           style: FilledButton.styleFrom(
             backgroundColor: isPaused ? colorScheme.tertiary : null,
-            minimumSize: const Size.fromHeight(56),
+            minimumSize: const Size.fromHeight(AppSizes.buttonHeight),
           ),
           icon: Icon(isPaused ? Icons.play_arrow : Icons.pause),
           label: Text(isPaused ? 'Retomar' : 'Pausar'),
         ),
-        const SizedBox(height: 24),
+        const SizedBox(height: AppSpacing.lg),
         Text('Pausas', style: Theme.of(context).textTheme.titleMedium),
         if (shift.pauses.isEmpty)
           const Padding(
-            padding: EdgeInsets.symmetric(vertical: 8),
+            padding: EdgeInsets.symmetric(vertical: AppSpacing.sm),
             child: Text('Nenhuma pausa registrada.'),
           )
         else
           for (var i = 0; i < shift.pauses.length; i++)
             ShiftPauseTile(index: i, pause: shift.pauses[i], now: now),
-        const SizedBox(height: 24),
+        const SizedBox(height: AppSpacing.lg),
         OutlinedButton(
           onPressed: state.isSubmitting ? null : () => _finish(context, ref),
           style: OutlinedButton.styleFrom(
@@ -105,13 +107,13 @@ class _ActiveShiftBody extends ConsumerWidget {
       ],
     );
   }
-  
+
   Future<void> _finish(BuildContext context, WidgetRef ref) async {
     final shift = ref.read(activeShiftNotifierProvider).shift;
     if (shift == null) return;
 
     final result = await FinishShiftDialog.show(context, initialKm: shift.initialKm);
-    
+
     if (result == null || !context.mounted) return;
 
     final (finalKm, earnings) = result;

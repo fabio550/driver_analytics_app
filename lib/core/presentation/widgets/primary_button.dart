@@ -1,5 +1,6 @@
 import 'package:driver_analytics_app/core/presentation/theme/app_sizes.dart';
 import 'package:driver_analytics_app/core/presentation/theme/app_spacing.dart';
+import 'package:driver_analytics_app/core/presentation/theme/app_text_styles.dart';
 import 'package:flutter/material.dart';
 
 /// Botão de ação primária padronizado para formulários — full-width, fixo
@@ -30,21 +31,18 @@ class PrimaryButton extends StatelessWidget {
           child: FilledButton(
             onPressed: isLoading ? null : onPressed,
             child: isLoading
-                ? SizedBox(
-                    width: 22,
-                    height: 22,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2.4,
-                      color: colorScheme.onPrimary,
-                    ),
-                  )
-                : Text(
-                    label,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
+              ? SizedBox(
+                  width: 22,
+                  height: 22,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2.4,
+                    color: colorScheme.onPrimary,
                   ),
+                )
+              : Text(
+                  label,
+                  style: AppTextStyles.buttonLabel,
+                ),
           ),
         ),
       ),

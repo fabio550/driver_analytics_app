@@ -2,6 +2,7 @@ import 'package:driver_analytics_app/core/domain/failures/validation_failure.dar
 import 'package:driver_analytics_app/core/presentation/formatters/currency_input_formatter.dart';
 import 'package:driver_analytics_app/core/presentation/theme/app_spacing.dart';
 import 'package:driver_analytics_app/core/presentation/widgets/bordered_field_shell.dart';
+import 'package:driver_analytics_app/core/presentation/theme/app_text_styles.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -24,8 +25,7 @@ class CurrencyField<TField> extends StatelessWidget {
       errorText: errors.isNotEmpty ? errors.first.message : null,
       leading: Text(
         'R\$',
-        style: TextStyle(
-          fontSize: 14,
+        style: AppTextStyles.fieldPrefix.copyWith(
           color: Theme.of(context).colorScheme.onSurfaceVariant,
         ),
       ),

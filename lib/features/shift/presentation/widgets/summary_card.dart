@@ -1,6 +1,7 @@
 import 'package:driver_analytics_app/core/extensions/datetime_extensions.dart';
 import 'package:driver_analytics_app/core/extensions/duration_extensions.dart';
 import 'package:driver_analytics_app/core/extensions/num_extensions.dart';
+import 'package:driver_analytics_app/core/presentation/theme/app_spacing.dart';
 import 'package:driver_analytics_app/features/shift/domain/entities/shift_entity.dart';
 import 'package:flutter/material.dart';
 
@@ -34,7 +35,7 @@ class SummaryCard extends StatelessWidget {
 
     return Card(
       child: ListView.separated(
-        padding: const EdgeInsets.symmetric(vertical: 8),
+        padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
         itemCount: rows.length,
         separatorBuilder: (context, i) => const Divider(height: 1),
         itemBuilder: (context, i) {

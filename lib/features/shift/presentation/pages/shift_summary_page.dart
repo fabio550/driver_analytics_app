@@ -1,6 +1,5 @@
-import 'package:driver_analytics_app/core/extensions/duration_extensions.dart';
-import 'package:driver_analytics_app/core/extensions/datetime_extensions.dart';
-import 'package:driver_analytics_app/core/extensions/num_extensions.dart';
+import 'package:driver_analytics_app/core/presentation/theme/app_sizes.dart';
+import 'package:driver_analytics_app/core/presentation/theme/app_spacing.dart';
 import 'package:driver_analytics_app/features/shift/application/providers/active_shift_provider.dart';
 import 'package:driver_analytics_app/features/shift/application/providers/shift_provider.dart';
 import 'package:driver_analytics_app/features/shift/presentation/dialogs/discard_shift_dialog.dart';
@@ -23,17 +22,17 @@ class ShiftSummaryPage extends ConsumerWidget {
       body: shift == null
           ? const Center(child: Text('Nenhuma jornada para resumir.'))
           : Padding(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(AppSpacing.md),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Expanded(child: SummaryCard(shift: shift)),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: AppSpacing.md),
                   FilledButton(
                     onPressed:
                         state.isSubmitting ? null : () => _confirm(context, ref),
                     style: FilledButton.styleFrom(
-                      minimumSize: const Size.fromHeight(56),
+                      minimumSize: const Size.fromHeight(AppSizes.buttonHeight),
                     ),
                     child: state.isSubmitting
                       ? const SizedBox(

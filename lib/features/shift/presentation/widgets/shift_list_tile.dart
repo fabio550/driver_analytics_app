@@ -1,5 +1,6 @@
 import 'package:driver_analytics_app/core/extensions/datetime_extensions.dart';
 import 'package:driver_analytics_app/core/extensions/num_extensions.dart';
+import 'package:driver_analytics_app/core/presentation/theme/app_spacing.dart';
 import 'package:driver_analytics_app/features/shift/presentation/widgets/shift_stats.dart';
 import 'package:driver_analytics_app/features/shift/presentation/widgets/shift_timeline.dart';
 import 'package:driver_analytics_app/features/shift/domain/entities/shift_entity.dart';
@@ -35,14 +36,14 @@ class _ShiftListTileState extends State<ShiftListTile> {
       child: Card(
         margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(AppSpacing.md),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildHeader(context),
               const SizedBox(height: 14),
               ShiftTimeline(shift: widget.shift),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppSpacing.md),
               ShiftStats(
                 shift: widget.shift,
                 now: now,

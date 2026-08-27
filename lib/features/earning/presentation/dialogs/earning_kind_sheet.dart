@@ -1,6 +1,6 @@
 import 'package:driver_analytics_app/core/presentation/theme/app_spacing.dart';
+import 'package:driver_analytics_app/core/presentation/theme/app_text_styles.dart';
 import 'package:driver_analytics_app/features/earning/domain/enums/earning_kind.dart';
-import 'package:driver_analytics_app/features/earning/presentation/widgets/earning_kind_icon.dart';
 import 'package:flutter/material.dart';
 
 /// Pergunta qual tipo de ganho lançar. Diferente do FAB de Custos (que já
@@ -20,10 +20,7 @@ class EarningKindSheet {
                 alignment: Alignment.centerLeft,
                 child: Text(
                   'NOVO LANÇAMENTO',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 1,
+                  style: AppTextStyles.eyebrow.copyWith(
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                 ),

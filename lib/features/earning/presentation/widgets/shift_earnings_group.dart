@@ -1,6 +1,7 @@
 import 'package:driver_analytics_app/core/extensions/datetime_extensions.dart';
 import 'package:driver_analytics_app/core/extensions/num_extensions.dart';
 import 'package:driver_analytics_app/core/presentation/theme/app_spacing.dart';
+import 'package:driver_analytics_app/core/presentation/theme/app_text_styles.dart';
 import 'package:driver_analytics_app/features/earning/domain/entities/earning_entity.dart';
 import 'package:driver_analytics_app/features/earning/presentation/widgets/earning_row_tile.dart';
 import 'package:flutter/material.dart';
@@ -145,9 +146,7 @@ class _CompletenessBadge extends StatelessWidget {
           const SizedBox(width: AppSpacing.xs),
           Text(
             label,
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w700,
+            style: AppTextStyles.badgeStrong.copyWith(
               color: isComplete ? colorScheme.onPrimaryContainer : colorScheme.onTertiaryContainer,
             ),
           ),

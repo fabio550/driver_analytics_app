@@ -1,4 +1,6 @@
 import 'package:driver_analytics_app/core/extensions/datetime_extensions.dart';
+import 'package:driver_analytics_app/core/presentation/theme/app_spacing.dart';
+import 'package:driver_analytics_app/core/presentation/theme/app_text_styles.dart';
 import 'package:driver_analytics_app/features/shift/domain/entities/shift_entity.dart';
 import 'package:driver_analytics_app/features/shift/domain/entities/shift_pause_entity.dart';
 import 'package:flutter/material.dart';
@@ -17,7 +19,7 @@ class ShiftTimeline extends StatelessWidget {
 
     return Wrap(
       spacing: 6,
-      runSpacing: 8,
+      runSpacing: AppSpacing.sm,
       crossAxisAlignment: WrapCrossAlignment.center,
       children: [
         _TimelinePoint(
@@ -74,7 +76,7 @@ class _TimelinePoint extends StatelessWidget {
           size: 18,
           color: color,
         ),
-        const SizedBox(width: 4),
+        const SizedBox(width: AppSpacing.xs),
         Text(
           label,
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -105,8 +107,8 @@ class _TimelinePauseChip extends StatelessWidget {
 
     return Container(
       padding: const EdgeInsets.symmetric(
-        horizontal: 8,
-        vertical: 4,
+        horizontal: AppSpacing.sm,
+        vertical: AppSpacing.xs,
       ),
       decoration: BoxDecoration(
         color: colorScheme.tertiaryContainer,
@@ -120,11 +122,10 @@ class _TimelinePauseChip extends StatelessWidget {
             size: 12,
             color: colorScheme.onTertiaryContainer,
           ),
-          const SizedBox(width: 4),
+          const SizedBox(width: AppSpacing.xs),
           Text(
             label,
-            style: TextStyle(
-              fontSize: 12,
+            style: AppTextStyles.caption.copyWith(
               color: colorScheme.onTertiaryContainer,
             ),
           ),
