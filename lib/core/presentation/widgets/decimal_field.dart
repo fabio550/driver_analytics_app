@@ -1,4 +1,5 @@
 import 'package:driver_analytics_app/core/domain/failures/validation_failure.dart';
+import 'package:driver_analytics_app/core/presentation/theme/app_spacing.dart';
 import 'package:driver_analytics_app/core/presentation/widgets/bordered_field_shell.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -32,7 +33,7 @@ class DecimalField<TField> extends StatelessWidget {
         inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9,]'))],
         decoration: const InputDecoration(
           border: InputBorder.none,
-          contentPadding: EdgeInsets.symmetric(horizontal: 12),
+          contentPadding: EdgeInsets.symmetric(horizontal: AppSpacing.fieldPadding),
         ),
       ),
     );
