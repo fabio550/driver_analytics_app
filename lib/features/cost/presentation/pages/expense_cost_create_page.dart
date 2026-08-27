@@ -1,7 +1,9 @@
 import 'package:driver_analytics_app/core/domain/failures/validation_failure.dart';
 import 'package:driver_analytics_app/core/presentation/formatters/currency_input_formatter.dart';
+import 'package:driver_analytics_app/core/presentation/theme/app_spacing.dart';
 import 'package:driver_analytics_app/core/presentation/widgets/currency_field.dart';
 import 'package:driver_analytics_app/core/presentation/widgets/date_field.dart';
+import 'package:driver_analytics_app/core/presentation/widgets/form_scroll_view.dart';
 import 'package:driver_analytics_app/core/presentation/widgets/primary_button.dart';
 import 'package:driver_analytics_app/features/cost/application/providers/cost_provider.dart';
 import 'package:driver_analytics_app/features/cost/domain/entities/cost_entity.dart';
@@ -57,7 +59,7 @@ class _ExpenseCostCreatePageState extends ConsumerState<ExpenseCostCreatePage> {
     if (date == null || !mounted) return;
     setState(() => _date = date);
   }
-  
+
   Future<void> _submit() async {
     setState(() => _isSubmitting = true);
 
@@ -106,56 +108,50 @@ class _ExpenseCostCreatePageState extends ConsumerState<ExpenseCostCreatePage> {
         isLoading: _isSubmitting,
         onPressed: _isSubmitting ? null : _submit,
       ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              DropdownButtonFormField<ExpenseSubcategory>(
-                initialValue: _subcategory,
-                decoration: const InputDecoration(labelText: 'Tipo de despesa'),
-                items: [
-                  for (final subcategory in ExpenseSubcategory.values)
-                    DropdownMenuItem(
-                      value: subcategory,
-                      child: Text(subcategory.label),
-                    ),
-                ],
-                onChanged: (value) {
-                  if (value == null) return;
-                  setState(() => _subcategory = value);
-                },
-              ),
-              const SizedBox(height: 16),
-              DateField(
-                label: 'Data',
-                value: _date,
-                errors: errorsFor(CostField.date),
-                onTap: _pickDate,
-              ),
-              const SizedBox(height: 16),
-              CurrencyField(
-                label: 'Valor pago',
-                errors: errorsFor(CostField.amount),
-                controller: _amountController,
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: _descriptionController,
-                decoration: InputDecoration(
-                  labelText: _subcategory == ExpenseSubcategory.other
-                      ? 'Descrição (obrigatória para "Outros")'
-                      : 'Observação (opcional)',
-                  errorText: errorsFor(CostField.description).isNotEmpty
-                      ? errorsFor(CostField.description).first.message
-                      : null,
+      body: FormScrollView(
+        children: [
+          DropdownButtonFormField<ExpenseSubcategory>(
+            initialValue: _subcategory,
+            decoration: const InputDecoration(labelText: 'Tipo de despesa'),
+            items: [
+              for (final subcategory in ExpenseSubcategory.values)
+                DropdownMenuItem(
+                  value: subcategory,
+                  child: Text(subcategory.label),
                 ),
-                maxLines: 2,
-              ),
             ],
+            onChanged: (value) {
+              if (value == null) return;
+              setState(() => _subcategory = value);
+            },
           ),
-        ),
+          const SizedBox(height: AppSpacing.md),
+          DateField(
+            label: 'Data',
+            value: _date,
+            errors: errorsFor(CostField.date),
+            onTap: _pickDate,
+          ),
+          const SizedBox(height: AppSpacing.md),
+          CurrencyField(
+            label: 'Valor pago',
+            errors: errorsFor(CostField.amount),
+            controller: _amountController,
+          ),
+          const SizedBox(height: AppSpacing.md),
+          TextField(
+            controller: _descriptionController,
+            decoration: InputDecoration(
+              labelText: _subcategory == ExpenseSubcategory.other
+                  ? 'Descrição (obrigatória para "Outros")'
+                  : 'Observação (opcional)',
+              errorText: errorsFor(CostField.description).isNotEmpty
+                  ? errorsFor(CostField.description).first.message
+                  : null,
+            ),
+            maxLines: 2,
+          ),
+        ],
       ),
     );
   }
