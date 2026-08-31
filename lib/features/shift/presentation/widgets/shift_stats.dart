@@ -1,5 +1,6 @@
 import 'package:driver_analytics_app/core/extensions/duration_extensions.dart';
 import 'package:driver_analytics_app/core/extensions/num_extensions.dart';
+import 'package:driver_analytics_app/core/presentation/widgets/stat_tile.dart';
 import 'package:driver_analytics_app/features/shift/domain/entities/shift_entity.dart';
 import 'package:flutter/material.dart';
 
@@ -15,6 +16,8 @@ class ShiftStats extends StatelessWidget {
     required this.isExpanded,
   });
 
+  static const _itemPadding = EdgeInsets.fromLTRB(0, 0, 12, 10);
+
   @override
   Widget build(BuildContext context) {
     return AnimatedSize(
@@ -25,102 +28,59 @@ class ShiftStats extends StatelessWidget {
               children: [
                 Divider(
                   height: 1,
-                  color: Theme.of(context)
-                      .colorScheme
-                      .outlineVariant,
+                  color: Theme.of(context).colorScheme.outlineVariant,
                 ),
                 const SizedBox(height: 12),
                 Row(
                   children: [
-                    _StatItem(
+                    StatTile(
                       label: 'Ganho total',
                       value: (shift.earnings ?? 0).formattedCurrency,
+                      padding: _itemPadding,
                     ),
-                    _StatItem(
+                    StatTile(
                       label: 'Km total',
                       value: shift.distanceKm.formattedKm,
+                      padding: _itemPadding,
                     ),
                   ],
                 ),
                 Row(
                   children: [
-                    _StatItem(
+                    StatTile(
                       label: 'Tempo total',
                       value: shift.elapsedTime(now).formattedHHmmss,
+                      padding: _itemPadding,
                     ),
-                    _StatItem(
+                    StatTile(
                       label: 'Tempo pausado',
                       value: shift.totalPausedTime(now).formattedHHmmss,
+                      padding: _itemPadding,
                     ),
-                    _StatItem(
+                    StatTile(
                       label: 'Tempo ativo',
                       value: shift.workedTime(now).formattedHHmmss,
+                      padding: _itemPadding,
                     ),
                   ],
                 ),
                 Row(
                   children: [
-                    _StatItem(
+                    StatTile(
                       label: 'Ganho/km',
-                      value: shift
-                          .earningsPerKm()
-                          .formattedCurrencyOrDash,
+                      value: shift.earningsPerKm().formattedCurrencyOrDash,
+                      padding: _itemPadding,
                     ),
-                    _StatItem(
+                    StatTile(
                       label: 'Ganho/hora',
-                      value: shift
-                          .earningsPerHour(now)
-                          .formattedCurrencyOrDash,
+                      value: shift.earningsPerHour(now).formattedCurrencyOrDash,
+                      padding: _itemPadding,
                     ),
                   ],
                 ),
               ],
             )
           : const SizedBox.shrink(),
-    );
-  }
-}
-
-class _StatItem extends StatelessWidget {
-  final String label;
-  final String value;
-
-  const _StatItem({
-    required this.label,
-    required this.value,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(
-        0,
-        0,
-        12,
-        10,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            label,
-            style: textTheme.bodySmall?.copyWith(
-              color: colorScheme.onSurfaceVariant,
-            ),
-          ),
-          const SizedBox(height: 2),
-          Text(
-            value,
-            style: textTheme.bodyMedium?.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

@@ -63,36 +63,38 @@ class _FinishShiftDialogState extends State<FinishShiftDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       title: const Text('Finalizar jornada'),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Km inicial: ${widget.initialKm.toStringAsFixed(0)}',
-            style: Theme.of(context).textTheme.bodySmall,
-          ),
-          const SizedBox(height: 12),
-          TextField(
-            controller: _finalKmController,
-            autofocus: true,
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            decoration: InputDecoration(
-              labelText: 'Km final',
-              errorText: _finalKm != null && _finalKm! <= widget.initialKm
-                  ? 'Deve ser maior que o km inicial'
-                  : null,
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Km inicial: ${widget.initialKm.toStringAsFixed(0)}',
+              style: Theme.of(context).textTheme.bodySmall,
             ),
-            onChanged: (_) => setState(() {}),
-          ),
-          const SizedBox(height: 12),
-          Text('Ganho bruto', style: Theme.of(context).textTheme.bodySmall),
-          const SizedBox(height: AppSpacing.xs),
-          CurrencyField(
-            label: 'Ganhos',
-            errors: [],
-            controller: _earningsController,
-          ),
-        ],
+            const SizedBox(height: 12),
+            TextField(
+              controller: _finalKmController,
+              autofocus: true,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              decoration: InputDecoration(
+                labelText: 'Km final',
+                errorText: _finalKm != null && _finalKm! <= widget.initialKm
+                    ? 'Deve ser maior que o km inicial'
+                    : null,
+              ),
+              onChanged: (_) => setState(() {}),
+            ),
+            const SizedBox(height: 12),
+            Text('Ganho bruto', style: Theme.of(context).textTheme.bodySmall),
+            const SizedBox(height: AppSpacing.xs),
+            CurrencyField(
+              label: 'Ganhos',
+              errors: [],
+              controller: _earningsController,
+            ),
+          ],
+        ),
       ),
       actions: [
         TextButton(

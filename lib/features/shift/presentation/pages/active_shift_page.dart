@@ -2,9 +2,12 @@ import 'package:driver_analytics_app/core/extensions/duration_extensions.dart';
 import 'package:driver_analytics_app/core/presentation/providers/clock_provider.dart';
 import 'package:driver_analytics_app/core/presentation/theme/app_sizes.dart';
 import 'package:driver_analytics_app/core/presentation/theme/app_spacing.dart';
+import 'package:driver_analytics_app/core/presentation/widgets/form_scroll_view.dart';
+import 'package:driver_analytics_app/core/presentation/widgets/timer_progress_border.dart';
 import 'package:driver_analytics_app/features/shift/application/providers/active_shift_provider.dart';
 import 'package:driver_analytics_app/features/shift/domain/enums/shift_status.dart';
 import 'package:driver_analytics_app/features/shift/presentation/dialogs/finish_shift_dialog.dart';
+import 'package:driver_analytics_app/features/shift/presentation/widgets/active_shift_stats.dart';
 import 'package:driver_analytics_app/features/shift/presentation/widgets/shift_pause_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -39,27 +42,36 @@ class _ActiveShiftBody extends ConsumerWidget {
     final shift = state.shift!;
     final isPaused = shift.isPaused;
     final colorScheme = Theme.of(context).colorScheme;
+    final workedTime = shift.workedTime(now);
+    final accent = isPaused ? colorScheme.tertiary : colorScheme.primary;
 
-    return ListView(
-      padding: const EdgeInsets.all(AppSpacing.md),
+    return FormScrollView(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         const SizedBox(height: AppSpacing.lg),
         Center(
-          child: Text(
-            shift.workedTime(now).formattedHHmm,
-            style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  fontFeatures: const [FontFeature.tabularFigures()],
-                  color: isPaused ? colorScheme.tertiary : colorScheme.primary,
-                ),
+          // A borda fecha exatamente quando o minuto vira no display, e
+          // congela sozinha na pausa porque o progresso vem do tempo
+          // trabalhado, não do relógio de parede.
+          child: TimerProgressBorder(
+            progress: (workedTime.inSeconds % 60) / 60,
+            color: accent,
+            trackColor: colorScheme.outlineVariant,
+            child: Text(
+              workedTime.formattedHHmm,
+              style: Theme.of(context).textTheme.displayMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    fontFeatures: const [FontFeature.tabularFigures()],
+                    color: accent,
+                  ),
+            ),
           ),
         ),
         const SizedBox(height: AppSpacing.xs),
-        Center(
-          child: Text(
-            'tempo trabalhado',
-            style: Theme.of(context).textTheme.bodySmall,
-          ),
+        Text(
+          'tempo trabalhado',
+          textAlign: TextAlign.center,
+          style: Theme.of(context).textTheme.bodySmall,
         ),
         if (isPaused) ...[
           const SizedBox(height: 12),
@@ -70,6 +82,8 @@ class _ActiveShiftBody extends ConsumerWidget {
             ),
           ),
         ],
+        const SizedBox(height: AppSpacing.lg),
+        ActiveShiftStats(shift: shift, now: now),
         const SizedBox(height: AppSpacing.lg),
         FilledButton.icon(
           onPressed: state.isSubmitting

@@ -23,7 +23,7 @@ class SummaryCard extends StatelessWidget {
           ? shift.endTime!.formattedHHmm
           : '--'),
       ('Tempo trabalhado', shift.workedTime(now).formattedHHmmss),
-      ('Tempo pausado', shift.totalPausedTime(now).formattedHHmm),
+      ('Tempo pausado', shift.totalPausedTime(now).formattedHHmmss),
       ('Km percorrido', shift.distanceKm.formattedKm),
       ('Ganho bruto', (shift.earnings ?? 0).formattedCurrency),
       if (shift.earningsPerKm() != null)
