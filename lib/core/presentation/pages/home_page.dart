@@ -36,6 +36,13 @@ class HomePage extends StatelessWidget {
                 },
                 child: Text('Ganhos')
               ),
+              SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: () {
+                  context.push('/analytics');
+                },
+                child: Text('Análises')
+              ),
             ],
           ),
         ),
