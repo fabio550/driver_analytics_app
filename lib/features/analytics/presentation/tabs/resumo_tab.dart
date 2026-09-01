@@ -1,6 +1,7 @@
 import 'package:driver_analytics_app/core/extensions/num_extensions.dart';
 import 'package:driver_analytics_app/core/presentation/theme/app_spacing.dart';
 import 'package:driver_analytics_app/core/presentation/theme/app_text_styles.dart';
+import 'package:driver_analytics_app/core/presentation/widgets/screen_scroll_view.dart';
 import 'package:driver_analytics_app/features/analytics/application/providers/analytics_provider.dart';
 import 'package:driver_analytics_app/features/analytics/domain/entities/daily_profit_entry.dart';
 import 'package:driver_analytics_app/features/analytics/presentation/widgets/daily_profit_chart.dart';
@@ -23,8 +24,7 @@ class ResumoTab extends ConsumerWidget {
       return const Center(child: Text('Sem jornadas confirmadas no período.'));
     }
 
-    return ListView(
-      padding: const EdgeInsets.all(AppSpacing.md),
+    return ScreenScrollView(
       children: [
         HeroProfitCard(
           netProfit: summary.netProfit,

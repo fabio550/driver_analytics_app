@@ -4,6 +4,7 @@ import 'package:driver_analytics_app/core/presentation/theme/app_chart_colors.da
 import 'package:driver_analytics_app/core/presentation/theme/app_radius.dart';
 import 'package:driver_analytics_app/core/presentation/theme/app_spacing.dart';
 import 'package:driver_analytics_app/core/presentation/theme/app_text_styles.dart';
+import 'package:driver_analytics_app/core/presentation/widgets/screen_scroll_view.dart';
 import 'package:driver_analytics_app/features/analytics/application/providers/analytics_provider.dart';
 import 'package:driver_analytics_app/features/analytics/domain/entities/operation_analytics.dart';
 import 'package:driver_analytics_app/features/analytics/presentation/widgets/completeness_banner.dart';
@@ -28,8 +29,7 @@ class OperacaoTab extends ConsumerWidget {
       return const Center(child: Text('Sem jornadas confirmadas no período.'));
     }
 
-    return ListView(
-      padding: const EdgeInsets.all(AppSpacing.md),
+    return ScreenScrollView(
       children: [
         CompletenessBanner(completeness: operation.completeness),
         const SizedBox(height: AppSpacing.sm),

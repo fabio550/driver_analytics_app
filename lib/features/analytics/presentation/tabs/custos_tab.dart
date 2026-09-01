@@ -1,6 +1,7 @@
 import 'package:driver_analytics_app/core/extensions/num_extensions.dart';
 import 'package:driver_analytics_app/core/presentation/theme/app_chart_colors.dart';
 import 'package:driver_analytics_app/core/presentation/theme/app_spacing.dart';
+import 'package:driver_analytics_app/core/presentation/widgets/screen_scroll_view.dart';
 import 'package:driver_analytics_app/features/analytics/application/providers/analytics_provider.dart';
 import 'package:driver_analytics_app/features/analytics/presentation/widgets/breakdown_bar_card.dart';
 import 'package:driver_analytics_app/features/analytics/presentation/widgets/ranked_bar_card.dart';
@@ -21,8 +22,7 @@ class CustosTab extends ConsumerWidget {
       return const Center(child: Text('Sem custos lançados no período.'));
     }
 
-    return ListView(
-      padding: const EdgeInsets.all(AppSpacing.md),
+    return ScreenScrollView(
       children: [
         BreakdownBarCard(
           title: 'Para onde foi o dinheiro',

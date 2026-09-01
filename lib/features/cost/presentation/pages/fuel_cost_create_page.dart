@@ -5,7 +5,7 @@ import 'package:driver_analytics_app/core/presentation/widgets/currency_field.da
 import 'package:driver_analytics_app/core/presentation/widgets/date_field.dart';
 import 'package:driver_analytics_app/core/presentation/widgets/decimal_field.dart';
 import 'package:driver_analytics_app/core/presentation/widgets/distance_field.dart';
-import 'package:driver_analytics_app/core/presentation/widgets/form_scroll_view.dart';
+import 'package:driver_analytics_app/core/presentation/widgets/screen_scroll_view.dart';
 import 'package:driver_analytics_app/core/presentation/widgets/primary_button.dart';
 import 'package:driver_analytics_app/features/cost/application/providers/cost_provider.dart';
 import 'package:driver_analytics_app/features/cost/domain/entities/cost_entity.dart';
@@ -137,7 +137,7 @@ class _FuelCostCreatePageState extends ConsumerState<FuelCostCreatePage> {
         isLoading: _isSubmitting,
         onPressed: _isSubmitting ? null : _submit,
       ),
-      body: FormScrollView(
+      body: ScreenScrollView(
         children: [
           DropdownButtonFormField<FuelSubcategory>(
             initialValue: _subcategory,

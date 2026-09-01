@@ -26,24 +26,25 @@ class DailyProfitChart extends StatelessWidget {
         .map((e) => e.netProfit.abs())
         .fold<double>(0, (max, value) => value > max ? value : max);
 
-    return SizedBox(
-      height: _chartHeight + 24,
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        reverse: true,
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            for (final entry in entries)
-              _DayBar(
-                entry: entry,
-                maxAbs: maxAbs,
-                positiveColor: colorScheme.primary,
-                negativeColor: colorScheme.error,
-                dividerColor: colorScheme.outlineVariant,
-              ),
-          ],
-        ),
+    // Sem altura fixa no wrapper: só a área da barra (halfHeight em
+    // _DayBar) é fixa — o rótulo do dia embaixo cresce à vontade (fonte
+    // maior por acessibilidade, métrica de fonte da plataforma) sem
+    // estourar um orçamento de pixel apertado.
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      reverse: true,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          for (final entry in entries)
+            _DayBar(
+              entry: entry,
+              maxAbs: maxAbs,
+              positiveColor: colorScheme.primary,
+              negativeColor: colorScheme.error,
+              dividerColor: colorScheme.outlineVariant,
+            ),
+        ],
       ),
     );
   }

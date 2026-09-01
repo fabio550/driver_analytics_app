@@ -1,13 +1,16 @@
 import 'package:driver_analytics_app/core/presentation/theme/app_spacing.dart';
 import 'package:flutter/material.dart';
 
-/// Corpo padrão de tela de formulário: SafeArea + Scrollbar sempre visível
-/// + padding consistente.
-class FormScrollView extends StatelessWidget {
+/// Corpo padrão de tela rolável: SafeArea + Scrollbar sempre visível +
+/// padding consistente. Não é exclusivo de formulário — active_shift_page
+/// e as abas de análise usam o mesmo corpo pra evitar bottom overflow
+/// quando o conteúdo (ou a fonte, com escala de acessibilidade) passa da
+/// altura da tela.
+class ScreenScrollView extends StatelessWidget {
   final List<Widget> children;
   final CrossAxisAlignment crossAxisAlignment;
 
-  const FormScrollView({
+  const ScreenScrollView({
     super.key,
     required this.children,
     this.crossAxisAlignment = CrossAxisAlignment.start,

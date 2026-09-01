@@ -6,7 +6,7 @@ import 'package:driver_analytics_app/core/presentation/theme/app_spacing.dart';
 import 'package:driver_analytics_app/core/presentation/widgets/currency_field.dart';
 import 'package:driver_analytics_app/core/presentation/widgets/date_time_field.dart';
 import 'package:driver_analytics_app/core/presentation/widgets/distance_field.dart';
-import 'package:driver_analytics_app/core/presentation/widgets/form_scroll_view.dart';
+import 'package:driver_analytics_app/core/presentation/widgets/screen_scroll_view.dart';
 import 'package:driver_analytics_app/features/shift/application/providers/shift_provider.dart';
 import 'package:driver_analytics_app/features/shift/application/use_cases/inputs/pause_input.dart';
 import 'package:driver_analytics_app/features/shift/domain/entities/shift_entity.dart';
@@ -90,7 +90,7 @@ class _ShiftCreatePageState extends ConsumerState<ShiftCreatePage> {
         isLoading: _formState.isSubmitting,
         onPressed: _formState.isSubmitting ? null : _submit,
       ),
-      body: FormScrollView(
+      body: ScreenScrollView(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           DateTimeField(

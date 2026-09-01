@@ -2,7 +2,7 @@ import 'package:driver_analytics_app/core/extensions/duration_extensions.dart';
 import 'package:driver_analytics_app/core/presentation/providers/clock_provider.dart';
 import 'package:driver_analytics_app/core/presentation/theme/app_sizes.dart';
 import 'package:driver_analytics_app/core/presentation/theme/app_spacing.dart';
-import 'package:driver_analytics_app/core/presentation/widgets/form_scroll_view.dart';
+import 'package:driver_analytics_app/core/presentation/widgets/screen_scroll_view.dart';
 import 'package:driver_analytics_app/core/presentation/widgets/timer_progress_border.dart';
 import 'package:driver_analytics_app/features/shift/application/providers/active_shift_provider.dart';
 import 'package:driver_analytics_app/features/shift/domain/enums/shift_status.dart';
@@ -45,7 +45,7 @@ class _ActiveShiftBody extends ConsumerWidget {
     final workedTime = shift.workedTime(now);
     final accent = isPaused ? colorScheme.tertiary : colorScheme.primary;
 
-    return FormScrollView(
+    return ScreenScrollView(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         const SizedBox(height: AppSpacing.lg),

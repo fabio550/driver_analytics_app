@@ -4,7 +4,7 @@ import 'package:driver_analytics_app/core/presentation/theme/app_spacing.dart';
 import 'package:driver_analytics_app/core/presentation/widgets/currency_field.dart';
 import 'package:driver_analytics_app/core/presentation/widgets/date_field.dart';
 import 'package:driver_analytics_app/core/presentation/widgets/distance_field.dart';
-import 'package:driver_analytics_app/core/presentation/widgets/form_scroll_view.dart';
+import 'package:driver_analytics_app/core/presentation/widgets/screen_scroll_view.dart';
 import 'package:driver_analytics_app/core/presentation/widgets/primary_button.dart';
 import 'package:driver_analytics_app/features/cost/application/providers/cost_provider.dart';
 import 'package:driver_analytics_app/features/cost/domain/entities/cost_entity.dart';
@@ -120,7 +120,7 @@ class _MaintenanceCostCreatePageState
         isLoading: _isSubmitting,
         onPressed: _isSubmitting ? null : _submit,
       ),
-      body: FormScrollView(
+      body: ScreenScrollView(
         children: [
           DropdownButtonFormField<MaintenanceSubcategory>(
             initialValue: _subcategory,
