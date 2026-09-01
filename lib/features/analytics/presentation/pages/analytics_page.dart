@@ -1,9 +1,12 @@
 import 'package:driver_analytics_app/core/domain/enums/load_status.dart';
 import 'package:driver_analytics_app/core/presentation/theme/app_spacing.dart';
+import 'package:driver_analytics_app/core/presentation/theme/app_text_styles.dart';
 import 'package:driver_analytics_app/features/analytics/application/providers/analytics_provider.dart';
-import 'package:driver_analytics_app/features/analytics/presentation/widgets/daily_profit_chart.dart';
+import 'package:driver_analytics_app/features/analytics/presentation/tabs/custos_tab.dart';
+import 'package:driver_analytics_app/features/analytics/presentation/tabs/operacao_tab.dart';
+import 'package:driver_analytics_app/features/analytics/presentation/tabs/receita_tab.dart';
+import 'package:driver_analytics_app/features/analytics/presentation/tabs/resumo_tab.dart';
 import 'package:driver_analytics_app/features/analytics/presentation/widgets/period_selector.dart';
-import 'package:driver_analytics_app/features/analytics/presentation/widgets/summary_analytics_card.dart';
 import 'package:driver_analytics_app/features/cost/application/providers/cost_provider.dart';
 import 'package:driver_analytics_app/features/earning/application/providers/earning_provider.dart';
 import 'package:driver_analytics_app/features/shift/application/providers/shift_provider.dart';
@@ -17,10 +20,21 @@ class AnalyticsPage extends ConsumerStatefulWidget {
   ConsumerState<AnalyticsPage> createState() => _AnalyticsPageState();
 }
 
-class _AnalyticsPageState extends ConsumerState<AnalyticsPage> {
+class _AnalyticsPageState extends ConsumerState<AnalyticsPage>
+    with SingleTickerProviderStateMixin {
+  static const _tabs = [
+    Tab(text: 'Resumo'),
+    Tab(text: 'Operação'),
+    Tab(text: 'Receita'),
+    Tab(text: 'Custos'),
+  ];
+
+  late final TabController _tabController;
+
   @override
   void initState() {
     super.initState();
+    _tabController = TabController(length: _tabs.length, vsync: this);
 
     // Cada fonte carrega só se ainda ninguém pediu — a página de análise
     // não é dona desses dados, só os consome.
@@ -43,6 +57,12 @@ class _AnalyticsPageState extends ConsumerState<AnalyticsPage> {
   }
 
   @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final shiftStatus = ref.watch(
       shiftNotifierProvider.select((state) => state.status),
@@ -62,37 +82,46 @@ class _AnalyticsPageState extends ConsumerState<AnalyticsPage> {
 
     final period = ref.watch(analyticsPeriodNotifierProvider);
     final periodNotifier = ref.read(analyticsPeriodNotifierProvider.notifier);
-    final summary = ref.watch(summaryAnalyticsProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Análises')),
+      appBar: AppBar(
+        title: const Text('Análises'),
+        bottom: TabBar(
+          controller: _tabController,
+          tabAlignment: TabAlignment.fill,
+          labelStyle: AppTextStyles.tabLabel,
+          unselectedLabelStyle: AppTextStyles.caption,
+          tabs: _tabs,
+        ),
+      ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : hasError
               ? const Center(
                   child: Text('Não foi possível carregar as análises.'),
                 )
-              : ListView(
-                  padding: const EdgeInsets.all(AppSpacing.md),
+              : Column(
                   children: [
-                    PeriodSelector(period: period, notifier: periodNotifier),
-                    const SizedBox(height: AppSpacing.md),
-                    SummaryAnalyticsCard(summary: summary),
-                    const SizedBox(height: AppSpacing.md),
-                    if (summary.isEmpty)
-                      const Padding(
-                        padding: EdgeInsets.symmetric(vertical: AppSpacing.xl),
-                        child: Center(
-                          child: Text('Sem jornadas confirmadas no período.'),
-                        ),
-                      )
-                    else
-                      Card(
-                        child: Padding(
-                          padding: const EdgeInsets.all(AppSpacing.md),
-                          child: DailyProfitChart(entries: summary.dailyProfits),
-                        ),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(
+                        AppSpacing.md,
+                        AppSpacing.sm,
+                        AppSpacing.md,
+                        0,
                       ),
+                      child: PeriodSelector(period: period, notifier: periodNotifier),
+                    ),
+                    Expanded(
+                      child: TabBarView(
+                        controller: _tabController,
+                        children: const [
+                          ResumoTab(),
+                          OperacaoTab(),
+                          ReceitaTab(),
+                          CustosTab(),
+                        ],
+                      ),
+                    ),
                   ],
                 ),
     );
