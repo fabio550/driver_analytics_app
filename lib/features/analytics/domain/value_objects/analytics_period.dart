@@ -47,4 +47,27 @@ class AnalyticsPeriod {
   bool contains(DateTime dateTime) {
     return !dateTime.isBefore(start) && dateTime.isBefore(end);
   }
+
+  /// Período anterior de mesmo tamanho — semana/mês andam pro seu vizinho
+  /// natural, custom desliza pela própria duração.
+  AnalyticsPeriod get previous => _shifted(-1);
+
+  /// Período seguinte de mesmo tamanho. Ver [previous].
+  AnalyticsPeriod get next => _shifted(1);
+
+  AnalyticsPeriod _shifted(int steps) {
+    switch (preset) {
+      case AnalyticsPeriodPreset.week:
+        return AnalyticsPeriod.week(start.add(Duration(days: 7 * steps)));
+      case AnalyticsPeriodPreset.month:
+        return AnalyticsPeriod.month(DateTime(start.year, start.month + steps));
+      case AnalyticsPeriodPreset.custom:
+        final span = end.difference(start);
+        return AnalyticsPeriod._(
+          start: start.add(span * steps),
+          end: end.add(span * steps),
+          preset: AnalyticsPeriodPreset.custom,
+        );
+    }
+  }
 }

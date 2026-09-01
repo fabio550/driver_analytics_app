@@ -1,4 +1,5 @@
 import 'package:driver_analytics_app/core/presentation/pages/home_page.dart';
+import 'package:driver_analytics_app/features/analytics/presentation/pages/analytics_page.dart';
 import 'package:driver_analytics_app/features/cost/domain/entities/cost_entity.dart';
 import 'package:driver_analytics_app/features/cost/presentation/pages/costs_page.dart';
 import 'package:driver_analytics_app/features/cost/presentation/pages/expense_cost_create_page.dart';
@@ -96,5 +97,8 @@ final routes = [
     path: '/earnings/orphans',
     builder: (context, state) => const OrphanEarningsPage(),
   ),
-  
+  GoRoute(
+    path: '/analytics',
+    builder: (context, state) => const AnalyticsPage(),
+  ),
 ];
