@@ -7,7 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ```bash
 flutter pub get                # install dependencies
 flutter analyze                # static analysis — run before committing
-flutter test                   # no test files exist yet, but this is how they'd run
+flutter test                   # unit tests live under test/, mirroring lib/
 flutter run                    # run the app (needs a connected device/emulator)
 
 # Drift (SQLite) code generation — required after touching any *_table.dart,
@@ -17,6 +17,14 @@ dart run build_runner watch --delete-conflicting-outputs   # while iterating
 ```
 
 There is no backend in this repo — see "Planned backend" below.
+
+`HomePage` has a "Popular dados de exemplo" button behind `kDebugMode`
+(`core/infrastructure/database/seed_data_service.dart`) that inserts
+~6 months of shifts/fuel/maintenance/financing/taxes/insurance straight
+through the repositories — useful to get enough history to exercise
+`CostAllocationCalculator`'s window/interval logic without hand-entering
+months of data through the UI. It never ships in a release build and it
+only adds data, never clears existing rows.
 
 ## Architecture
 
