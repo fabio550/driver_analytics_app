@@ -1,4 +1,8 @@
+import 'package:driver_analytics_app/core/infrastructure/database/seed_data_provider.dart';
+import 'package:driver_analytics_app/features/cost/application/providers/cost_provider.dart';
 import 'package:driver_analytics_app/features/shift/application/providers/active_shift_provider.dart';
+import 'package:driver_analytics_app/features/shift/application/providers/shift_provider.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -11,6 +15,8 @@ class HomePage extends ConsumerStatefulWidget {
 }
 
 class _HomePageState extends ConsumerState<HomePage> {
+  bool _isSeeding = false;
+
   @override
   void initState() {
     super.initState();
@@ -69,10 +75,38 @@ class _HomePageState extends ConsumerState<HomePage> {
                 },
                 child: Text('Análises')
               ),
+              if (kDebugMode) ...[
+                const SizedBox(height: 24),
+                OutlinedButton(
+                  onPressed: _isSeeding ? null : _seedSampleData,
+                  child: _isSeeding
+                      ? const SizedBox(
+                          height: 16,
+                          width: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Text('Popular dados de exemplo (debug)'),
+                ),
+              ],
             ],
           ),
         ),
       )
+    );
+  }
+
+  Future<void> _seedSampleData() async {
+    setState(() => _isSeeding = true);
+
+    await ref.read(seedDataServiceProvider).seed();
+    await ref.read(shiftNotifierProvider.notifier).loadShifts();
+    await ref.read(costNotifierProvider.notifier).loadCosts();
+
+    if (!mounted) return;
+    setState(() => _isSeeding = false);
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Dados de exemplo adicionados.')),
     );
   }
 }

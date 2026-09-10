@@ -1,3 +1,4 @@
+import 'package:driver_analytics_app/core/extensions/datetime_extensions.dart';
 import 'package:driver_analytics_app/features/analytics/domain/entities/cost_allocation.dart';
 import 'package:driver_analytics_app/features/analytics/domain/services/fuel_consumption_calculator.dart';
 import 'package:driver_analytics_app/features/analytics/domain/value_objects/analytics_period.dart';
@@ -164,11 +165,18 @@ class CostAllocationCalculator {
 
     final earliestFuel = allFuel.map((c) => c.date).reduce((a, b) => a.isBefore(b) ? a : b);
 
+    // Âncora no último dia real do período, não em period.end — period.end
+    // é o limite exclusivo (já é o 1º dia do mês seguinte quando o período
+    // é um mês fechado), então usar period.end.month direto pra subtrair
+    // mês dava o próprio mês do período, não o anterior.
+    final periodLastDay = period.end.subtract(const Duration(days: 1));
+
     var monthsBack = 1;
     var reachedAllTime = false;
+    var windowStart = periodLastDay;
     var stats = FuelConsumptionStats.empty;
     while (true) {
-      var windowStart = DateTime(period.end.year, period.end.month - monthsBack, 1);
+      windowStart = DateTime(periodLastDay.year, periodLastDay.month - monthsBack, 1);
       reachedAllTime = !windowStart.isAfter(earliestFuel);
       if (reachedAllTime) windowStart = earliestFuel;
 
@@ -202,7 +210,7 @@ class CostAllocationCalculator {
       attributedCost: rate * periodKm,
       note: reachedAllTime
           ? 'Taxa baseada em todo o histórico de combustível.'
-          : 'Taxa baseada nos últimos $monthsBack ${monthsBack == 1 ? 'mês' : 'meses'}.',
+          : 'Taxa baseada em combustível desde ${windowStart.formattedDDMMYYYY}.',
     );
   }
 
