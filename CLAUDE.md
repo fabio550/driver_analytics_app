@@ -113,6 +113,36 @@ persists via a mapper → notifier reloads the list and updates `*State`.
   district ranking in Analytics will be empty until some UI populates
   these (see "Planned backend" — they were added for a geo-resolution
   pipeline that isn't built).
+- **Cost allocation (`CostAllocationCalculator`, `analytics/domain/
+  services/`)**: the "cost" that feeds net profit/R$-per-hour is not the
+  raw sum of what was logged in the period — it's a smoothed rate applied
+  to the period, one method per `CostAllocationMethod`
+  (`cost/domain/enums/`, classification via `cost/domain/extensions/
+  cost_allocation_extensions.dart`, **not** a presentation label):
+  - `kmDriven` (fuel, all of maintenance): rate × km driven in the
+    period. Maintenance's rate uses the entire history up to the
+    period's end (a tire doesn't pay for itself in a short window);
+    fuel's rate uses a window starting last calendar month, expanding a
+    month at a time until it finds 2 full tanks (fuel price moves too
+    fast for an all-time average), reusing `FuelConsumptionCalculator`.
+  - `timeDriven` (financing/taxes/insurance, each isolated): rate = most
+    recent entry's amount ÷ days since that subcategory's previous
+    entry — self-adapts to whatever cadence that subcategory actually
+    has, no hardcoded "30 days"/"365 days" anywhere.
+  - `direct` (parking/carWash/fine/toll/other): raw sum, never smoothed.
+  A group's rate locks (`attributedCost = null`) only with exactly one
+  data point (can't tell a one-off from a pattern yet); zero entries
+  ever is a legitimate zero. Locking is per-group — one group short on
+  history falls back to its own raw amount, it never blocks the other
+  groups or the whole total. `costAllocationProvider` computes this once
+  and both `SummaryAnalyticsCalculator` and `CostAnalyticsCalculator`
+  consume it, to avoid the kind of duplication the §7.1 rule above
+  already has. The existing period-scoped `FuelEfficiencyStats` (the
+  "Combustível" card's consumo/R$-km/R$-litro) is unrelated and
+  unaffected by any of this.
+- **"Lucro por dia" (Resumo)** only plots days with a `submitted` shift
+  starting that day — a cost or loose earning logged on a day with no
+  shift still counts in the period total but doesn't get its own bar.
 
 ## Planned backend (not implemented)
 
