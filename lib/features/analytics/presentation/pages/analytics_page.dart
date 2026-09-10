@@ -2,7 +2,7 @@ import 'package:driver_analytics_app/core/domain/enums/load_status.dart';
 import 'package:driver_analytics_app/core/presentation/theme/app_spacing.dart';
 import 'package:driver_analytics_app/core/presentation/theme/app_text_styles.dart';
 import 'package:driver_analytics_app/features/analytics/application/providers/analytics_provider.dart';
-import 'package:driver_analytics_app/features/analytics/presentation/tabs/custos_tab.dart';
+import 'package:driver_analytics_app/features/analytics/presentation/tabs/costs_tab.dart';
 import 'package:driver_analytics_app/features/analytics/presentation/tabs/operacao_tab.dart';
 import 'package:driver_analytics_app/features/analytics/presentation/tabs/receita_tab.dart';
 import 'package:driver_analytics_app/features/analytics/presentation/tabs/resumo_tab.dart';
@@ -118,7 +118,7 @@ class _AnalyticsPageState extends ConsumerState<AnalyticsPage>
                           ResumoTab(),
                           OperacaoTab(),
                           ReceitaTab(),
-                          CustosTab(),
+                          CostsTab(),
                         ],
                       ),
                     ),

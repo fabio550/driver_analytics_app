@@ -12,8 +12,8 @@ import 'package:driver_analytics_app/features/cost/presentation/extensions/cost_
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class CustosTab extends ConsumerWidget {
-  const CustosTab({super.key});
+class CostsTab extends ConsumerWidget {
+  const CostsTab({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
