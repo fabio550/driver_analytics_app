@@ -39,7 +39,9 @@ class _CostListViewState extends ConsumerState<CostListView> {
     }
 
     return ListView.builder(
-      padding: const EdgeInsets.symmetric(vertical: 6),
+      // bottom generoso pra o último card não ficar embaixo do FAB
+      // extended — mesmo valor do ShiftsListView/EarningsPage.
+      padding: const EdgeInsets.only(top: 6, bottom: 96),
       itemCount: filtered.length,
       itemBuilder: (context, i) {
         final cost = filtered[i];
