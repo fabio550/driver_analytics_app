@@ -1,3 +1,4 @@
+import 'package:driver_analytics_app/features/analytics/domain/entities/cost_allocation.dart';
 import 'package:driver_analytics_app/features/analytics/domain/entities/daily_profit_entry.dart';
 import 'package:driver_analytics_app/features/analytics/domain/entities/summary_analytics.dart';
 import 'package:driver_analytics_app/features/analytics/domain/value_objects/analytics_period.dart';
@@ -15,6 +16,7 @@ class SummaryAnalyticsCalculator {
     required List<EarningEntity> earnings,
     required AnalyticsPeriod period,
     required DateTime now,
+    required CostAllocationResult costAllocation,
   }) {
     // Só jornada confirmada entra. Uma jornada em andamento somaria horas
     // trabalhadas com receita ainda zerada e derrubaria o R$/h; uma
@@ -67,19 +69,28 @@ class SummaryAnalyticsCalculator {
       _addToDay(revenueByDay, earning.occurredAt, earning.amount);
     }
 
-    var cost = 0.0;
+    // Custo do total do período vem do rateio (CostAllocationCalculator),
+    // não da soma bruta — um lançamento caro perto da borda do período
+    // não deveria mais derrubar o lucro líquido sozinho. O gráfico diário
+    // continua com o valor bruto de cada dia (ver _addToDay abaixo):
+    // suavizar por dia faria a barra mentir sobre quando o gasto saiu.
     for (final entry in costs) {
       if (!period.contains(entry.date)) continue;
-      cost += entry.amount;
       _addToDay(costByDay, entry.date, entry.amount);
     }
+    final cost = costAllocation.attributedTotal;
 
     final netProfit = revenue - cost;
     final workedHours = workedMinutes / 60;
 
-    // Só dias com movimento viram ponto. Dia parado não é dado ausente,
-    // é ausência de dado — a barra some em vez de virar zero.
-    final days = {...revenueByDay.keys, ...costByDay.keys}.toList()..sort();
+    // Só dia com jornada confirmada vira ponto — custo/ganho lançado num
+    // dia sem jornada entra no total do período mas não ganha barra
+    // própria (não fica "pendurado" num dia em que não se trabalhou).
+    final days = periodShifts
+        .map((s) => DateTime(s.startTime.year, s.startTime.month, s.startTime.day))
+        .toSet()
+        .toList()
+      ..sort();
 
     return SummaryAnalytics(
       revenue: revenue,

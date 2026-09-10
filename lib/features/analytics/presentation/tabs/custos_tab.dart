@@ -4,6 +4,8 @@ import 'package:driver_analytics_app/core/presentation/theme/app_spacing.dart';
 import 'package:driver_analytics_app/core/presentation/widgets/screen_scroll_view.dart';
 import 'package:driver_analytics_app/features/analytics/application/providers/analytics_provider.dart';
 import 'package:driver_analytics_app/features/analytics/presentation/widgets/breakdown_bar_card.dart';
+import 'package:driver_analytics_app/features/analytics/presentation/widgets/cost_allocation_breakdown_card.dart';
+import 'package:driver_analytics_app/features/analytics/presentation/widgets/kpi_card.dart';
 import 'package:driver_analytics_app/features/analytics/presentation/widgets/ranked_bar_card.dart';
 import 'package:driver_analytics_app/features/analytics/presentation/widgets/stat_grid_card.dart';
 import 'package:driver_analytics_app/features/cost/presentation/extensions/cost_category_extensions.dart';
@@ -24,6 +26,24 @@ class CustosTab extends ConsumerWidget {
 
     return ScreenScrollView(
       children: [
+        Row(
+          children: [
+            Expanded(
+              child: KpiCard(
+                label: 'Gasto no período',
+                value: cost.actualSpend.formattedCurrency,
+              ),
+            ),
+            const SizedBox(width: AppSpacing.sm),
+            Expanded(
+              child: KpiCard(
+                label: 'Custo atribuído (estimado)',
+                value: cost.allocation.attributedTotal.formattedCurrency,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: AppSpacing.sm),
         BreakdownBarCard(
           title: 'Para onde foi o dinheiro',
           items: [
@@ -80,6 +100,8 @@ class CustosTab extends ConsumerWidget {
               ? null
               : 'Os ${cost.topEntries.length} maiores lançamentos do período.',
         ),
+        const SizedBox(height: AppSpacing.sm),
+        CostAllocationBreakdownCard(allocation: cost.allocation),
       ],
     );
   }
