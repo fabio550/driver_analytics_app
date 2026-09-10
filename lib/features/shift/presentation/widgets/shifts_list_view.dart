@@ -31,7 +31,9 @@ class _ShiftsListViewState extends ConsumerState<ShiftsListView> {
     }
 
     return ListView.builder(
-      padding: const EdgeInsets.symmetric(vertical: 6),
+      // bottom generoso pra o último card não ficar embaixo do FAB
+      // extended ("Nova Jornada") — mesmo valor do EarningsPage.
+      padding: const EdgeInsets.only(top: 6, bottom: 96),
       itemCount: visible.length,
       itemBuilder: (context, i) {
         final shift = visible[i];
