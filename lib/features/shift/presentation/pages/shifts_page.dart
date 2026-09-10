@@ -35,6 +35,16 @@ class _ShiftsPageState extends ConsumerState<ShiftsPage> {
 
     return Scaffold(
       appBar: AppBar(
+        // O go_router só mostra a seta automática se houver algo pra
+        // dar pop — mas dá pra chegar aqui direto (ex.: reabrindo o app
+        // no meio de uma jornada, que empurra pra /shifts/active e depois
+        // volta com go('/shifts')), zerando a pilha. Sem um leading fixo
+        // a tela fica sem saída visível.
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          tooltip: 'Voltar',
+          onPressed: () => context.go('/'),
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.play_arrow),
