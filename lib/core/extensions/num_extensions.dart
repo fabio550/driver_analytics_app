@@ -1,10 +1,18 @@
+import 'package:intl/intl.dart';
+
+/// Mesmo padrão que o `CurrencyInputFormatter` usa ao digitar. Sem isso o
+/// app se contradizia: o campo mostrava `1.545,00` enquanto a lista
+/// mostrava `1545,00` pro mesmo valor.
+final _decimalFormat = NumberFormat('#,##0.00', 'pt_BR');
+final _integerFormat = NumberFormat('#,##0', 'pt_BR');
+
 extension DoubleExtensions on double {
   String get formattedKm {
-    return '${toStringAsFixed(0)} km';
+    return '${_integerFormat.format(this)} km';
   }
 
   String get formattedCurrency {
-    return 'R\$ ${toStringAsFixed(2).replaceAll('.', ',')}';
+    return 'R\$ ${_decimalFormat.format(this)}';
   }
 
   String get formattedPercent {

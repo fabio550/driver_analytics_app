@@ -4,13 +4,16 @@ import 'package:driver_analytics_app/core/presentation/theme/app_spacing.dart';
 import 'package:driver_analytics_app/core/presentation/theme/app_text_styles.dart';
 import 'package:flutter/material.dart';
 
-/// Barra do bruto dividida em lucro e custo. Responde "entrou quanto,
-/// saiu quanto, sobrou quanto" de uma vez só — os três números existiam
-/// antes como três cards iguais, sem relação visível entre eles.
+/// A barra inteira é o ganho do período; a fatia laranja é o que os
+/// custos levaram, e o que sobra é o lucro.
 ///
-/// Quando o custo passa o bruto a barra fica inteira de custo: não há
-/// fatia de lucro pra desenhar, e o prejuízo aparece na legenda com
-/// sinal e cor próprios.
+/// A legenda dá ganhos e custos, nunca o lucro: o lucro é o número herói
+/// logo acima da barra, e repeti-lo aqui só gastava uma linha pra dizer
+/// duas vezes a mesma coisa. Os dois números da legenda mais o herói
+/// fecham a conta sozinhos.
+///
+/// Quando o custo passa o ganho a barra fica inteira de custo: não há
+/// fatia de lucro pra desenhar, e o prejuízo aparece no herói com sinal.
 class RevenueSplitBar extends StatelessWidget {
   final double revenue;
   final double cost;
@@ -64,11 +67,8 @@ class RevenueSplitBar extends StatelessWidget {
           spacing: AppSpacing.md,
           runSpacing: AppSpacing.xs,
           children: [
-            _Legend(
-              color: AppChartColors.profit,
-              label: 'Lucro',
-              value: profit.formattedCurrency,
-            ),
+            // Ganhos não leva marcador: é a barra toda, não uma fatia.
+            _Legend(label: 'Ganhos', value: revenue.formattedCurrency),
             _Legend(
               color: AppChartColors.cost,
               label: 'Custos',
@@ -99,28 +99,31 @@ class RevenueSplitBar extends StatelessWidget {
 }
 
 class _Legend extends StatelessWidget {
-  final Color color;
+  final Color? color;
   final String label;
   final String value;
 
-  const _Legend({required this.color, required this.label, required this.value});
+  const _Legend({this.color, required this.label, required this.value});
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final swatch = color;
 
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Container(
-          width: 8,
-          height: 8,
-          decoration: BoxDecoration(
-            color: color,
-            borderRadius: BorderRadius.circular(2),
+        if (swatch != null) ...[
+          Container(
+            width: 8,
+            height: 8,
+            decoration: BoxDecoration(
+              color: swatch,
+              borderRadius: BorderRadius.circular(2),
+            ),
           ),
-        ),
-        const SizedBox(width: 6),
+          const SizedBox(width: 6),
+        ],
         Text(
           label,
           style: AppTextStyles.caption.copyWith(color: colorScheme.onSurfaceVariant),

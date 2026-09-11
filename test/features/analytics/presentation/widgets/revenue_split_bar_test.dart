@@ -11,29 +11,32 @@ Widget _wrap(Widget child) {
 }
 
 void main() {
-  testWidgets('splits the gross into profit and cost', (tester) async {
+  testWidgets('a legenda dá ganhos e custos, nunca o lucro', (tester) async {
+    // O lucro é o número herói logo acima da barra: repetido aqui, o
+    // card diria duas vezes a mesma coisa.
     await tester.pumpWidget(
       _wrap(const RevenueSplitBar(revenue: 1545, cost: 660.40)),
     );
 
-    expect(find.text('Lucro'), findsOneWidget);
-    expect(find.text('R\$ 884,60'), findsOneWidget);
+    expect(find.text('Ganhos'), findsOneWidget);
+    expect(find.text('R\$ 1.545,00'), findsOneWidget);
     expect(find.text('Custos'), findsOneWidget);
     expect(find.text('R\$ 660,40'), findsOneWidget);
+    expect(find.text('Lucro'), findsNothing);
+    expect(find.text('R\$ 884,60'), findsNothing);
   });
 
-  testWidgets('a period that lost money still renders, with the loss signed',
-      (tester) async {
+  testWidgets('um período no prejuízo ainda desenha', (tester) async {
     await tester.pumpWidget(
       _wrap(const RevenueSplitBar(revenue: 100, cost: 250)),
     );
 
-    expect(find.text('R\$ -150,00'), findsOneWidget);
+    expect(find.text('R\$ 100,00'), findsOneWidget);
+    expect(find.text('R\$ 250,00'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('an empty period renders without dividing by zero',
-      (tester) async {
+  testWidgets('um período vazio não divide por zero', (tester) async {
     await tester.pumpWidget(_wrap(const RevenueSplitBar(revenue: 0, cost: 0)));
 
     expect(find.text('R\$ 0,00'), findsNWidgets(2));

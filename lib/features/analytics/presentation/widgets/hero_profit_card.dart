@@ -70,14 +70,9 @@ class HeroProfitCard extends StatelessWidget {
                   .tabular,
             ),
             const SizedBox(height: AppSpacing.md),
+            // O ganho bruto fica na legenda da barra: uma linha extra
+            // aqui repetia o mesmo número logo abaixo dele.
             RevenueSplitBar(revenue: summary.revenue, cost: summary.cost),
-            const SizedBox(height: AppSpacing.sm),
-            Text(
-              'Ganho bruto ${summary.revenue.formattedCurrency}',
-              style: textTheme.labelSmall
-                  ?.copyWith(color: colorScheme.onSurfaceVariant)
-                  .tabular,
-            ),
           ],
         ),
       ),
