@@ -1,6 +1,7 @@
 import 'package:driver_analytics_app/core/extensions/num_extensions.dart';
 import 'package:driver_analytics_app/core/presentation/theme/app_chart_colors.dart';
 import 'package:driver_analytics_app/core/presentation/theme/app_spacing.dart';
+import 'package:driver_analytics_app/core/presentation/widgets/empty_state_view.dart';
 import 'package:driver_analytics_app/core/presentation/widgets/screen_scroll_view.dart';
 import 'package:driver_analytics_app/features/analytics/application/providers/analytics_provider.dart';
 import 'package:driver_analytics_app/features/analytics/presentation/widgets/breakdown_bar_card.dart';
@@ -21,7 +22,12 @@ class CostsTab extends ConsumerWidget {
     final series = AppChartColors.series(Theme.of(context).brightness);
 
     if (cost.isEmpty) {
-      return const Center(child: Text('Sem custos lançados no período.'));
+      return const EmptyStateView(
+        icon: Icons.pie_chart_outline,
+        title: 'Nada no período',
+        message: 'Lance um abastecimento, uma manutenção ou uma despesa pra '
+            'ver o rateio aqui.',
+      );
     }
 
     return ScreenScrollView(

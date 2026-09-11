@@ -6,151 +6,88 @@ import 'package:driver_analytics_app/features/earning/domain/entities/earning_en
 import 'package:driver_analytics_app/features/earning/presentation/widgets/earning_row_tile.dart';
 import 'package:flutter/material.dart';
 
-/// Cartão de um turno com seus lançamentos — a lista principal da
-/// EarningsPage é agrupada por turno, não por tipo, porque o que importa
-/// aqui é ver o turno fechando ou não (checksum §6.3), e isso exige
-/// corrida + promoção + ajuste juntos na mesma conta.
+/// Cartão de uma jornada com seus lançamentos. A lista de Ganhos é
+/// agrupada por jornada, não por tipo, porque é assim que o motorista
+/// pensa no dinheiro que entrou: um turno de cada vez.
 class ShiftEarningsGroup extends StatelessWidget {
   final DateTime shiftStartTime;
-  final double? informedAmount;
+  final double? shiftEarnings;
   final List<EarningEntity> earnings;
   final void Function(EarningEntity earning)? onTapEarning;
 
   const ShiftEarningsGroup({
     super.key,
     required this.shiftStartTime,
-    required this.informedAmount,
+    required this.shiftEarnings,
     required this.earnings,
     this.onTapEarning,
   });
-
-  double get _sum => earnings.fold<double>(0, (total, e) => total + e.amount);
-
-  bool get _isComplete {
-    final informed = informedAmount;
-    if (informed == null) return false;
-    return (informed - _sum).abs() < 0.01;
-  }
-
-  String get _badgeLabel {
-    if (_isComplete) return 'Completo';
-    if (informedAmount == null) return 'Sem valor informado';
-    return 'Faltam ${(informedAmount! - _sum).formattedCurrency}';
-  }
-
-  String get _footerText {
-    if (_isComplete) return '${_sum.formattedCurrency} · bate com o informado';
-    if (informedAmount == null) return '${_sum.formattedCurrency} lançados · sem valor informado';
-    return '${_sum.formattedCurrency} de ${informedAmount!.formattedCurrency}';
-  }
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
+    final total = shiftEarnings;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(2, 4, 2, 8),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        shiftStartTime.formattedFullDate,
-                        style: textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
-                      ),
-                      Text(
-                        informedAmount != null
-                            ? 'Informado ${informedAmount!.formattedCurrency}'
-                            : 'Sem valor informado',
-                        style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
-                      ),
-                    ],
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: 6),
+      child: Card(
+        clipBehavior: Clip.antiAlias,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      shiftStartTime.formattedDayAndWeekday,
+                      style: textTheme.bodyMedium
+                          ?.copyWith(fontWeight: FontWeight.w700)
+                          .tabular,
+                    ),
                   ),
-                ),
-                _CompletenessBadge(isComplete: _isComplete, label: _badgeLabel),
-              ],
-            ),
-          ),
-          Card(
-            margin: EdgeInsets.zero,
-            child: Column(
-              children: [
-                for (var i = 0; i < earnings.length; i++) ...[
-                  if (i > 0) const Divider(height: 1),
-                  EarningRowTile(
-                    earning: earnings[i],
-                    onTap: onTapEarning == null ? null : () => onTapEarning!(earnings[i]),
-                  ),
+                  if (total != null)
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          total.formattedCurrency,
+                          style: textTheme.titleSmall
+                              ?.copyWith(fontWeight: FontWeight.bold)
+                              .tabular,
+                        ),
+                        Text(
+                          'ganho da jornada',
+                          style: textTheme.labelSmall?.copyWith(
+                            color: colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
+                    ),
                 ],
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 9),
-                  decoration: BoxDecoration(
-                    color: colorScheme.surfaceContainerHighest.withOpacity(0.4),
-                    border: Border(top: BorderSide(color: colorScheme.outlineVariant)),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Soma lançada',
-                        style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
-                      ),
-                      Text(
-                        _footerText,
-                        style: textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w700),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+              ),
             ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _CompletenessBadge extends StatelessWidget {
-  final bool isComplete;
-  final String label;
-
-  const _CompletenessBadge({required this.isComplete, required this.label});
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      decoration: BoxDecoration(
-        color: isComplete ? colorScheme.primaryContainer : colorScheme.tertiaryContainer,
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            isComplete ? Icons.check_circle : Icons.error_outline,
-            size: 13,
-            color: isComplete ? colorScheme.onPrimaryContainer : colorScheme.onTertiaryContainer,
-          ),
-          const SizedBox(width: AppSpacing.xs),
-          Text(
-            label,
-            style: AppTextStyles.badgeStrong.copyWith(
-              color: isComplete ? colorScheme.onPrimaryContainer : colorScheme.onTertiaryContainer,
+            Divider(color: colorScheme.outlineVariant, height: 1),
+            for (final earning in earnings)
+              EarningRowTile(
+                earning: earning,
+                onTap: onTapEarning == null ? null : () => onTapEarning!(earning),
+              ),
+            Container(
+              color: colorScheme.surfaceContainerLow,
+              padding: const EdgeInsets.fromLTRB(14, 9, 14, 11),
+              child: Text(
+                '${earnings.length} '
+                '${earnings.length == 1 ? 'lançamento detalhado' : 'lançamentos detalhados'}',
+                style: textTheme.labelSmall
+                    ?.copyWith(color: colorScheme.onSurfaceVariant)
+                    .tabular,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

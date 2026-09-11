@@ -32,4 +32,16 @@ class AppChartColors {
     final palette = series(brightness);
     return palette[index % palette.length];
   }
+
+  /// Marcas de valor positivo (barra de lucro, fatia de lucro). Não sai
+  /// da paleta categórica acima de propósito: aqui a cor carrega sinal,
+  /// não identidade de série, e o par lucro/custo foi validado contra a
+  /// superfície clara pros tipos de daltonismo.
+  static const profit = Color(0xFF0F9D63);
+
+  /// Marcas de custo — o outro lado da barra de bruto/custos.
+  static const cost = Color(0xFFE4622A);
+
+  /// Marcas de valor negativo (barra de prejuízo abaixo da linha zero).
+  static const loss = Color(0xFFD93A2B);
 }

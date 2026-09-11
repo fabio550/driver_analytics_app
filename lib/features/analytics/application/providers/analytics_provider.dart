@@ -13,6 +13,8 @@ import 'package:driver_analytics_app/features/analytics/domain/value_objects/ana
 import 'package:driver_analytics_app/features/cost/application/providers/cost_provider.dart';
 import 'package:driver_analytics_app/features/earning/application/providers/earning_provider.dart';
 import 'package:driver_analytics_app/features/shift/application/providers/shift_provider.dart';
+import 'package:driver_analytics_app/features/shift/domain/entities/shift_entity.dart';
+import 'package:driver_analytics_app/features/shift/domain/enums/shift_status.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final analyticsPeriodNotifierProvider =
@@ -100,4 +102,43 @@ final costAnalyticsProvider = Provider<CostAnalytics>((ref) {
     distanceKm: ref.watch(summaryAnalyticsProvider).distanceKm,
     allocation: ref.watch(costAllocationProvider),
   );
+});
+/// Resumo da semana corrente, independente do recorte escolhido na aba
+/// de Análises. O card do Início mostra sempre "esta semana"; se ele
+/// consumisse [summaryAnalyticsProvider], trocar o período lá dentro
+/// mudaria o número da Home pelas costas.
+final currentWeekSummaryProvider = Provider<SummaryAnalytics>((ref) {
+  final now = DateTime.now();
+  final period = AnalyticsPeriod.week(now);
+
+  final shifts = ref.watch(shiftNotifierProvider).shifts;
+  final costs = ref.watch(costNotifierProvider).costs;
+  final earnings = ref.watch(earningNotifierProvider).earnings;
+
+  final allocation = ref.watch(costAllocationCalculatorProvider).calculate(
+        costs: costs,
+        shifts: shifts,
+        period: period,
+      );
+
+  return ref.watch(summaryAnalyticsCalculatorProvider).calculate(
+        shifts: shifts,
+        costs: costs,
+        earnings: earnings,
+        period: period,
+        now: now,
+        costAllocation: allocation,
+      );
+});
+
+/// Última jornada confirmada, pro rodapé do botão de iniciar no Início.
+final lastSubmittedShiftProvider = Provider<ShiftEntity?>((ref) {
+  final shifts = ref
+      .watch(shiftNotifierProvider)
+      .shifts
+      .where((shift) => shift.status == ShiftStatus.submitted)
+      .toList()
+    ..sort((a, b) => b.startTime.compareTo(a.startTime));
+
+  return shifts.isEmpty ? null : shifts.first;
 });

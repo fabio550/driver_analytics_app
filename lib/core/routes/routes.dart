@@ -1,31 +1,65 @@
+import 'package:driver_analytics_app/core/presentation/pages/app_shell_page.dart';
+import 'package:driver_analytics_app/core/presentation/pages/entries_page.dart';
 import 'package:driver_analytics_app/core/presentation/pages/home_page.dart';
 import 'package:driver_analytics_app/features/analytics/presentation/pages/analytics_page.dart';
 import 'package:driver_analytics_app/features/cost/domain/entities/cost_entity.dart';
-import 'package:driver_analytics_app/features/cost/presentation/pages/costs_page.dart';
 import 'package:driver_analytics_app/features/cost/presentation/pages/expense_cost_create_page.dart';
 import 'package:driver_analytics_app/features/cost/presentation/pages/fuel_cost_create_page.dart';
 import 'package:driver_analytics_app/features/cost/presentation/pages/maintenance_cost_create_page.dart';
+import 'package:driver_analytics_app/features/earning/domain/entities/earning_entity.dart';
 import 'package:driver_analytics_app/features/earning/presentation/pages/adjustment_earning_create_page.dart';
-import 'package:driver_analytics_app/features/earning/presentation/pages/earnings_page.dart';
-import 'package:driver_analytics_app/features/earning/presentation/pages/orphan_earnings_page.dart';
 import 'package:driver_analytics_app/features/earning/presentation/pages/promotion_earning_create_page.dart';
 import 'package:driver_analytics_app/features/earning/presentation/pages/ride_earning_create_page.dart';
 import 'package:driver_analytics_app/features/shift/domain/entities/shift_entity.dart';
-import 'package:driver_analytics_app/features/shift/presentation/pages/shift_create_page.dart';
-import 'package:driver_analytics_app/features/shift/presentation/pages/shifts_page.dart';
 import 'package:driver_analytics_app/features/shift/presentation/pages/active_shift_page.dart';
+import 'package:driver_analytics_app/features/shift/presentation/pages/shift_create_page.dart';
 import 'package:driver_analytics_app/features/shift/presentation/pages/shift_summary_page.dart';
-import 'package:driver_analytics_app/features/earning/domain/entities/earning_entity.dart';
+import 'package:driver_analytics_app/features/shift/presentation/pages/shifts_page.dart';
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+final rootNavigatorKey = GlobalKey<NavigatorState>();
+
+/// As quatro abas. Formulários e a jornada em andamento ficam fora da
+/// casca de propósito: são telas de foco, sobem por cima da barra.
 final routes = [
-  GoRoute(
-    path: '/',
-    builder: (context, state) => const HomePage(),
-  ),
-  GoRoute(
-    path: '/shifts',
-    builder: (context, state) => const ShiftsPage(),
+  StatefulShellRoute.indexedStack(
+    builder: (context, state, navigationShell) =>
+        AppShellPage(navigationShell: navigationShell),
+    branches: [
+      StatefulShellBranch(
+        routes: [
+          GoRoute(
+            path: '/',
+            builder: (context, state) => const HomePage(),
+          ),
+        ],
+      ),
+      StatefulShellBranch(
+        routes: [
+          GoRoute(
+            path: '/shifts',
+            builder: (context, state) => const ShiftsPage(),
+          ),
+        ],
+      ),
+      StatefulShellBranch(
+        routes: [
+          GoRoute(
+            path: '/entries',
+            builder: (context, state) => const EntriesPage(),
+          ),
+        ],
+      ),
+      StatefulShellBranch(
+        routes: [
+          GoRoute(
+            path: '/analytics',
+            builder: (context, state) => const AnalyticsPage(),
+          ),
+        ],
+      ),
+    ],
   ),
   GoRoute(
     path: '/shifts/create',
@@ -42,10 +76,6 @@ final routes = [
   GoRoute(
     path: '/shifts/active/summary',
     builder: (context, state) => const ShiftSummaryPage(),
-  ),
-  GoRoute(
-    path: '/costs',
-    builder: (context, state) => const CostsPage(),
   ),
   GoRoute(
     path: '/costs/fuel/create',
@@ -74,10 +104,6 @@ final routes = [
         ExpenseCostCreatePage(existing: state.extra as ExpenseCostEntity),
   ),
   GoRoute(
-    path: '/earnings',
-    builder: (context, state) => const EarningsPage(),
-  ),
-    GoRoute(
     path: '/earnings/ride/create',
     builder: (context, state) => const RideEarningCreatePage(),
   ),
@@ -92,13 +118,5 @@ final routes = [
   GoRoute(
     path: '/earnings/adjustment/create',
     builder: (context, state) => const AdjustmentEarningCreatePage(),
-  ),
-  GoRoute(
-    path: '/earnings/orphans',
-    builder: (context, state) => const OrphanEarningsPage(),
-  ),
-  GoRoute(
-    path: '/analytics',
-    builder: (context, state) => const AnalyticsPage(),
   ),
 ];

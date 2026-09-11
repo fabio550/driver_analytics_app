@@ -1,3 +1,7 @@
+// ignore_for_file: prefer_initializing_formals
+// O campo é privado e o parâmetro nomeado não pode ser: não dá pra
+// usar um initializing formal aqui.
+
 import 'package:driver_analytics_app/core/domain/failures/validation_failure.dart';
 import 'package:driver_analytics_app/features/shift/domain/enums/shift_field.dart';
 import 'package:driver_analytics_app/features/shift/presentation/state/shift_pause_form_entry.dart';

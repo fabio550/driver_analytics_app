@@ -4,13 +4,12 @@ import 'package:driver_analytics_app/core/presentation/theme/app_chart_colors.da
 import 'package:driver_analytics_app/core/presentation/theme/app_radius.dart';
 import 'package:driver_analytics_app/core/presentation/theme/app_spacing.dart';
 import 'package:driver_analytics_app/core/presentation/theme/app_text_styles.dart';
+import 'package:driver_analytics_app/core/presentation/widgets/empty_state_view.dart';
 import 'package:driver_analytics_app/core/presentation/widgets/screen_scroll_view.dart';
 import 'package:driver_analytics_app/features/analytics/application/providers/analytics_provider.dart';
 import 'package:driver_analytics_app/features/analytics/domain/entities/operation_analytics.dart';
-import 'package:driver_analytics_app/features/analytics/presentation/widgets/completeness_banner.dart';
 import 'package:driver_analytics_app/features/analytics/presentation/widgets/district_ranking_card.dart';
 import 'package:driver_analytics_app/features/analytics/presentation/widgets/hourly_earnings_chart.dart';
-import 'package:driver_analytics_app/features/analytics/presentation/widgets/locked_notice.dart';
 import 'package:driver_analytics_app/features/analytics/presentation/widgets/split_card.dart';
 import 'package:driver_analytics_app/features/analytics/presentation/widgets/stat_grid_card.dart';
 import 'package:flutter/material.dart';
@@ -26,13 +25,16 @@ class OperacaoTab extends ConsumerWidget {
     final series = AppChartColors.series(Theme.of(context).brightness);
 
     if (operation.isEmpty) {
-      return const Center(child: Text('Sem jornadas confirmadas no período.'));
+      return const EmptyStateView(
+        icon: Icons.timeline_outlined,
+        title: 'Nada no período',
+        message: 'Finalize uma jornada ou escolha outro período pra ver a '
+            'operação aqui.',
+      );
     }
 
     return ScreenScrollView(
       children: [
-        CompletenessBanner(completeness: operation.completeness),
-        const SizedBox(height: AppSpacing.sm),
         StatGridCard(
           title: 'Tempo',
           columns: 3,
@@ -43,13 +45,11 @@ class OperacaoTab extends ConsumerWidget {
           ],
         ),
         const SizedBox(height: AppSpacing.sm),
-        if (!operation.hasDetail)
-          const LockedNotice(
-            message: 'Produtividade, ociosidade e análise por região aparecem '
-                'quando as jornadas do período estiverem completas.',
-          )
-        else
-          _OperationDetail(operation: operation, series: series, colorScheme: colorScheme),
+        _OperationDetail(
+          operation: operation,
+          series: series,
+          colorScheme: colorScheme,
+        ),
       ],
     );
   }

@@ -4,8 +4,12 @@ import 'package:driver_analytics_app/core/presentation/theme/app_sizes.dart';
 import 'package:driver_analytics_app/core/presentation/theme/app_spacing.dart';
 import 'package:driver_analytics_app/core/presentation/widgets/screen_scroll_view.dart';
 import 'package:driver_analytics_app/core/presentation/widgets/timer_progress_border.dart';
+import 'package:driver_analytics_app/features/earning/application/providers/earning_provider.dart';
+import 'package:driver_analytics_app/features/earning/domain/enums/ride_app.dart';
+import 'package:driver_analytics_app/features/earning/domain/enums/ride_status.dart';
 import 'package:driver_analytics_app/features/shift/application/providers/active_shift_provider.dart';
 import 'package:driver_analytics_app/features/shift/domain/enums/shift_status.dart';
+import 'package:driver_analytics_app/features/earning/presentation/state/ride_draft.dart';
 import 'package:driver_analytics_app/features/shift/presentation/dialogs/finish_shift_dialog.dart';
 import 'package:driver_analytics_app/features/shift/presentation/widgets/active_shift_stats.dart';
 import 'package:driver_analytics_app/features/shift/presentation/widgets/shift_pause_tile.dart';
@@ -110,13 +114,13 @@ class _ActiveShiftBody extends ConsumerWidget {
           for (var i = 0; i < shift.pauses.length; i++)
             ShiftPauseTile(index: i, pause: shift.pauses[i], now: now),
         const SizedBox(height: AppSpacing.lg),
-        OutlinedButton(
+        // Neutro, não vermelho: a cor de erro fica reservada pro que
+        // destrói dado (descartar, excluir). Concluir um turno é o fim
+        // normal do fluxo, não um acidente.
+        OutlinedButton.icon(
           onPressed: state.isSubmitting ? null : () => _finish(context, ref),
-          style: OutlinedButton.styleFrom(
-            foregroundColor: colorScheme.error,
-            side: BorderSide(color: colorScheme.error),
-          ),
-          child: const Text('Finalizar jornada'),
+          icon: const Icon(Icons.flag_outlined),
+          label: const Text('Finalizar jornada'),
         ),
       ],
     );
@@ -126,18 +130,49 @@ class _ActiveShiftBody extends ConsumerWidget {
     final shift = ref.read(activeShiftNotifierProvider).shift;
     if (shift == null) return;
 
-    final result = await FinishShiftDialog.show(context, initialKm: shift.initialKm);
+    final result = await FinishShiftDialog.show(
+      context,
+      shift: shift,
+      now: DateTime.now(),
+    );
 
     if (result == null || !context.mounted) return;
 
-    final (finalKm, earnings) = result;
     final notifier = ref.read(activeShiftNotifierProvider.notifier);
-    await notifier.finish(finalKm: finalKm, earnings: earnings);
+    await notifier.finish(finalKm: result.finalKm, earnings: result.earnings);
     if (!context.mounted) return;
 
     final updated = ref.read(activeShiftNotifierProvider).shift;
-    if (updated?.status == ShiftStatus.finished) {
-      context.push('/shifts/active/summary');
+    if (updated == null || updated.status != ShiftStatus.finished) return;
+
+    await _saveRides(ref, shiftId: updated.id, rides: result.rides);
+    if (!context.mounted) return;
+
+    context.push('/shifts/active/summary');
+  }
+
+  /// As corridas só são persistidas depois da jornada finalizar: é ela
+  /// que dá o id que vincula cada uma ao turno certo.
+  Future<void> _saveRides(
+    WidgetRef ref, {
+    required String shiftId,
+    required List<RideDraft> rides,
+  }) async {
+    if (rides.isEmpty) return;
+
+    final earningNotifier = ref.read(earningNotifierProvider.notifier);
+
+    for (final ride in rides) {
+      await earningNotifier.createRideEarning(
+        shiftId: shiftId,
+        occurredAt: ride.occurredAt,
+        app: RideApp.uber,
+        serviceType: ride.serviceType,
+        fare: ride.fare,
+        durationSeconds: ride.durationSeconds,
+        distanceKm: ride.distanceKm,
+        status: RideStatus.completed,
+      );
     }
   }
 }

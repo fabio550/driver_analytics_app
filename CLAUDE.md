@@ -31,6 +31,28 @@ only adds data, never clears existing rows.
 Flutter app, 100% local persistence (Drift/SQLite), Riverpod 3 for state,
 go_router for navigation. No backend, no sync, no auth today.
 
+### Navigation
+
+Four tabs behind a `StatefulShellRoute.indexedStack` (`core/routes/
+routes.dart`, shell chrome in `core/presentation/pages/app_shell_page.dart`):
+
+| tab | route | page |
+|---|---|---|
+| Início | `/` | `HomePage` — the day: start a shift, this week's summary, recent shifts |
+| Jornadas | `/shifts` | `ShiftsPage` |
+| Lançamentos | `/entries` | `EntriesPage` — Ganhos and Custos as two segments |
+| Análises | `/analytics` | `AnalyticsPage` |
+
+Each branch keeps its own stack. Everything else (forms, the active
+shift, the shift summary) is a **top-level** `GoRoute`, so it renders
+above the shell on the root navigator and hides the nav bar. Add a new
+form there, not inside a branch.
+
+`EntriesPage` lives in `core/presentation/` because it composes two
+features: it owns the segment/filter chrome and delegates to
+`EarningsListView` (earning) and `CostListView` (cost), which stay in
+their own features.
+
 ### Per-feature layering
 
 Each feature under `lib/features/<feature>/` (`shift`, `cost`, `earning`,
@@ -74,15 +96,38 @@ persists via a mapper → notifier reloads the list and updates `*State`.
   `default`) so adding a new subtype forces every call site to be
   updated by the compiler.
 - **Design tokens live in `core/presentation/theme/`** — `AppSpacing`
-  (xs/sm/md/lg/xl), `AppRadius`, `AppSizes`, `AppTextStyles` (only for
-  text styles that don't map to a `TextTheme` role), `AppColors` (single
-  seed color, `ColorScheme.fromSeed` — never hardcode a color in a
-  widget), `AppChartColors` (separate categorical palette for chart
-  series, not from the Material color scheme). Always use these instead
-  of literal `SizedBox(height: 16)` / `EdgeInsets.all(24)` / raw colors.
+  (xs/sm/md/lg/xl), `AppRadius` (sm/md/lg + `xl` for hero cards),
+  `AppSizes`, `AppTextStyles` (only for text styles that don't map to a
+  `TextTheme` role), `AppColors` (single seed color), `AppChartColors`
+  (separate categorical palette for chart series, not from the Material
+  color scheme). Always use these instead of literal
+  `SizedBox(height: 16)` / `EdgeInsets.all(24)` / raw colors.
+- **`ColorScheme.fromSeed` runs with `DynamicSchemeVariant.vibrant`**
+  (`AppTheme`). The default variant (`tonalSpot`) resolves the
+  `#2E5CFF` seed to `#4F5B92`, a desaturated slate: the brand colour
+  never reached the screen. `test/core/presentation/theme/app_theme_test.dart`
+  pins this so the variant can't silently go back.
+- **`AppSemanticColors`** (a `ThemeExtension`, read with
+  `AppSemanticColors.of(context)`) is the only place profit / loss /
+  pending colours live. Use `forAmount(value)` for any money figure
+  whose sign matters — before it, a negative net profit was painted in
+  `colorScheme.primary`, i.e. blue. Colour is never the only signal: the
+  sign and the label carry it too.
+- **Money and time digits use `.tabular`** (`AppTextStyles`, an extension
+  on `TextStyle`): `textTheme.titleMedium?.copyWith(...).tabular`.
+  Without it a column of values shifts as digits change.
+- **`EmptyStateView`, `ErrorStateView`, `SkeletonBox`/`SkeletonCard`**
+  (`core/presentation/widgets/`) are the three non-happy states. An
+  empty list always says what to do next and offers the action; an
+  error always offers a retry; loading uses a skeleton shaped like the
+  real content, never a centred spinner, so the layout doesn't jump.
+- **Forms**: `AmountField` for the one money figure the form is about
+  (bigger box, focused border), `FormSection` for the eyebrow-labelled
+  groups, `FormSwitchTile` for a switch that needs to explain *why* it
+  matters, `PrimaryButton` pinned via `Scaffold.bottomNavigationBar`.
 - **`ScreenScrollView`** (`core/presentation/widgets/`) is the standard
-  scrollable screen body (`SafeArea` + always-visible `Scrollbar` +
-  consistent padding). Use it instead of a bare `ListView`/
+  scrollable screen body (`SafeArea` + consistent padding, plus a fixed
+  `Scrollbar` on desktop only). Use it instead of a bare `ListView`/
   `SingleChildScrollView` for any full-screen content — it was renamed
   from `FormScrollView` because it's used well beyond forms (active
   shift screen, analytics tabs).
@@ -106,12 +151,14 @@ persists via a mapper → notifier reloads the list and updates `*State`.
   duplicated across `SummaryAnalyticsCalculator`,
   `OperationAnalyticsCalculator` and `RevenueAnalyticsCalculator` —
   change all three together if it changes.
-- **Operation completeness (checksum)**: a shift only unlocks the
-  detailed Operação tab (time/km split, pace, hourly earnings, district
-  ranking) if the sum of its linked earnings matches its declared
-  `shift.earnings` (or it has no linked earnings at all, so there's
-  nothing to reconcile). Otherwise the tab shows how much is missing in
-  currency instead of a possibly-wrong number.
+- **Detailing rides is optional.** The finish-shift dialog takes km,
+  gross earnings and, if the driver wants, the rides of the shift
+  (`RideDraft` → persisted with the new shift's id once it finishes, in
+  `ActiveShiftPage._saveRides`). A shift with no linked rides is normal,
+  not incomplete: nothing in the UI compares the sum of the rides
+  against `shift.earnings`, and no screen gates on that. The domain
+  still computes `OperationAnalytics.completeness` / `hasDetail` but no
+  screen reads them.
 - **Fuel efficiency (km/L)** is only computed between two full-tank
   fill-ups (`FuelCostEntity.isFullTank`) in the period — with fewer than
   two it's `null`, never estimated. `R$/km` and `R$/litro` are plain

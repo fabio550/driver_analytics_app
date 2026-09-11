@@ -1,6 +1,8 @@
 import 'package:driver_analytics_app/core/domain/enums/load_status.dart';
 import 'package:driver_analytics_app/core/presentation/theme/app_spacing.dart';
 import 'package:driver_analytics_app/core/presentation/theme/app_text_styles.dart';
+import 'package:driver_analytics_app/core/presentation/widgets/error_state_view.dart';
+import 'package:driver_analytics_app/core/presentation/widgets/skeleton_box.dart';
 import 'package:driver_analytics_app/features/analytics/application/providers/analytics_provider.dart';
 import 'package:driver_analytics_app/features/analytics/presentation/tabs/costs_tab.dart';
 import 'package:driver_analytics_app/features/analytics/presentation/tabs/operacao_tab.dart';
@@ -39,18 +41,13 @@ class _AnalyticsPageState extends ConsumerState<AnalyticsPage>
     // Cada fonte carrega só se ainda ninguém pediu — a página de análise
     // não é dona desses dados, só os consome.
     Future.microtask(() {
-      final shiftState = ref.read(shiftNotifierProvider);
-      if (shiftState.status == LoadStatus.initial) {
+      if (ref.read(shiftNotifierProvider).status == LoadStatus.initial) {
         ref.read(shiftNotifierProvider.notifier).loadShifts();
       }
-
-      final costState = ref.read(costNotifierProvider);
-      if (costState.status == LoadStatus.initial) {
+      if (ref.read(costNotifierProvider).status == LoadStatus.initial) {
         ref.read(costNotifierProvider.notifier).loadCosts();
       }
-
-      final earningState = ref.read(earningNotifierProvider);
-      if (earningState.status == LoadStatus.initial) {
+      if (ref.read(earningNotifierProvider).status == LoadStatus.initial) {
         ref.read(earningNotifierProvider.notifier).loadEarnings();
       }
     });
@@ -62,19 +59,21 @@ class _AnalyticsPageState extends ConsumerState<AnalyticsPage>
     super.dispose();
   }
 
+  Future<void> _reload() async {
+    await Future.wait([
+      ref.read(shiftNotifierProvider.notifier).loadShifts(),
+      ref.read(costNotifierProvider.notifier).loadCosts(),
+      ref.read(earningNotifierProvider.notifier).loadEarnings(),
+    ]);
+  }
+
   @override
   Widget build(BuildContext context) {
-    final shiftStatus = ref.watch(
-      shiftNotifierProvider.select((state) => state.status),
-    );
-    final costStatus = ref.watch(
-      costNotifierProvider.select((state) => state.status),
-    );
-    final earningStatus = ref.watch(
-      earningNotifierProvider.select((state) => state.status),
-    );
-
-    final statuses = [shiftStatus, costStatus, earningStatus];
+    final statuses = [
+      ref.watch(shiftNotifierProvider.select((state) => state.status)),
+      ref.watch(costNotifierProvider.select((state) => state.status)),
+      ref.watch(earningNotifierProvider.select((state) => state.status)),
+    ];
     final isLoading = statuses.any(
       (status) => status == LoadStatus.initial || status == LoadStatus.loading,
     );
@@ -86,44 +85,91 @@ class _AnalyticsPageState extends ConsumerState<AnalyticsPage>
     return Scaffold(
       appBar: AppBar(
         title: const Text('Análises'),
-        bottom: TabBar(
-          controller: _tabController,
-          tabAlignment: TabAlignment.fill,
-          labelStyle: AppTextStyles.tabLabel,
-          unselectedLabelStyle: AppTextStyles.caption,
-          tabs: _tabs,
+        centerTitle: false,
+        titleTextStyle: Theme.of(context)
+            .textTheme
+            .titleLarge
+            ?.copyWith(fontWeight: FontWeight.bold),
+        actions: [
+          PeriodPresetButton(period: period, notifier: periodNotifier),
+          const SizedBox(width: AppSpacing.sm),
+        ],
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(90),
+          child: Column(
+            children: [
+              PeriodSelector(period: period, notifier: periodNotifier),
+              TabBar(
+                controller: _tabController,
+                tabAlignment: TabAlignment.fill,
+                labelStyle: AppTextStyles.tabLabel,
+                unselectedLabelStyle: AppTextStyles.caption,
+                tabs: _tabs,
+              ),
+            ],
+          ),
         ),
       ),
-      body: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : hasError
-              ? const Center(
-                  child: Text('Não foi possível carregar as análises.'),
-                )
-              : Column(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(
-                        AppSpacing.md,
-                        AppSpacing.sm,
-                        AppSpacing.md,
-                        0,
-                      ),
-                      child: PeriodSelector(period: period, notifier: periodNotifier),
-                    ),
-                    Expanded(
-                      child: TabBarView(
-                        controller: _tabController,
-                        children: const [
-                          ResumoTab(),
-                          OperacaoTab(),
-                          ReceitaTab(),
-                          CostsTab(),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
+      body: switch ((isLoading, hasError)) {
+        (true, _) => const _AnalyticsSkeleton(),
+        (_, true) => ErrorStateView(
+            message: 'Seus dados continuam salvos no aparelho. '
+                'Tente abrir de novo.',
+            onRetry: _reload,
+          ),
+        _ => TabBarView(
+            controller: _tabController,
+            children: const [
+              ResumoTab(),
+              OperacaoTab(),
+              ReceitaTab(),
+              CostsTab(),
+            ],
+          ),
+      },
+    );
+  }
+}
+
+class _AnalyticsSkeleton extends StatelessWidget {
+  const _AnalyticsSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      children: [
+        const SkeletonCard(
+          children: [
+            SkeletonBox(width: 96, height: 13),
+            SizedBox(height: AppSpacing.sm),
+            SkeletonBox(width: 220, height: 40),
+            SizedBox(height: AppSpacing.sm),
+            SkeletonBox(width: 160, height: 12),
+            SizedBox(height: AppSpacing.md),
+            SkeletonBox(height: 10),
+          ],
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        Row(
+          children: [
+            for (var i = 0; i < 3; i++) ...[
+              const Expanded(child: SkeletonBox(height: 62, radius: 12)),
+              if (i < 2) const SizedBox(width: AppSpacing.sm),
+            ],
+          ],
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        const SkeletonCard(
+          children: [
+            SkeletonBox(width: 104, height: 12),
+            SizedBox(height: AppSpacing.md),
+            SkeletonBox(height: 150),
+            SizedBox(height: AppSpacing.md),
+            SkeletonBox(height: 12),
+          ],
+        ),
+      ],
     );
   }
 }

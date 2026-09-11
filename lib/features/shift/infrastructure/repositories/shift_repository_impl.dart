@@ -1,4 +1,3 @@
-import 'package:drift/drift.dart';
 
 import 'package:driver_analytics_app/core/infrastructure/database/app_database.dart';
 import 'package:driver_analytics_app/features/shift/domain/entities/shift_entity.dart';

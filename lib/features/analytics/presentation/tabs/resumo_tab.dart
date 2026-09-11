@@ -1,12 +1,15 @@
 import 'package:driver_analytics_app/core/extensions/num_extensions.dart';
+import 'package:driver_analytics_app/core/presentation/theme/app_radius.dart';
 import 'package:driver_analytics_app/core/presentation/theme/app_spacing.dart';
 import 'package:driver_analytics_app/core/presentation/theme/app_text_styles.dart';
+import 'package:driver_analytics_app/core/presentation/widgets/empty_state_view.dart';
 import 'package:driver_analytics_app/core/presentation/widgets/screen_scroll_view.dart';
 import 'package:driver_analytics_app/features/analytics/application/providers/analytics_provider.dart';
 import 'package:driver_analytics_app/features/analytics/domain/entities/daily_profit_entry.dart';
 import 'package:driver_analytics_app/features/analytics/presentation/widgets/daily_profit_chart.dart';
 import 'package:driver_analytics_app/features/analytics/presentation/widgets/hero_profit_card.dart';
 import 'package:driver_analytics_app/features/analytics/presentation/widgets/kpi_card.dart';
+import 'package:driver_analytics_app/core/presentation/theme/app_chart_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -21,33 +24,24 @@ class ResumoTab extends ConsumerWidget {
     final colorScheme = Theme.of(context).colorScheme;
 
     if (summary.isEmpty) {
-      return const Center(child: Text('Sem jornadas confirmadas no período.'));
+      return const EmptyStateView(
+        icon: Icons.insights_outlined,
+        title: 'Nada no período',
+        message: 'Finalize uma jornada ou escolha outro período pra ver o '
+            'resumo aqui.',
+      );
     }
 
     return ScreenScrollView(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        HeroProfitCard(
-          netProfit: summary.netProfit,
-          subtitle: '${summary.shiftCount} jornadas',
-        ),
-        const SizedBox(height: AppSpacing.sm),
-        Row(
-          children: [
-            Expanded(child: KpiCard(label: 'Ganho bruto', value: summary.revenue.formattedCurrency)),
-            const SizedBox(width: AppSpacing.sm),
-            Expanded(child: KpiCard(label: 'Custos', value: summary.cost.formattedCurrency)),
-            const SizedBox(width: AppSpacing.sm),
-            Expanded(
-              child: KpiCard(label: 'Margem', value: summary.margin.formattedPercentOrDash),
-            ),
-          ],
-        ),
+        HeroProfitCard(summary: summary),
         const SizedBox(height: AppSpacing.sm),
         Row(
           children: [
             Expanded(
               child: KpiCard(
-                label: 'R\$/hora líquido',
+                label: 'R\$/h líquido',
                 value: summary.netEarningsPerHour.formattedCurrencyOrDash,
               ),
             ),
@@ -58,29 +52,101 @@ class ResumoTab extends ConsumerWidget {
                 value: summary.netEarningsPerKm.formattedCurrencyOrDash,
               ),
             ),
+            const SizedBox(width: AppSpacing.sm),
+            Expanded(
+              child: KpiCard(
+                label: 'Margem',
+                value: summary.margin.formattedPercentOrDash,
+              ),
+            ),
           ],
         ),
         const SizedBox(height: AppSpacing.sm),
         Card(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppRadius.xl),
+            side: BorderSide(color: colorScheme.outlineVariant),
+          ),
           child: Padding(
             padding: const EdgeInsets.all(AppSpacing.md),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Text(
-                  'LUCRO POR DIA',
-                  style: AppTextStyles.eyebrow.copyWith(color: colorScheme.onSurfaceVariant),
+                Wrap(
+                  alignment: WrapAlignment.spaceBetween,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  spacing: AppSpacing.md,
+                  runSpacing: AppSpacing.xs,
+                  children: [
+                    Text(
+                      'LUCRO POR DIA',
+                      style: AppTextStyles.eyebrow.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                    const _ChartLegend(),
+                  ],
                 ),
-                const SizedBox(height: AppSpacing.sm),
+                const SizedBox(height: AppSpacing.fieldPadding),
                 DailyProfitChart(entries: summary.dailyProfits),
                 if (summary.dailyProfits.isNotEmpty) ...[
-                  const SizedBox(height: AppSpacing.sm),
+                  const SizedBox(height: AppSpacing.fieldPadding),
                   Divider(color: colorScheme.outlineVariant, height: 1),
-                  const SizedBox(height: AppSpacing.xs),
+                  const SizedBox(height: AppSpacing.fieldPadding),
                   _DailyProfitFootnote(dailyProfits: summary.dailyProfits),
                 ],
               ],
             ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Duas cores, dois sentidos — a posição em relação à linha do zero já
+/// separa lucro de prejuízo, mas a legenda é o canal de identidade que
+/// não depende de enxergar cor.
+class _ChartLegend extends StatelessWidget {
+  const _ChartLegend();
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: const [
+        _LegendItem(color: AppChartColors.profit, label: 'lucro'),
+        SizedBox(width: 10),
+        _LegendItem(color: AppChartColors.loss, label: 'prejuízo'),
+      ],
+    );
+  }
+}
+
+class _LegendItem extends StatelessWidget {
+  final Color color;
+  final String label;
+
+  const _LegendItem({required this.color, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 8,
+          height: 8,
+          decoration: BoxDecoration(
+            color: color,
+            borderRadius: BorderRadius.circular(2),
+          ),
+        ),
+        const SizedBox(width: 5),
+        Text(
+          label,
+          style: AppTextStyles.caption.copyWith(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
         ),
       ],
@@ -95,25 +161,50 @@ class _DailyProfitFootnote extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
     final best = dailyProfits.reduce((a, b) => a.netProfit > b.netProfit ? a : b);
     final average =
         dailyProfits.fold<double>(0, (t, e) => t + e.netProfit) / dailyProfits.length;
 
+    final bestDay = '${best.date.day.toString().padLeft(2, '0')}/'
+        '${best.date.month.toString().padLeft(2, '0')}';
+
+    return Wrap(
+      alignment: WrapAlignment.spaceBetween,
+      spacing: AppSpacing.md,
+      runSpacing: AppSpacing.xs,
+      children: [
+        _Footnote(label: 'Melhor $bestDay', value: best.netProfit.formattedCurrency),
+        _Footnote(label: 'Média', value: average.formattedCurrency),
+      ],
+    );
+  }
+}
+
+class _Footnote extends StatelessWidget {
+  final String label;
+  final String value;
+
+  const _Footnote({required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      mainAxisSize: MainAxisSize.min,
       children: [
         Text(
-          'Melhor: ${best.netProfit.formattedCurrency}',
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: colorScheme.onSurfaceVariant,
-              ),
+          '$label ',
+          style: textTheme.bodySmall
+              ?.copyWith(color: colorScheme.onSurfaceVariant)
+              .tabular,
         ),
         Text(
-          'Média ${average.formattedCurrency}',
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: colorScheme.onSurfaceVariant,
-              ),
+          value,
+          style: textTheme.bodySmall
+              ?.copyWith(color: colorScheme.onSurface, fontWeight: FontWeight.w700)
+              .tabular,
         ),
       ],
     );

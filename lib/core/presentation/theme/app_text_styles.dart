@@ -35,3 +35,16 @@ class AppTextStyles {
   /// Label do PrimaryButton.
   static const buttonLabel = TextStyle(fontSize: 16, fontWeight: FontWeight.w600);
 }
+/// Dígitos de largura fixa. Antes disso só o cronômetro da jornada usava
+/// `FontFeature.tabularFigures()`, e toda coluna de dinheiro dançava
+/// quando o dígito mudava — `R$ 1.084,60` acima de `R$ 111,11` saía
+/// desalinhado à direita mesmo com o mesmo estilo.
+extension TabularFigures on TextStyle {
+  TextStyle get tabular {
+    return copyWith(fontFeatures: const [FontFeature.tabularFigures()]);
+  }
+}
+
+extension TabularFiguresOrNull on TextStyle? {
+  TextStyle? get tabular => this?.tabular;
+}

@@ -109,7 +109,7 @@ class _HourBar extends StatelessWidget {
         ? emptyColor
         : isPeak
             ? color
-            : color.withOpacity(0.45);
+            : color.withValues(alpha: 0.45);
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 2),

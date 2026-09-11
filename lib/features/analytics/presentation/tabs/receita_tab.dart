@@ -1,6 +1,7 @@
 import 'package:driver_analytics_app/core/extensions/num_extensions.dart';
 import 'package:driver_analytics_app/core/presentation/theme/app_chart_colors.dart';
 import 'package:driver_analytics_app/core/presentation/theme/app_spacing.dart';
+import 'package:driver_analytics_app/core/presentation/widgets/empty_state_view.dart';
 import 'package:driver_analytics_app/core/presentation/widgets/screen_scroll_view.dart';
 import 'package:driver_analytics_app/features/analytics/application/providers/analytics_provider.dart';
 import 'package:driver_analytics_app/features/analytics/presentation/extensions/revenue_source_label_extension.dart';
@@ -23,7 +24,12 @@ class ReceitaTab extends ConsumerWidget {
     final series = AppChartColors.series(Theme.of(context).brightness);
 
     if (revenue.isEmpty) {
-      return const Center(child: Text('Sem receita lançada no período.'));
+      return const EmptyStateView(
+        icon: Icons.payments_outlined,
+        title: 'Nada no período',
+        message: 'Finalize uma jornada ou escolha outro período pra ver a '
+            'receita aqui.',
+      );
     }
 
     return ScreenScrollView(

@@ -18,3 +18,13 @@ extension AnalyticsPeriodLabel on AnalyticsPeriod {
     return '${start.formattedDDMMYYYY} - ${lastDay.formattedDDMMYYYY}';
   }
 }
+
+extension AnalyticsPeriodPresetLabel on AnalyticsPeriodPreset {
+  String get label {
+    return switch (this) {
+      AnalyticsPeriodPreset.week => 'Semana',
+      AnalyticsPeriodPreset.month => 'Mês',
+      AnalyticsPeriodPreset.custom => 'Personalizado',
+    };
+  }
+}
