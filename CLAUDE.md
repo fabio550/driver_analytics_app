@@ -198,6 +198,13 @@ persists via a mapper → notifier reloads the list and updates `*State`.
 - **"Lucro por dia" (Resumo)** only plots days with a `submitted` shift
   starting that day — a cost or loose earning logged on a day with no
   shift still counts in the period total but doesn't get its own bar.
+  Every bar carries its own value, so the footnote never repeats a
+  number the chart already shows. It carries two daily averages instead:
+  the period's, and the enclosing scope's
+  (`AnalyticsPeriod.enclosing` — a week compares against its month, a
+  month against its year, a hand-picked range has no comparison and the
+  second average is simply absent). A week straddling a month boundary
+  compares against the month it started in.
 
 ## Planned backend (not implemented)
 

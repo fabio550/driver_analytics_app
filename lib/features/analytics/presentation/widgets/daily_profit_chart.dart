@@ -1,3 +1,4 @@
+import 'package:driver_analytics_app/core/extensions/num_extensions.dart';
 import 'package:driver_analytics_app/core/presentation/theme/app_chart_colors.dart';
 import 'package:driver_analytics_app/core/presentation/theme/app_semantic_colors.dart';
 import 'package:driver_analytics_app/core/presentation/theme/app_spacing.dart';
@@ -12,6 +13,10 @@ import 'package:flutter/material.dart';
 /// dividem a altura na proporção do maior lucro e do maior prejuízo, em
 /// vez de cada lado ter metade fixa. Com meia altura pra cada lado, um
 /// prejuízo de R$ 10 desenhava do mesmo tamanho que um lucro de R$ 300.
+///
+/// Toda barra leva o próprio valor: são poucos dias por período, e a
+/// altura relativa responde "qual foi o melhor" enquanto o rótulo
+/// responde "quanto foi", que é o que o motorista veio ver.
 class DailyProfitChart extends StatelessWidget {
   final List<DailyProfitEntry> entries;
 
@@ -19,7 +24,7 @@ class DailyProfitChart extends StatelessWidget {
 
   static const _plotHeight = 150.0;
   static const _barWidth = 24.0;
-  static const _slotGap = 8.0;
+  static const _slotGap = 10.0;
   static const _labelHeight = 16.0;
 
   @override
@@ -50,8 +55,6 @@ class DailyProfitChart extends StatelessWidget {
     final lossArea = _plotHeight - profitArea;
     final scale = span > 0 ? _plotHeight / span : 0.0;
 
-    final best = entries.reduce((a, b) => a.netProfit > b.netProfit ? a : b);
-
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       reverse: true,
@@ -64,7 +67,10 @@ class DailyProfitChart extends StatelessWidget {
               scale: scale,
               profitArea: profitArea,
               lossArea: lossArea,
-              isBest: identical(entry, best) && entry.netProfit > 0,
+              // Período sem nenhum dia no vermelho não reserva a faixa
+              // de rótulo de baixo: seria uma tira vazia entre a linha do
+              // zero e os dias.
+              hasLoss: maxLoss > 0,
             ),
         ],
       ),
@@ -77,14 +83,14 @@ class _DayBar extends StatelessWidget {
   final double scale;
   final double profitArea;
   final double lossArea;
-  final bool isBest;
+  final bool hasLoss;
 
   const _DayBar({
     required this.entry,
     required this.scale,
     required this.profitArea,
     required this.lossArea,
-    required this.isBest,
+    required this.hasLoss,
   });
 
   @override
@@ -100,6 +106,14 @@ class _DayBar extends StatelessWidget {
     final day = '${entry.date.day.toString().padLeft(2, '0')}/'
         '${entry.date.month.toString().padLeft(2, '0')}';
 
+    // As duas faixas de rótulo existem em toda coluna, mesmo vazias: é o
+    // que mantém as linhas do zero e dos dias alinhadas entre colunas de
+    // sinais diferentes.
+    final label = _ValueLabel(
+      value: entry.netProfit,
+      color: semantic.forAmount(entry.netProfit),
+    );
+
     return SizedBox(
       // A linha do zero é um traço de largura total dentro de cada
       // coluna: colunas encostadas fazem uma linha contínua, sem precisar
@@ -110,16 +124,7 @@ class _DayBar extends StatelessWidget {
         children: [
           SizedBox(
             height: DailyProfitChart._labelHeight,
-            child: isBest
-                ? FittedBox(
-                    child: Text(
-                      _short(entry.netProfit),
-                      style: AppTextStyles.badgeStrong
-                          .copyWith(color: semantic.profit)
-                          .tabular,
-                    ),
-                  )
-                : null,
+            child: isPositive ? label : null,
           ),
           SizedBox(
             height: profitArea,
@@ -143,16 +148,17 @@ class _DayBar extends StatelessWidget {
               child: _bar(isPositive ? 0 : barHeight, AppChartColors.loss, false),
             ),
           ),
+          SizedBox(
+            height: hasLoss ? DailyProfitChart._labelHeight : 0,
+            child: isPositive ? null : label,
+          ),
           const SizedBox(height: AppSpacing.xs),
           Text(
             day,
             style: Theme.of(context)
                 .textTheme
                 .labelSmall
-                ?.copyWith(
-                  color: isBest ? colorScheme.onSurface : colorScheme.onSurfaceVariant,
-                  fontWeight: isBest ? FontWeight.w700 : null,
-                )
+                ?.copyWith(color: colorScheme.onSurfaceVariant)
                 .tabular,
           ),
         ],
@@ -177,6 +183,25 @@ class _DayBar extends StatelessWidget {
       ),
     );
   }
+}
 
-  String _short(double value) => value.toStringAsFixed(2).replaceAll('.', ',');
+class _ValueLabel extends StatelessWidget {
+  final double value;
+  final Color color;
+
+  const _ValueLabel({required this.value, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return FittedBox(
+      // scaleDown, não contain: contain aumentaria os rótulos curtos pra
+      // preencher a faixa, e cada barra ficaria com um tamanho de fonte
+      // diferente do vizinho.
+      fit: BoxFit.scaleDown,
+      child: Text(
+        value.formattedAmount,
+        style: AppTextStyles.badgeStrong.copyWith(color: color).tabular,
+      ),
+    );
+  }
 }

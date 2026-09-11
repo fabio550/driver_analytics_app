@@ -6,6 +6,7 @@ import 'package:driver_analytics_app/core/presentation/widgets/empty_state_view.
 import 'package:driver_analytics_app/core/presentation/widgets/screen_scroll_view.dart';
 import 'package:driver_analytics_app/features/analytics/application/providers/analytics_provider.dart';
 import 'package:driver_analytics_app/features/analytics/domain/entities/daily_profit_entry.dart';
+import 'package:driver_analytics_app/features/analytics/presentation/extensions/analytics_period_label_extension.dart';
 import 'package:driver_analytics_app/features/analytics/presentation/widgets/daily_profit_chart.dart';
 import 'package:driver_analytics_app/features/analytics/presentation/widgets/hero_profit_card.dart';
 import 'package:driver_analytics_app/features/analytics/presentation/widgets/kpi_card.dart';
@@ -154,27 +155,38 @@ class _LegendItem extends StatelessWidget {
   }
 }
 
-class _DailyProfitFootnote extends StatelessWidget {
+/// Duas médias diárias: a do período e a do recorte que o contém.
+///
+/// O melhor dia saiu daqui quando toda barra passou a mostrar o próprio
+/// valor: o rodapé repetia um número que já estava no gráfico, e em
+/// negrito. A média do ano (ou do mês) ocupa o lugar porque é a única
+/// coisa que o gráfico não mostra — a régua que diz se o período rendeu
+/// acima ou abaixo do normal.
+class _DailyProfitFootnote extends ConsumerWidget {
   final List<DailyProfitEntry> dailyProfits;
 
   const _DailyProfitFootnote({required this.dailyProfits});
 
   @override
-  Widget build(BuildContext context) {
-    final best = dailyProfits.reduce((a, b) => a.netProfit > b.netProfit ? a : b);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final period = ref.watch(analyticsPeriodNotifierProvider);
+    final enclosingAverage = ref.watch(enclosingScopeDailyAverageProvider);
+    final enclosingLabel = period.enclosingAverageLabel;
+
     final average =
         dailyProfits.fold<double>(0, (t, e) => t + e.netProfit) / dailyProfits.length;
-
-    final bestDay = '${best.date.day.toString().padLeft(2, '0')}/'
-        '${best.date.month.toString().padLeft(2, '0')}';
 
     return Wrap(
       alignment: WrapAlignment.spaceBetween,
       spacing: AppSpacing.md,
       runSpacing: AppSpacing.xs,
       children: [
-        _Footnote(label: 'Melhor $bestDay', value: best.netProfit.formattedCurrency),
-        _Footnote(label: 'Média', value: average.formattedCurrency),
+        _Footnote(label: period.averageLabel, value: average.formattedCurrency),
+        if (enclosingAverage != null && enclosingLabel != null)
+          _Footnote(
+            label: enclosingLabel,
+            value: enclosingAverage.formattedCurrency,
+          ),
       ],
     );
   }

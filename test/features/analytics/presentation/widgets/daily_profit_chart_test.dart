@@ -43,7 +43,7 @@ void main() {
     expect(find.text('05/09'), findsOneWidget);
   });
 
-  testWidgets('labels only the best day, never every column', (tester) async {
+  testWidgets('toda barra mostra o próprio valor', (tester) async {
     await tester.pumpWidget(
       _wrap(
         DailyProfitChart(
@@ -57,8 +57,49 @@ void main() {
     );
 
     expect(find.text('350,00'), findsOneWidget);
-    expect(find.text('150,00'), findsNothing);
-    expect(find.text('50,00'), findsNothing);
+    expect(find.text('150,00'), findsOneWidget);
+    expect(find.text('50,00'), findsOneWidget);
+  });
+
+  testWidgets('dia no prejuízo também leva rótulo, com sinal', (tester) async {
+    await tester.pumpWidget(
+      _wrap(
+        DailyProfitChart(
+          entries: [
+            _entry(4, revenue: 200, cost: 50),
+            _entry(5, revenue: 0, cost: 100),
+          ],
+        ),
+      ),
+    );
+
+    expect(find.text('150,00'), findsOneWidget);
+    expect(find.text('-100,00'), findsOneWidget);
+  });
+
+  testWidgets('rótulos só encolhem, nunca aumentam', (tester) async {
+    // Com BoxFit.contain um rótulo curto esticaria pra preencher a faixa
+    // e cada barra sairia com um tamanho de fonte diferente do vizinho.
+    await tester.pumpWidget(
+      _wrap(
+        DailyProfitChart(
+          entries: [
+            _entry(4, revenue: 60, cost: 50),
+            _entry(5, revenue: 10050, cost: 50),
+          ],
+        ),
+      ),
+    );
+
+    final fitted = tester.widgetList<FittedBox>(
+      find.descendant(
+        of: find.byType(DailyProfitChart),
+        matching: find.byType(FittedBox),
+      ),
+    );
+
+    expect(fitted, isNotEmpty);
+    expect(fitted.every((box) => box.fit == BoxFit.scaleDown), isTrue);
   });
 
   testWidgets('a linha do zero atravessa a coluna inteira', (tester) async {

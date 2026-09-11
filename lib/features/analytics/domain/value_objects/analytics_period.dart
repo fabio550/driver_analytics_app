@@ -48,6 +48,27 @@ class AnalyticsPeriod {
     return !dateTime.isBefore(start) && dateTime.isBefore(end);
   }
 
+  /// Recorte mais largo que contém este, pra comparação: a semana se
+  /// compara com o mês, o mês com o ano. Sozinha, a média de um período
+  /// não diz se ele foi bom ou ruim — precisa de uma régua.
+  ///
+  /// Uma semana que cruza a virada do mês se compara com o mês em que
+  /// ela começou. Um intervalo escolhido à mão não tem um "mais largo"
+  /// óbvio, então não tem comparação.
+  AnalyticsPeriod? get enclosing {
+    switch (preset) {
+      case AnalyticsPeriodPreset.week:
+        return AnalyticsPeriod.month(start);
+      case AnalyticsPeriodPreset.month:
+        return AnalyticsPeriod.custom(
+          start: DateTime(start.year),
+          end: DateTime(start.year, 12, 31),
+        );
+      case AnalyticsPeriodPreset.custom:
+        return null;
+    }
+  }
+
   /// Período anterior de mesmo tamanho — semana/mês andam pro seu vizinho
   /// natural, custom desliza pela própria duração.
   AnalyticsPeriod get previous => _shifted(-1);

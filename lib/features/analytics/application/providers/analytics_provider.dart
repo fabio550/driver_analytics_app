@@ -142,3 +142,38 @@ final lastSubmittedShiftProvider = Provider<ShiftEntity?>((ref) {
 
   return shifts.isEmpty ? null : shifts.first;
 });
+
+/// Média diária do recorte que contém o período atual: o mês quando se
+/// olha uma semana, o ano quando se olha um mês.
+///
+/// É a régua do rodapé do gráfico. "Média de R$ 147,43 por dia" sozinho
+/// não diz nada; ao lado da média do ano, diz se o período foi acima ou
+/// abaixo do normal. Nulo quando não há recorte mais largo (intervalo
+/// personalizado) ou quando ele não tem nenhum dia com jornada.
+final enclosingScopeDailyAverageProvider = Provider<double?>((ref) {
+  final enclosing = ref.watch(analyticsPeriodNotifierProvider).enclosing;
+  if (enclosing == null) return null;
+
+  final shifts = ref.watch(shiftNotifierProvider).shifts;
+  final costs = ref.watch(costNotifierProvider).costs;
+  final earnings = ref.watch(earningNotifierProvider).earnings;
+
+  final allocation = ref.watch(costAllocationCalculatorProvider).calculate(
+        costs: costs,
+        shifts: shifts,
+        period: enclosing,
+      );
+
+  final days = ref.watch(summaryAnalyticsCalculatorProvider).calculate(
+        shifts: shifts,
+        costs: costs,
+        earnings: earnings,
+        period: enclosing,
+        now: DateTime.now(),
+        costAllocation: allocation,
+      ).dailyProfits;
+
+  if (days.isEmpty) return null;
+
+  return days.fold<double>(0, (total, day) => total + day.netProfit) / days.length;
+});

@@ -15,6 +15,12 @@ extension DoubleExtensions on double {
     return 'R\$ ${_decimalFormat.format(this)}';
   }
 
+  /// Só o número, sem o "R$" — pros rótulos de barra do gráfico, onde o
+  /// símbolo repetido em toda barra vira ruído.
+  String get formattedAmount {
+    return _decimalFormat.format(this);
+  }
+
   String get formattedPercent {
     return '${(this * 100).toStringAsFixed(0)}%';
   }

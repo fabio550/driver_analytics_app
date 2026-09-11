@@ -28,3 +28,24 @@ extension AnalyticsPeriodPresetLabel on AnalyticsPeriodPreset {
     };
   }
 }
+
+extension AnalyticsPeriodAverageLabel on AnalyticsPeriod {
+  /// Nome da média do próprio período no rodapé do gráfico.
+  String get averageLabel {
+    return switch (preset) {
+      AnalyticsPeriodPreset.week => 'Média da semana',
+      AnalyticsPeriodPreset.month => 'Média do mês',
+      AnalyticsPeriodPreset.custom => 'Média do período',
+    };
+  }
+
+  /// Nome da média do recorte que contém este ([AnalyticsPeriod.enclosing]).
+  /// Nulo quando não há comparação possível.
+  String? get enclosingAverageLabel {
+    return switch (preset) {
+      AnalyticsPeriodPreset.week => 'Média do mês',
+      AnalyticsPeriodPreset.month => 'Média do ano',
+      AnalyticsPeriodPreset.custom => null,
+    };
+  }
+}
