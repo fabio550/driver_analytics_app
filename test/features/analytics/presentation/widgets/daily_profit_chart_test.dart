@@ -61,6 +61,30 @@ void main() {
     expect(find.text('50,00'), findsNothing);
   });
 
+  testWidgets('a linha do zero atravessa a coluna inteira', (tester) async {
+    // A Column do dia centraliza os filhos: uma caixa colorida sem filho
+    // e sem largura assume 0px e a linha some sem erro no console.
+    await tester.pumpWidget(
+      _wrap(
+        DailyProfitChart(
+          entries: [_entry(4, revenue: 200, cost: 50)],
+        ),
+      ),
+    );
+
+    final baseline = tester.getSize(
+      find
+          .descendant(
+            of: find.byType(DailyProfitChart),
+            matching: find.byType(ColoredBox),
+          )
+          .first,
+    );
+
+    expect(baseline.height, 1);
+    expect(baseline.width, greaterThan(20));
+  });
+
   testWidgets('a losing day and a winning day share one scale', (tester) async {
     // Prejuízo de 100 e lucro de 100: as duas áreas ficam iguais, então
     // a barra negativa não pode ser desenhada maior que a positiva só

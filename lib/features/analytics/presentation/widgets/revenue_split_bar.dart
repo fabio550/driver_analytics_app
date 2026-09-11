@@ -30,13 +30,29 @@ class RevenueSplitBar extends StatelessWidget {
     final profitFlex = base > 0 && profit > 0 ? (profit / base * 1000).round() : 0;
     final costFlex = base > 0 ? (cost.clamp(0, base) / base * 1000).round() : 0;
 
+    final isEmpty = profitFlex == 0 && costFlex == 0;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         SizedBox(
           height: _barHeight,
           child: Row(
+            // stretch, não o center padrão: os segmentos são DecoratedBox
+            // sem filho, então com altura frouxa eles assumem 0px e a
+            // barra some sem erro nenhum no console.
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              if (isEmpty)
+                // Período sem nada ainda tem barra: um trilho vazio diz
+                // "zero", enquanto a ausência dela parece defeito.
+                Expanded(
+                  child: _segment(
+                    Theme.of(context).colorScheme.outlineVariant,
+                    leading: true,
+                    trailing: true,
+                  ),
+                ),
               if (profitFlex > 0)
                 Expanded(
                   flex: profitFlex,

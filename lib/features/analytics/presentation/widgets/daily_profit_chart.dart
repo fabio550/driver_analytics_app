@@ -128,7 +128,14 @@ class _DayBar extends StatelessWidget {
               child: _bar(isPositive ? barHeight : 0, AppChartColors.profit, true),
             ),
           ),
-          Container(height: 1, color: colorScheme.outlineVariant),
+          // width: double.infinity porque a Column centraliza: uma caixa
+          // colorida sem filho e sem largura assume 0px, e a linha do
+          // zero sumia sem nenhum erro.
+          SizedBox(
+            width: double.infinity,
+            height: 1,
+            child: ColoredBox(color: colorScheme.outlineVariant),
+          ),
           SizedBox(
             height: lossArea,
             child: Align(
