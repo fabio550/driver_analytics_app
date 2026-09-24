@@ -2367,6 +2367,17 @@ class $RideEarningsTable extends RideEarnings
         type: DriftSqlType.string,
         requiredDuringInsert: false,
       );
+  static const VerificationMeta _dedupHashMeta = const VerificationMeta(
+    'dedupHash',
+  );
+  @override
+  late final GeneratedColumn<String> dedupHash = GeneratedColumn<String>(
+    'dedup_hash',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     earningId,
@@ -2382,6 +2393,7 @@ class $RideEarningsTable extends RideEarnings
     destinationCep,
     pickupDistrictId,
     destinationDistrictId,
+    dedupHash,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -2502,11 +2514,21 @@ class $RideEarningsTable extends RideEarnings
         ),
       );
     }
+    if (data.containsKey('dedup_hash')) {
+      context.handle(
+        _dedupHashMeta,
+        dedupHash.isAcceptableOrUnknown(data['dedup_hash']!, _dedupHashMeta),
+      );
+    }
     return context;
   }
 
   @override
   Set<GeneratedColumn> get $primaryKey => {earningId};
+  @override
+  List<Set<GeneratedColumn>> get uniqueKeys => [
+    {dedupHash},
+  ];
   @override
   RideEarning map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
@@ -2563,6 +2585,10 @@ class $RideEarningsTable extends RideEarnings
         DriftSqlType.string,
         data['${effectivePrefix}destination_district_id'],
       ),
+      dedupHash: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}dedup_hash'],
+      ),
     );
   }
 
@@ -2586,6 +2612,7 @@ class RideEarning extends DataClass implements Insertable<RideEarning> {
   final String? destinationCep;
   final String? pickupDistrictId;
   final String? destinationDistrictId;
+  final String? dedupHash;
   const RideEarning({
     required this.earningId,
     required this.app,
@@ -2600,6 +2627,7 @@ class RideEarning extends DataClass implements Insertable<RideEarning> {
     this.destinationCep,
     this.pickupDistrictId,
     this.destinationDistrictId,
+    this.dedupHash,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -2624,6 +2652,9 @@ class RideEarning extends DataClass implements Insertable<RideEarning> {
     }
     if (!nullToAbsent || destinationDistrictId != null) {
       map['destination_district_id'] = Variable<String>(destinationDistrictId);
+    }
+    if (!nullToAbsent || dedupHash != null) {
+      map['dedup_hash'] = Variable<String>(dedupHash);
     }
     return map;
   }
@@ -2651,6 +2682,9 @@ class RideEarning extends DataClass implements Insertable<RideEarning> {
       destinationDistrictId: destinationDistrictId == null && nullToAbsent
           ? const Value.absent()
           : Value(destinationDistrictId),
+      dedupHash: dedupHash == null && nullToAbsent
+          ? const Value.absent()
+          : Value(dedupHash),
     );
   }
 
@@ -2675,6 +2709,7 @@ class RideEarning extends DataClass implements Insertable<RideEarning> {
       destinationDistrictId: serializer.fromJson<String?>(
         json['destinationDistrictId'],
       ),
+      dedupHash: serializer.fromJson<String?>(json['dedupHash']),
     );
   }
   @override
@@ -2696,6 +2731,7 @@ class RideEarning extends DataClass implements Insertable<RideEarning> {
       'destinationDistrictId': serializer.toJson<String?>(
         destinationDistrictId,
       ),
+      'dedupHash': serializer.toJson<String?>(dedupHash),
     };
   }
 
@@ -2713,6 +2749,7 @@ class RideEarning extends DataClass implements Insertable<RideEarning> {
     Value<String?> destinationCep = const Value.absent(),
     Value<String?> pickupDistrictId = const Value.absent(),
     Value<String?> destinationDistrictId = const Value.absent(),
+    Value<String?> dedupHash = const Value.absent(),
   }) => RideEarning(
     earningId: earningId ?? this.earningId,
     app: app ?? this.app,
@@ -2733,6 +2770,7 @@ class RideEarning extends DataClass implements Insertable<RideEarning> {
     destinationDistrictId: destinationDistrictId.present
         ? destinationDistrictId.value
         : this.destinationDistrictId,
+    dedupHash: dedupHash.present ? dedupHash.value : this.dedupHash,
   );
   RideEarning copyWithCompanion(RideEarningsCompanion data) {
     return RideEarning(
@@ -2761,6 +2799,7 @@ class RideEarning extends DataClass implements Insertable<RideEarning> {
       destinationDistrictId: data.destinationDistrictId.present
           ? data.destinationDistrictId.value
           : this.destinationDistrictId,
+      dedupHash: data.dedupHash.present ? data.dedupHash.value : this.dedupHash,
     );
   }
 
@@ -2779,7 +2818,8 @@ class RideEarning extends DataClass implements Insertable<RideEarning> {
           ..write('pickupCep: $pickupCep, ')
           ..write('destinationCep: $destinationCep, ')
           ..write('pickupDistrictId: $pickupDistrictId, ')
-          ..write('destinationDistrictId: $destinationDistrictId')
+          ..write('destinationDistrictId: $destinationDistrictId, ')
+          ..write('dedupHash: $dedupHash')
           ..write(')'))
         .toString();
   }
@@ -2799,6 +2839,7 @@ class RideEarning extends DataClass implements Insertable<RideEarning> {
     destinationCep,
     pickupDistrictId,
     destinationDistrictId,
+    dedupHash,
   );
   @override
   bool operator ==(Object other) =>
@@ -2816,7 +2857,8 @@ class RideEarning extends DataClass implements Insertable<RideEarning> {
           other.pickupCep == this.pickupCep &&
           other.destinationCep == this.destinationCep &&
           other.pickupDistrictId == this.pickupDistrictId &&
-          other.destinationDistrictId == this.destinationDistrictId);
+          other.destinationDistrictId == this.destinationDistrictId &&
+          other.dedupHash == this.dedupHash);
 }
 
 class RideEarningsCompanion extends UpdateCompanion<RideEarning> {
@@ -2833,6 +2875,7 @@ class RideEarningsCompanion extends UpdateCompanion<RideEarning> {
   final Value<String?> destinationCep;
   final Value<String?> pickupDistrictId;
   final Value<String?> destinationDistrictId;
+  final Value<String?> dedupHash;
   final Value<int> rowid;
   const RideEarningsCompanion({
     this.earningId = const Value.absent(),
@@ -2848,6 +2891,7 @@ class RideEarningsCompanion extends UpdateCompanion<RideEarning> {
     this.destinationCep = const Value.absent(),
     this.pickupDistrictId = const Value.absent(),
     this.destinationDistrictId = const Value.absent(),
+    this.dedupHash = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   RideEarningsCompanion.insert({
@@ -2864,6 +2908,7 @@ class RideEarningsCompanion extends UpdateCompanion<RideEarning> {
     this.destinationCep = const Value.absent(),
     this.pickupDistrictId = const Value.absent(),
     this.destinationDistrictId = const Value.absent(),
+    this.dedupHash = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : earningId = Value(earningId),
        app = Value(app),
@@ -2886,6 +2931,7 @@ class RideEarningsCompanion extends UpdateCompanion<RideEarning> {
     Expression<String>? destinationCep,
     Expression<String>? pickupDistrictId,
     Expression<String>? destinationDistrictId,
+    Expression<String>? dedupHash,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -2903,6 +2949,7 @@ class RideEarningsCompanion extends UpdateCompanion<RideEarning> {
       if (pickupDistrictId != null) 'pickup_district_id': pickupDistrictId,
       if (destinationDistrictId != null)
         'destination_district_id': destinationDistrictId,
+      if (dedupHash != null) 'dedup_hash': dedupHash,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -2921,6 +2968,7 @@ class RideEarningsCompanion extends UpdateCompanion<RideEarning> {
     Value<String?>? destinationCep,
     Value<String?>? pickupDistrictId,
     Value<String?>? destinationDistrictId,
+    Value<String?>? dedupHash,
     Value<int>? rowid,
   }) {
     return RideEarningsCompanion(
@@ -2938,6 +2986,7 @@ class RideEarningsCompanion extends UpdateCompanion<RideEarning> {
       pickupDistrictId: pickupDistrictId ?? this.pickupDistrictId,
       destinationDistrictId:
           destinationDistrictId ?? this.destinationDistrictId,
+      dedupHash: dedupHash ?? this.dedupHash,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -2986,6 +3035,9 @@ class RideEarningsCompanion extends UpdateCompanion<RideEarning> {
         destinationDistrictId.value,
       );
     }
+    if (dedupHash.present) {
+      map['dedup_hash'] = Variable<String>(dedupHash.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -3008,6 +3060,7 @@ class RideEarningsCompanion extends UpdateCompanion<RideEarning> {
           ..write('destinationCep: $destinationCep, ')
           ..write('pickupDistrictId: $pickupDistrictId, ')
           ..write('destinationDistrictId: $destinationDistrictId, ')
+          ..write('dedupHash: $dedupHash, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -5020,6 +5073,7 @@ typedef $$RideEarningsTableCreateCompanionBuilder =
       Value<String?> destinationCep,
       Value<String?> pickupDistrictId,
       Value<String?> destinationDistrictId,
+      Value<String?> dedupHash,
       Value<int> rowid,
     });
 typedef $$RideEarningsTableUpdateCompanionBuilder =
@@ -5037,6 +5091,7 @@ typedef $$RideEarningsTableUpdateCompanionBuilder =
       Value<String?> destinationCep,
       Value<String?> pickupDistrictId,
       Value<String?> destinationDistrictId,
+      Value<String?> dedupHash,
       Value<int> rowid,
     });
 
@@ -5128,6 +5183,11 @@ class $$RideEarningsTableFilterComposer
 
   ColumnFilters<String> get destinationDistrictId => $composableBuilder(
     column: $table.destinationDistrictId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get dedupHash => $composableBuilder(
+    column: $table.dedupHash,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -5224,6 +5284,11 @@ class $$RideEarningsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get dedupHash => $composableBuilder(
+    column: $table.dedupHash,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   $$EarningsTableOrderingComposer get earningId {
     final $$EarningsTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -5305,6 +5370,9 @@ class $$RideEarningsTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<String> get dedupHash =>
+      $composableBuilder(column: $table.dedupHash, builder: (column) => column);
+
   $$EarningsTableAnnotationComposer get earningId {
     final $$EarningsTableAnnotationComposer composer = $composerBuilder(
       composer: this,
@@ -5370,6 +5438,7 @@ class $$RideEarningsTableTableManager
                 Value<String?> destinationCep = const Value.absent(),
                 Value<String?> pickupDistrictId = const Value.absent(),
                 Value<String?> destinationDistrictId = const Value.absent(),
+                Value<String?> dedupHash = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => RideEarningsCompanion(
                 earningId: earningId,
@@ -5385,6 +5454,7 @@ class $$RideEarningsTableTableManager
                 destinationCep: destinationCep,
                 pickupDistrictId: pickupDistrictId,
                 destinationDistrictId: destinationDistrictId,
+                dedupHash: dedupHash,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -5402,6 +5472,7 @@ class $$RideEarningsTableTableManager
                 Value<String?> destinationCep = const Value.absent(),
                 Value<String?> pickupDistrictId = const Value.absent(),
                 Value<String?> destinationDistrictId = const Value.absent(),
+                Value<String?> dedupHash = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => RideEarningsCompanion.insert(
                 earningId: earningId,
@@ -5417,6 +5488,7 @@ class $$RideEarningsTableTableManager
                 destinationCep: destinationCep,
                 pickupDistrictId: pickupDistrictId,
                 destinationDistrictId: destinationDistrictId,
+                dedupHash: dedupHash,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
