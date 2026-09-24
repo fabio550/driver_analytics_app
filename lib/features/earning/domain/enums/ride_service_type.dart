@@ -5,4 +5,7 @@ enum RideServiceType {
   deliveries,
   uberDispatch,
   uberByTime,
+  moto,
+  flash,
+  pet,
 }

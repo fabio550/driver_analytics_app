@@ -19,6 +19,9 @@ extension RideServiceTypeLabel on RideServiceType {
       RideServiceType.deliveries => 'Entregas',
       RideServiceType.uberDispatch => 'Uber envios',
       RideServiceType.uberByTime => 'Uber por tempo',
+      RideServiceType.moto => 'Moto',
+      RideServiceType.flash => 'Flash',
+      RideServiceType.pet => 'Pet',
     };
   }
 }
