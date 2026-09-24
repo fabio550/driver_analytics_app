@@ -9,6 +9,7 @@ import 'package:driver_analytics_app/features/earning/application/state/ride_imp
 import 'package:driver_analytics_app/features/earning/application/state/ride_import_state.dart';
 import 'package:driver_analytics_app/features/earning/presentation/widgets/ride_import_candidate_tile.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -48,25 +49,29 @@ class _RideImportPageState extends ConsumerState<RideImportPage> {
     final state = ref.watch(rideImportNotifierProvider);
     final notifier = ref.read(rideImportNotifierProvider.notifier);
 
-    final hasCandidates = state.candidates.isNotEmpty;
+    // "loaded" é o parser/OCR já ter rodado — mesmo achando zero
+    // corridas, isso é resultado, não o estado inicial. Usar só
+    // candidates.isNotEmpty fazia zero corridas parecer "nada aconteceu"
+    // e voltar pra tela de seleção em silêncio.
+    final showResult = state.status == LoadStatus.loaded;
     final importableCount = state.selectedIndexes
         .where((i) => state.candidates[i].isImportable)
         .length;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Importar corridas')),
-      bottomNavigationBar: _bottomBar(state, notifier, hasCandidates, importableCount),
-      body: hasCandidates ? _preview(state, notifier) : _initial(state),
+      bottomNavigationBar: _bottomBar(state, notifier, showResult, importableCount),
+      body: showResult ? _preview(state, notifier) : _initial(state, notifier),
     );
   }
 
   Widget? _bottomBar(
     RideImportState state,
     RideImportNotifier notifier,
-    bool hasCandidates,
+    bool showResult,
     int importableCount,
   ) {
-    if (hasCandidates) {
+    if (showResult && state.candidates.isNotEmpty) {
       return PrimaryButton(
         label: importableCount > 0
             ? 'Confirmar importação ($importableCount)'
@@ -84,7 +89,7 @@ class _RideImportPageState extends ConsumerState<RideImportPage> {
       );
     }
 
-    if (_showPasteFallback) {
+    if (!showResult && _showPasteFallback) {
       return PrimaryButton(
         label: 'Analisar texto',
         isLoading: state.status == LoadStatus.loading,
@@ -111,12 +116,12 @@ class _RideImportPageState extends ConsumerState<RideImportPage> {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
   }
 
-  Widget _initial(RideImportState state) {
+  Widget _initial(RideImportState state, RideImportNotifier notifier) {
     if (state.status == LoadStatus.error) {
       return ErrorStateView(
         message: 'Não consegui processar isso. Confira se é mesmo um '
             'print da tela de corridas do Uber e tenta de novo.',
-        onRetry: () => setState(() {}),
+        onRetry: notifier.reset,
       );
     }
 
@@ -189,15 +194,76 @@ class _RideImportPageState extends ConsumerState<RideImportPage> {
           label: const Text('Selecionar outro print'),
         ),
         const SizedBox(height: AppSpacing.sm),
-        for (var i = 0; i < state.candidates.length; i++) ...[
-          RideImportCandidateTile(
-            candidate: state.candidates[i],
-            selected: state.selectedIndexes.contains(i),
-            onChanged: state.candidates[i].isImportable
-                ? (_) => notifier.toggleSelected(i)
-                : null,
+        if (state.candidates.isEmpty)
+          _EmptyResult(rawText: state.rawText)
+        else
+          for (var i = 0; i < state.candidates.length; i++) ...[
+            RideImportCandidateTile(
+              candidate: state.candidates[i],
+              selected: state.selectedIndexes.contains(i),
+              onChanged: state.candidates[i].isImportable
+                  ? (_) => notifier.toggleSelected(i)
+                  : null,
+            ),
+            const SizedBox(height: AppSpacing.sm),
+          ],
+      ],
+    );
+  }
+}
+
+/// Nenhuma corrida reconhecida — pode ser um print de outro layout, ou
+/// OCR que leu mal a imagem. Mostra o texto que foi lido (se teve algum)
+/// pra dar pra diagnosticar em vez de só dizer "não achei nada".
+class _EmptyResult extends StatelessWidget {
+  final String? rawText;
+
+  const _EmptyResult({required this.rawText});
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Não reconheci nenhuma corrida nesse texto. Pode ser um layout '
+          'de print diferente do esperado, ou o OCR não leu bem a imagem.',
+          style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant),
+        ),
+        if (rawText != null && rawText!.trim().isNotEmpty) ...[
+          const SizedBox(height: AppSpacing.md),
+          ExpansionTile(
+            tilePadding: EdgeInsets.zero,
+            title: const Text('Ver texto reconhecido'),
+            children: [
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(AppSpacing.sm),
+                decoration: BoxDecoration(
+                  color: colorScheme.surfaceContainerHigh,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: SelectableText(rawText!, style: textTheme.bodySmall),
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: TextButton.icon(
+                  onPressed: () {
+                    Clipboard.setData(ClipboardData(text: rawText!));
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Texto copiado')),
+                    );
+                  },
+                  icon: const Icon(Icons.copy, size: 16),
+                  label: const Text('Copiar'),
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: AppSpacing.sm),
         ],
       ],
     );

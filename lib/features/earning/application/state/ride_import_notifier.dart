@@ -70,9 +70,10 @@ class RideImportNotifier extends Notifier<RideImportState> {
         status: LoadStatus.loaded,
         candidates: candidates,
         selectedIndexes: selected,
+        rawText: rawText,
       );
     } catch (error) {
-      state = state.copyWith(status: LoadStatus.error, error: error);
+      state = state.copyWith(status: LoadStatus.error, error: error, rawText: rawText);
     }
   }
 
