@@ -30,7 +30,28 @@ class RideImportNotifier extends Notifier<RideImportState> {
       clearError: true,
       clearResult: true,
     );
+    await _runPreview(rawText);
+  }
 
+  /// Roda OCR on-device sobre o print selecionado e manda o texto
+  /// reconhecido pro mesmo pipeline de [preview].
+  Future<void> previewFromImagePath(String imagePath) async {
+    state = state.copyWith(
+      status: LoadStatus.loading,
+      clearError: true,
+      clearResult: true,
+    );
+
+    try {
+      final recognizer = ref.read(textRecognizerServiceProvider);
+      final rawText = await recognizer.recognizeText(imagePath);
+      await _runPreview(rawText);
+    } catch (error) {
+      state = state.copyWith(status: LoadStatus.error, error: error);
+    }
+  }
+
+  Future<void> _runPreview(String rawText) async {
     try {
       final geoLookupService = await ref.read(geoLookupServiceProvider.future);
       final useCase = PreviewRideImportUseCase(

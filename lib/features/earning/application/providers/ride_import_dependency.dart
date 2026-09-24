@@ -1,4 +1,5 @@
 import 'package:driver_analytics_app/features/earning/infrastructure/geo/geo_lookup_service.dart';
+import 'package:driver_analytics_app/features/earning/infrastructure/ocr/text_recognizer_service.dart';
 import 'package:driver_analytics_app/features/earning/infrastructure/parser/ride_parser.dart';
 import 'package:driver_analytics_app/features/earning/infrastructure/parser/uber_parser.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -21,4 +22,12 @@ final geoLookupServiceProvider = FutureProvider<GeoLookupService>((ref) async {
 /// Só Uber por enquanto — troca por uma factory quando outro parser existir.
 final rideParserProvider = Provider<RideParser>((ref) {
   return UberParser();
+});
+
+/// Um recognizer por tela de importação — fecha (libera o modelo do ML
+/// Kit) quando o provider é descartado, ex: ao sair da tela.
+final textRecognizerServiceProvider = Provider<TextRecognizerService>((ref) {
+  final service = MlKitTextRecognizerService();
+  ref.onDispose(service.dispose);
+  return service;
 });
