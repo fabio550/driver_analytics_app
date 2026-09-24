@@ -1,7 +1,7 @@
 import 'package:driver_analytics_app/features/analytics/domain/entities/cost_allocation.dart';
 import 'package:driver_analytics_app/features/analytics/domain/entities/daily_profit_entry.dart';
 import 'package:driver_analytics_app/features/analytics/domain/entities/summary_analytics.dart';
-import 'package:driver_analytics_app/features/analytics/domain/value_objects/analytics_period.dart';
+import 'package:driver_analytics_app/core/domain/value_objects/analytics_period.dart';
 import 'package:driver_analytics_app/features/cost/domain/entities/cost_entity.dart';
 import 'package:driver_analytics_app/features/earning/domain/entities/earning_entity.dart';
 import 'package:driver_analytics_app/features/shift/domain/entities/shift_entity.dart';

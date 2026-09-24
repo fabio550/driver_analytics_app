@@ -1,4 +1,4 @@
-import 'package:driver_analytics_app/features/analytics/application/state/analytics_period_notifier.dart';
+import 'package:driver_analytics_app/core/presentation/providers/analytics_period_notifier.dart';
 import 'package:driver_analytics_app/features/analytics/domain/entities/cost_allocation.dart';
 import 'package:driver_analytics_app/features/analytics/domain/entities/cost_analytics.dart';
 import 'package:driver_analytics_app/features/analytics/domain/entities/operation_analytics.dart';
@@ -9,7 +9,7 @@ import 'package:driver_analytics_app/features/analytics/domain/services/cost_ana
 import 'package:driver_analytics_app/features/analytics/domain/services/operation_analytics_calculator.dart';
 import 'package:driver_analytics_app/features/analytics/domain/services/revenue_analytics_calculator.dart';
 import 'package:driver_analytics_app/features/analytics/domain/services/summary_analytics_calculator.dart';
-import 'package:driver_analytics_app/features/analytics/domain/value_objects/analytics_period.dart';
+import 'package:driver_analytics_app/core/domain/value_objects/analytics_period.dart';
 import 'package:driver_analytics_app/features/cost/application/providers/cost_provider.dart';
 import 'package:driver_analytics_app/features/earning/application/providers/earning_provider.dart';
 import 'package:driver_analytics_app/features/shift/application/providers/shift_provider.dart';

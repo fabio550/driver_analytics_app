@@ -1,7 +1,7 @@
 import 'package:driver_analytics_app/features/analytics/domain/entities/cost_allocation.dart';
 import 'package:driver_analytics_app/features/analytics/domain/entities/cost_analytics.dart';
 import 'package:driver_analytics_app/features/analytics/domain/services/fuel_consumption_calculator.dart';
-import 'package:driver_analytics_app/features/analytics/domain/value_objects/analytics_period.dart';
+import 'package:driver_analytics_app/core/domain/value_objects/analytics_period.dart';
 import 'package:driver_analytics_app/features/cost/domain/entities/cost_entity.dart';
 import 'package:driver_analytics_app/features/cost/domain/enums/cost_category.dart';
 

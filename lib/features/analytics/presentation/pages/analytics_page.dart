@@ -8,7 +8,7 @@ import 'package:driver_analytics_app/features/analytics/presentation/tabs/costs_
 import 'package:driver_analytics_app/features/analytics/presentation/tabs/operacao_tab.dart';
 import 'package:driver_analytics_app/features/analytics/presentation/tabs/receita_tab.dart';
 import 'package:driver_analytics_app/features/analytics/presentation/tabs/resumo_tab.dart';
-import 'package:driver_analytics_app/features/analytics/presentation/widgets/period_selector.dart';
+import 'package:driver_analytics_app/core/presentation/widgets/period_selector.dart';
 import 'package:driver_analytics_app/features/cost/application/providers/cost_provider.dart';
 import 'package:driver_analytics_app/features/earning/application/providers/earning_provider.dart';
 import 'package:driver_analytics_app/features/shift/application/providers/shift_provider.dart';

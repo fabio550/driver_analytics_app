@@ -1,5 +1,5 @@
-import 'package:driver_analytics_app/features/analytics/domain/value_objects/analytics_period.dart';
-import 'package:driver_analytics_app/features/analytics/presentation/extensions/analytics_period_label_extension.dart';
+import 'package:driver_analytics_app/core/domain/value_objects/analytics_period.dart';
+import 'package:driver_analytics_app/core/presentation/extensions/analytics_period_label_extension.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

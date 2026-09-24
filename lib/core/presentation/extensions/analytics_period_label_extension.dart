@@ -1,5 +1,5 @@
 import 'package:driver_analytics_app/core/extensions/datetime_extensions.dart';
-import 'package:driver_analytics_app/features/analytics/domain/value_objects/analytics_period.dart';
+import 'package:driver_analytics_app/core/domain/value_objects/analytics_period.dart';
 
 extension AnalyticsPeriodLabel on AnalyticsPeriod {
   static const _months = [

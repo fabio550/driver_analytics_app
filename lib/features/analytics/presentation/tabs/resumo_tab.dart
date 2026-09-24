@@ -6,7 +6,7 @@ import 'package:driver_analytics_app/core/presentation/widgets/empty_state_view.
 import 'package:driver_analytics_app/core/presentation/widgets/screen_scroll_view.dart';
 import 'package:driver_analytics_app/features/analytics/application/providers/analytics_provider.dart';
 import 'package:driver_analytics_app/features/analytics/domain/entities/daily_profit_entry.dart';
-import 'package:driver_analytics_app/features/analytics/presentation/extensions/analytics_period_label_extension.dart';
+import 'package:driver_analytics_app/core/presentation/extensions/analytics_period_label_extension.dart';
 import 'package:driver_analytics_app/features/analytics/presentation/widgets/daily_profit_chart.dart';
 import 'package:driver_analytics_app/features/analytics/presentation/widgets/hero_profit_card.dart';
 import 'package:driver_analytics_app/features/analytics/presentation/widgets/kpi_card.dart';

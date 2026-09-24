@@ -1,6 +1,8 @@
 import 'package:driver_analytics_app/core/domain/enums/load_status.dart';
+import 'package:driver_analytics_app/core/presentation/providers/entries_period_provider.dart';
 import 'package:driver_analytics_app/core/presentation/theme/app_spacing.dart';
 import 'package:driver_analytics_app/core/presentation/widgets/error_state_view.dart';
+import 'package:driver_analytics_app/core/presentation/widgets/period_selector.dart';
 import 'package:driver_analytics_app/core/presentation/widgets/skeleton_box.dart';
 import 'package:driver_analytics_app/features/cost/application/providers/cost_provider.dart';
 import 'package:driver_analytics_app/features/cost/domain/enums/cost_category.dart';
@@ -54,6 +56,9 @@ class _EntriesPageState extends ConsumerState<EntriesPage> {
 
   @override
   Widget build(BuildContext context) {
+    final period = ref.watch(entriesPeriodNotifierProvider);
+    final periodNotifier = ref.read(entriesPeriodNotifierProvider.notifier);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Lançamentos'),
@@ -69,7 +74,21 @@ class _EntriesPageState extends ConsumerState<EntriesPage> {
               icon: const Icon(Icons.upload_file_outlined),
               onPressed: () => context.push('/earnings/ride/import'),
             ),
+          PeriodPresetButton(period: period, notifier: periodNotifier),
+          const SizedBox(width: AppSpacing.sm),
         ],
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(48),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.md,
+              0,
+              AppSpacing.md,
+              AppSpacing.sm,
+            ),
+            child: PeriodSelector(period: period, notifier: periodNotifier),
+          ),
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _openCreateSheet,
@@ -145,6 +164,7 @@ class _EntriesPageState extends ConsumerState<EntriesPage> {
   Widget _earnings() {
     final earningState = ref.watch(earningNotifierProvider);
     final shiftState = ref.watch(shiftNotifierProvider);
+    final period = ref.watch(entriesPeriodNotifierProvider);
 
     if (earningState.status == LoadStatus.error) {
       return ErrorStateView(
@@ -158,8 +178,12 @@ class _EntriesPageState extends ConsumerState<EntriesPage> {
         shiftState.status != LoadStatus.loaded;
     if (isLoading) return const _ListSkeleton();
 
+    final earnings = earningState.earnings
+        .where((earning) => period.contains(earning.occurredAt))
+        .toList();
+
     return EarningsListView(
-      earnings: earningState.earnings,
+      earnings: earnings,
       shifts: shiftState.shifts,
       onCreate: _openCreateSheet,
       onTapEarning: (earning) {
@@ -175,6 +199,7 @@ class _EntriesPageState extends ConsumerState<EntriesPage> {
 
   Widget _costs() {
     final costState = ref.watch(costNotifierProvider);
+    final period = ref.watch(entriesPeriodNotifierProvider);
 
     if (costState.status == LoadStatus.error) {
       return ErrorStateView(
@@ -186,8 +211,11 @@ class _EntriesPageState extends ConsumerState<EntriesPage> {
 
     if (costState.status != LoadStatus.loaded) return const _ListSkeleton();
 
+    final costs =
+        costState.costs.where((cost) => period.contains(cost.date)).toList();
+
     return CostListView(
-      costs: costState.costs,
+      costs: costs,
       category: _costFilter,
       onCreate: _openCreateSheet,
     );

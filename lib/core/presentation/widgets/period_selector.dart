@@ -1,7 +1,7 @@
 import 'package:driver_analytics_app/core/presentation/theme/app_text_styles.dart';
-import 'package:driver_analytics_app/features/analytics/application/state/analytics_period_notifier.dart';
-import 'package:driver_analytics_app/features/analytics/domain/value_objects/analytics_period.dart';
-import 'package:driver_analytics_app/features/analytics/presentation/extensions/analytics_period_label_extension.dart';
+import 'package:driver_analytics_app/core/presentation/providers/analytics_period_notifier.dart';
+import 'package:driver_analytics_app/core/domain/value_objects/analytics_period.dart';
+import 'package:driver_analytics_app/core/presentation/extensions/analytics_period_label_extension.dart';
 import 'package:flutter/material.dart';
 
 /// Navegação entre períodos, numa linha só.

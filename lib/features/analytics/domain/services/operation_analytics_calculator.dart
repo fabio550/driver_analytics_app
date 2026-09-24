@@ -1,5 +1,5 @@
 import 'package:driver_analytics_app/features/analytics/domain/entities/operation_analytics.dart';
-import 'package:driver_analytics_app/features/analytics/domain/value_objects/analytics_period.dart';
+import 'package:driver_analytics_app/core/domain/value_objects/analytics_period.dart';
 import 'package:driver_analytics_app/features/earning/domain/entities/earning_entity.dart';
 import 'package:driver_analytics_app/features/earning/domain/enums/ride_status.dart';
 import 'package:driver_analytics_app/features/shift/domain/entities/shift_entity.dart';
