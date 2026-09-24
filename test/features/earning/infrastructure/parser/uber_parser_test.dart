@@ -212,5 +212,69 @@ void main() {
       expect(parser.parse('', now: _now), isEmpty);
       expect(parser.parse('Uber sem mais nada', now: _now), isEmpty);
     });
+
+    group('serviço · duração · distância quebrado em 2 linhas de OCR', () {
+      // Reproduz a tela "Histórico de ganhos" real do Uber (com
+      // mapinha), onde o texto embrulha em telas estreitas e o ML Kit
+      // devolve isso como duas linhas de OCR em vez de uma. A regra é:
+      // só tenta juntar linha atual + próxima quando ainda não achou o
+      // serviço desta corrida — senão a tentativa de junção roda de
+      // novo pra endereço/tarifa da próxima corrida e pode bater com o
+      // regex por acidente, misturando dados de corridas diferentes.
+      final now = DateTime(2026, 9, 24, 12);
+
+      const rawText = '''
+sáb., 19 de set.
+
+R\$ 27,59
+
+Prioridade · 19 min 43 segundos ·
+10.08 km
+
+3:41
+
+Butantã Shopping Av. Prof. Francisco Morato, Butantã - São Paulo - SP, 05512-300, Brasil
+
+Rua Vicente Amato, Campo Limpo - São Paulo - SP, 05794-390, Brasil
+
+R\$ 12,98
+
+Uber X · 5 min 30 segundos · 4.02
+km
+
+3:39
+
+Rod. Raposo Tavares, Jardim Boa Vista - São Paulo - SP, 05576-100, Brasil
+
+Avenida Imigrante Japones, Vila Sônia - São Paulo - SP, 05521-000, Brasil
+''';
+
+      test('as 2 corridas são extraídas mesmo com a linha quebrada', () {
+        final rides = parser.parse(rawText, now: now);
+        expect(rides, hasLength(2));
+      });
+
+      test('quebra logo após o separador ("· 19 min 43 segundos ·" '
+          '/ "10.08 km")', () {
+        final ride = parser.parse(rawText, now: now)[0];
+        expect(ride.serviceType, 'Prioridade');
+        expect(ride.fareBrl, 27.59);
+        expect(ride.durationSeconds, 1183);
+        expect(ride.distanceKm, 10.08);
+        expect(ride.startedAt, DateTime(2026, 9, 19, 3, 41));
+        expect(ride.pickupPostalCode, '05512-300');
+        expect(ride.destinationPostalCode, '05794-390');
+      });
+
+      test('quebra no meio do valor, antes da unidade '
+          '("· 4.02" / "km")', () {
+        final ride = parser.parse(rawText, now: now)[1];
+        expect(ride.serviceType, 'Uber X');
+        expect(ride.fareBrl, 12.98);
+        expect(ride.durationSeconds, 330);
+        expect(ride.distanceKm, 4.02);
+        expect(ride.startedAt, DateTime(2026, 9, 19, 3, 39));
+      });
+    });
   });
 }

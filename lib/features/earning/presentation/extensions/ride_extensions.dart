@@ -22,6 +22,7 @@ extension RideServiceTypeLabel on RideServiceType {
       RideServiceType.moto => 'Moto',
       RideServiceType.flash => 'Flash',
       RideServiceType.pet => 'Pet',
+      RideServiceType.priority => 'Prioridade',
     };
   }
 }

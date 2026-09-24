@@ -87,6 +87,8 @@ class PreviewRideImportUseCase {
       case 'uber pet':
       case 'pet':
         return RideServiceType.pet;
+      case 'prioridade':
+        return RideServiceType.priority;
       default:
         return null;
     }

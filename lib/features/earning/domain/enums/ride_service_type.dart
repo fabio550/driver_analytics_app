@@ -8,4 +8,5 @@ enum RideServiceType {
   moto,
   flash,
   pet,
+  priority,
 }

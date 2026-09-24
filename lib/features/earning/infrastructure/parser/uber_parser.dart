@@ -117,7 +117,31 @@ class UberParser implements RideParser {
             continue;
           }
 
-          final svcMatch = _reService.matchAsPrefix(l);
+          // Só tenta achar o serviço enquanto ainda não achou o desta
+          // corrida — sem essa guarda, a tentativa de juntar linha atual
+          // + próxima (abaixo) roda de novo pra cada linha seguinte
+          // (endereço, tarifa da próxima corrida etc.) e pode por
+          // coincidência bater com o regex, misturando texto de blocos
+          // diferentes.
+          var svcMatch = serviceType == null ? _reService.matchAsPrefix(l) : null;
+          var svcText = l;
+          var svcLinesConsumed = 1;
+
+          // Em telas estreitas o ML Kit às vezes quebra "serviço ·
+          // duração · distância" em duas linhas de OCR (o texto era uma
+          // frase só na UI, só que embrulhada). Tenta juntar com a
+          // próxima linha antes de desistir do match.
+          if (serviceType == null && svcMatch == null && i + 1 < lines.length) {
+            final joined = '$l ${lines[i + 1]}';
+            final joinedMatch = _reService.matchAsPrefix(joined);
+            if (joinedMatch != null) {
+              svcMatch = joinedMatch;
+              svcText = joined;
+              svcLinesConsumed = 2;
+              rawLines.add(lines[i + 1]);
+            }
+          }
+
           if (svcMatch != null) {
             serviceType = svcMatch.group(1)!.trim();
             status = _normalizeStatus(svcMatch.group(5));
@@ -128,12 +152,15 @@ class UberParser implements RideParser {
               distanceKm = _parseDistance(svcMatch.group(4)!);
             }
 
-            Match? timeMatch = _reTime.firstMatch(l);
+            i += svcLinesConsumed;
 
-            if (timeMatch == null && i + 1 < lines.length) {
-              final nextLine = lines[i + 1];
+            Match? timeMatch = _reTime.firstMatch(svcText);
+
+            if (timeMatch == null && i < lines.length) {
+              final nextLine = lines[i];
               timeMatch = _reTime.matchAsPrefix(nextLine);
               if (timeMatch != null) {
+                rawLines.add(nextLine);
                 i++;
               }
             }
@@ -145,7 +172,6 @@ class UberParser implements RideParser {
               );
             }
 
-            i++;
             continue;
           }
 
