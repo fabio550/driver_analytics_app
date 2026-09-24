@@ -62,6 +62,14 @@ class _EntriesPageState extends ConsumerState<EntriesPage> {
             .textTheme
             .titleLarge
             ?.copyWith(fontWeight: FontWeight.bold),
+        actions: [
+          if (_segment == _EntriesSegment.earnings)
+            IconButton(
+              tooltip: 'Importar corridas',
+              icon: const Icon(Icons.upload_file_outlined),
+              onPressed: () => context.push('/earnings/ride/import'),
+            ),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _openCreateSheet,

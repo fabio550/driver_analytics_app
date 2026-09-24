@@ -10,6 +10,7 @@ import 'package:driver_analytics_app/features/earning/domain/entities/earning_en
 import 'package:driver_analytics_app/features/earning/presentation/pages/adjustment_earning_create_page.dart';
 import 'package:driver_analytics_app/features/earning/presentation/pages/promotion_earning_create_page.dart';
 import 'package:driver_analytics_app/features/earning/presentation/pages/ride_earning_create_page.dart';
+import 'package:driver_analytics_app/features/earning/presentation/pages/ride_import_page.dart';
 import 'package:driver_analytics_app/features/shift/domain/entities/shift_entity.dart';
 import 'package:driver_analytics_app/features/shift/presentation/pages/active_shift_page.dart';
 import 'package:driver_analytics_app/features/shift/presentation/pages/shift_create_page.dart';
@@ -110,6 +111,10 @@ final routes = [
   GoRoute(
     path: '/earnings/ride/edit',
     builder: (context, state) => RideEarningCreatePage(existing: state.extra as RideEarningEntity),
+  ),
+  GoRoute(
+    path: '/earnings/ride/import',
+    builder: (context, state) => RideImportPage(shiftId: state.extra as String?),
   ),
   GoRoute(
     path: '/earnings/promotion/create',

@@ -12,6 +12,7 @@ import 'package:driver_analytics_app/features/earning/presentation/state/ride_dr
 import 'package:driver_analytics_app/features/shift/domain/entities/shift_entity.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:go_router/go_router.dart';
 
 /// O que o diálogo de finalizar devolve. [rides] pode vir vazio: detalhar
 /// corrida a corrida é opcional.
@@ -110,6 +111,15 @@ class _FinishShiftDialogState extends State<FinishShiftDialog> {
         ..add(draft)
         ..sort((a, b) => a.occurredAt.compareTo(b.occurredAt));
     });
+  }
+
+  /// Corridas confirmadas na importação são salvas na hora (já com o
+  /// shiftId deste turno), diferente das adicionadas manualmente aqui
+  /// (que ficam como [RideDraft] até o turno ser finalizado) — o parser
+  /// e a resolução de geo/dedup já rodaram, não faz sentido descartar
+  /// esse trabalho se o usuário fechar o app antes de finalizar.
+  Future<void> _importRides() async {
+    await context.push('/earnings/ride/import', extra: widget.shift.id);
   }
 
   @override
@@ -253,6 +263,13 @@ class _FinishShiftDialogState extends State<FinishShiftDialog> {
           onPressed: _addRide,
           icon: const Icon(Icons.add),
           label: const Text('Adicionar corrida'),
+          style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(48)),
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        OutlinedButton.icon(
+          onPressed: _importRides,
+          icon: const Icon(Icons.upload_file_outlined),
+          label: const Text('Importar corridas'),
           style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(48)),
         ),
         if (_rides.isNotEmpty) ...[
