@@ -26,6 +26,7 @@ class RideEarningMapper {
       destinationCep: rideRow.destinationCep,
       pickupDistrictId: rideRow.pickupDistrictId,
       destinationDistrictId: rideRow.destinationDistrictId,
+      dedupHash: rideRow.dedupHash,
     );
   }
 
@@ -44,6 +45,7 @@ class RideEarningMapper {
       destinationCep: Value(earning.destinationCep),
       pickupDistrictId: Value(earning.pickupDistrictId),
       destinationDistrictId: Value(earning.destinationDistrictId),
+      dedupHash: Value(earning.dedupHash),
     );
   }
 }

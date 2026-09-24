@@ -25,7 +25,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -38,6 +38,13 @@ class AppDatabase extends _$AppDatabase {
           if (from < 3) {
             await m.createTable(earnings);
             await m.createTable(rideEarnings);
+          }
+          if (from < 4) {
+            await m.addColumn(rideEarnings, rideEarnings.dedupHash);
+            await customStatement(
+              'CREATE UNIQUE INDEX IF NOT EXISTS idx_ride_earnings_dedup_hash '
+              'ON ride_earnings (dedup_hash)',
+            );
           }
         },
         beforeOpen: (details) async {

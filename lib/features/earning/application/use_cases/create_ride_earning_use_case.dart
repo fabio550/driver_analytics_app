@@ -40,6 +40,7 @@ class CreateRideEarningUseCase {
     String? destinationCep,
     String? pickupDistrictId,
     String? destinationDistrictId,
+    String? dedupHash,
   }) async {
     final earning = RideEarningEntity(
       id: _idGenerator.generate(),
@@ -58,6 +59,7 @@ class CreateRideEarningUseCase {
       destinationCep: destinationCep,
       pickupDistrictId: pickupDistrictId,
       destinationDistrictId: destinationDistrictId,
+      dedupHash: dedupHash,
     );
 
     final failures = _validator.validate(earning);

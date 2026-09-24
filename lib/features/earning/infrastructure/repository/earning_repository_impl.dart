@@ -74,6 +74,14 @@ class EarningRepositoryImpl implements EarningRepository {
     });
   }
 
+  @override
+  Future<bool> existsRideWithDedupHash(String dedupHash) async {
+    final query = _database.select(_database.rideEarnings)
+      ..where((t) => t.dedupHash.equals(dedupHash));
+    final row = await query.getSingleOrNull();
+    return row != null;
+  }
+
   Future<EarningEntity> _toEntity(Earning row) async {
     switch (EarningKind.values.byName(row.kind)) {
       case EarningKind.ride:

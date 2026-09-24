@@ -13,6 +13,7 @@ class RideEarningEntity extends EarningEntity {
   final String? destinationCep;
   final String? pickupDistrictId;
   final String? destinationDistrictId;
+  final String? dedupHash;
 
   const RideEarningEntity({
     required super.id,
@@ -31,6 +32,7 @@ class RideEarningEntity extends EarningEntity {
     this.destinationCep,
     this.pickupDistrictId,
     this.destinationDistrictId,
+    this.dedupHash,
   });
 
   @override

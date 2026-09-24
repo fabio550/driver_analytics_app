@@ -6,4 +6,8 @@ abstract interface class EarningRepository {
   Future<void> create(EarningEntity earning);
   Future<void> update(EarningEntity earning);
   Future<void> delete(String id);
+
+  /// Usado pra descartar corridas duplicadas antes de criar: true se já
+  /// existe uma ride com esse [RideEarningEntity.dedupHash].
+  Future<bool> existsRideWithDedupHash(String dedupHash);
 }

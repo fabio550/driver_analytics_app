@@ -15,7 +15,13 @@ class RideEarnings extends Table {
   TextColumn get destinationCep => text().nullable()();
   TextColumn get pickupDistrictId => text().nullable()();
   TextColumn get destinationDistrictId => text().nullable()();
+  TextColumn get dedupHash => text().nullable()();
 
   @override
   Set<Column> get primaryKey => {earningId};
+
+  @override
+  List<Set<Column>> get uniqueKeys => [
+        {dedupHash},
+      ];
 }
