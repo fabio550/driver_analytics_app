@@ -28,15 +28,28 @@ class UberParser implements RideParser {
   /// pra string normal exigiria escapar `\d`/`\s` manualmente no resto
   /// do padrão.
   ///
-  /// O separador (·/•/-/*) e os espaços ao redor dele são opcionais —
+  /// O separador (·/•/-/*/.) e os espaços ao redor dele são opcionais —
   /// no OCR real do Uber ele às vezes some (“Uber X5 min 30 seg…”, sem
-  /// nada entre “X” e “5”). A palavra depois da duração é `\S+` em vez
-  /// de exigir "segundos"/"segs" literalmente, porque o OCR
-  /// ocasionalmente lê "segundos" como "sequndos" (g→q) — não dá pra
-  /// prever todo erro de caractere, então não trava nisso.
+  /// nada entre “X” e “5”) ou vira um ponto (“Uber X . 48 min”). A
+  /// palavra depois da duração usa `[^\d\s]+` (qualquer coisa que não
+  /// seja dígito/espaço) em vez de exigir "segundos"/"segs"
+  /// literalmente, porque o OCR ocasionalmente lê "segundos" como
+  /// "sequndos" (g→q) — não dá pra prever todo erro de caractere,
+  /// então não trava nisso. Precisa ser `[^\d\s]+` e não `\S+`: `\S+`
+  /// também casa dígitos, então quando não há espaço antes da distância
+  /// (“sequndos·8.11”) ele invade os dígitos por backtracking e captura
+  /// só o último caractere como distância (“8.11” virava “1”).
+  ///
+  /// Os grupos numéricos aceitam `l`/`I` além de dígitos — o OCR
+  /// ocasionalmente lê "1" como letra minúscula/maiúscula ("2l min",
+  /// "1l min"); `_normalizeDigits` converte de volta antes de fazer o
+  /// parse. O "km" no fim é opcional: em alguns prints reais essa
+  /// palavra some inteiramente do texto reconhecido, e sem isso a
+  /// corrida inteira era descartada por só faltar a unidade.
   static final RegExp _reService = RegExp(
-    r'^(.+?)\s*(?:·|•|-|\*)?\s*'
-    r'(?:(\d+)\s+min\s+(\d+)\s+\S+\s*(?:·|•|-|\*)?\s*(\d+(?:[.,]\d+)?)\s+km'
+    r'^(.+?)\s*(?:·|•|-|\*|\.)?\s*'
+    r'(?:([\dlI]+)\s+min\s+([\dlI]+)\s+[^\d\s]+\s*(?:·|•|-|\*|\.)?\s*'
+    r'([\dlI]+(?:[.,][\dlI]+)?)\s*(?:km)?'
     r'|(Você cancelou|Cancelado pelo usuário))$',
   );
 
@@ -171,6 +184,33 @@ class UberParser implements RideParser {
             }
           }
 
+          // Outro jeito real de quebra: o horário sai intercalado NO
+          // MEIO do bloco de serviço — "serviço · duração" numa linha,
+          // o horário sozinho na linha seguinte, e só depois a
+          // distância (ex.: "Uber X 48 min 29 seg" / "22:01" / "29.44
+          // km"). Nem o match de uma linha só nem o join com a linha
+          // imediatamente seguinte cobrem isso, porque a linha do meio
+          // não faz parte do texto de serviço. Se a linha seguinte for
+          // um horário isolado, tenta juntar a atual com a de DUAS
+          // linhas à frente (pulando o horário) e guarda esse horário
+          // separadamente.
+          var skippedTimeMatch = serviceType == null && svcMatch == null && i + 2 < lines.length
+              ? _reTime.matchAsPrefix(lines[i + 1])
+              : null;
+          if (skippedTimeMatch != null) {
+            final joined = '$l ${lines[i + 2]}';
+            final joinedMatch = _reService.matchAsPrefix(joined);
+            if (joinedMatch != null) {
+              svcMatch = joinedMatch;
+              svcText = joined;
+              svcLinesConsumed = 3;
+              rawLines.add(lines[i + 1]);
+              rawLines.add(lines[i + 2]);
+            } else {
+              skippedTimeMatch = null;
+            }
+          }
+
           if (svcMatch != null) {
             serviceType = svcMatch.group(1)!.trim();
             status = _normalizeStatus(svcMatch.group(5));
@@ -183,22 +223,29 @@ class UberParser implements RideParser {
 
             i += svcLinesConsumed;
 
-            Match? timeMatch = _reTime.firstMatch(svcText);
-
-            if (timeMatch == null && i < lines.length) {
-              final nextLine = lines[i];
-              timeMatch = _reTime.matchAsPrefix(nextLine);
-              if (timeMatch != null) {
-                rawLines.add(nextLine);
-                i++;
-              }
-            }
-
-            if (timeMatch != null) {
-              rideTime = (
-                int.parse(timeMatch.group(1)!),
-                int.parse(timeMatch.group(2)!),
+            if (skippedTimeMatch != null) {
+              rideTime ??= (
+                int.parse(skippedTimeMatch.group(1)!),
+                int.parse(skippedTimeMatch.group(2)!),
               );
+            } else if (rideTime == null) {
+              Match? timeMatch = _reTime.firstMatch(svcText);
+
+              if (timeMatch == null && i < lines.length) {
+                final nextLine = lines[i];
+                timeMatch = _reTime.matchAsPrefix(nextLine);
+                if (timeMatch != null) {
+                  rawLines.add(nextLine);
+                  i++;
+                }
+              }
+
+              if (timeMatch != null) {
+                rideTime = (
+                  int.parse(timeMatch.group(1)!),
+                  int.parse(timeMatch.group(2)!),
+                );
+              }
             }
 
             continue;
@@ -262,10 +309,19 @@ class UberParser implements RideParser {
       double.parse(value.replaceAll('.', '').replaceAll(',', '.'));
 
   static int _parseDuration(String minutes, String seconds) =>
-      int.parse(minutes) * 60 + int.parse(seconds);
+      int.parse(_normalizeDigits(minutes)) * 60 +
+      int.parse(_normalizeDigits(seconds));
 
   static double _parseDistance(String value) =>
-      double.parse(value.replaceAll(',', '.'));
+      double.parse(_normalizeDigits(value).replaceAll(',', '.'));
+
+  /// O OCR ocasionalmente lê "1" como "l" (L minúsculo) ou "I"
+  /// (i maiúsculo) — visualmente quase idênticos na fonte do app.
+  /// `_reService` aceita esses caracteres nos grupos numéricos
+  /// justamente pra não descartar a corrida inteira por causa de um
+  /// caractere; aqui eles voltam a ser "1" antes do parse.
+  static String _normalizeDigits(String value) =>
+      value.replaceAll('l', '1').replaceAll('I', '1');
 
   static String _normalizeStatus(String? rawStatus) {
     if (rawStatus == null) return 'completed';

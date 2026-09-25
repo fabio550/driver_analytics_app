@@ -444,5 +444,148 @@ Bela Vista, Rua Bela Cintra,
         expect(ride.destinationPostalCode, '01415-000');
       });
     });
+
+    group('OCR real do celular (print "meio termo", 6 corridas)', () {
+      // Terceiro print real do usuário, mais longo que os anteriores.
+      // Reproduz 3 bugs reais achados aqui: (1) o horário intercalado
+      // NO MEIO do bloco de serviço ("serviço · duração" / horário /
+      // distância, em 3 linhas separadas — diferente do caso "horário
+      // antes de tudo" já coberto acima); (2) "km" sumindo inteiramente
+      // do texto reconhecido; (3) um bug de regex onde `\S+` (a palavra
+      // depois da duração) invadia por backtracking os dígitos da
+      // distância quando não havia espaço antes deles
+      // ("sequndos·8.11" virava distância "1" em vez de "8.11").
+      final now = DateTime(2026, 9, 25, 12);
+
+      const rawText = '''
+9 all 44
+17:13 999
+Histórico de gan..
+Tipo
+24/09
+Recurso v
+qui., 24 de set.
+R\$ 63,85
+Uber X . 48 min 29 sequndos
+22:01
+29.44 km
+R\$ 5,25 Preço dinâmico
+André
+Sahto
+098
+Avenida Santo Amaro, Itaim Bibi - São Paulo - SP
+04506-000, Brasil
+Rua Ator Paulo Gustavo, São Mateus - São Paulo -
+03950-000, Brasil
+R\$ 14,36
+21:49
+Uber X- 16 min 52 segundos -6.76
+km
+o15 SãoPaulo T
+Taboão da Serra
+/Säo Caetano do
+Su
+9 Rua Major Maragliano., Vila Mariana - São Paulo -(
+04017-030, Brasil
+Rua Clodomiro Amazonas, 287, Itaim Bibi - São Paı
+- SP. 04542-060, Brasil
+R\$ 23,98
+21:19
+Uber X- 17 min 20 sequndos·8.11
+R\$ 3,00 Preço dinâmico
+1015
+270
+Taboão da Serra
+São Caeta
+etano
+R. Joapé, Cidade Jardim - São Paulo - SP, 05676-1
+Brasil
+Rua Doutor Álvaro Alvim, Vila Mariana - São Paulo
+SP, 04018-010, Brasil
+R\$ 25,69
+20:52
+Prioridade 21 min l sequndos
+9.87 km
+OL5 SãoPaulo
+Taboão d
+são Caetano do
+Sul
+• Rua Sena Madureira, Vila Mariana - São Paulo - SF
+04021-050, Brasil
+Rua Doutor Bruno Rangel Pestana, Morumbi - São
+Paulo - SP 05614-100, Brasil
+R\$ 32,74
+20:16
+Uber X37 min 44 sequndos:
+22.16 km
+orocába
+o88
+hdré
+vanto A
+Rua Francisco de Tourinho, Ponte Rasa - São Paul
+SP, 03737-060, Brasil
+Rua Coronel Lisboa, Vila Mariana - São Paulo - SP.
+04020-040. Brasil
+R\$ 9,15
+19:48
+Uber X·1l min 0 segundos 2.62
+km
+do Tietê
+CHÁCAR
+CRUZEIRO D
+SUL
+R. Manuel Leiroz, Vila Penteado - São Paulo - SP,
+03735-180, Brasil
+Av. Amador Bueno da Veiga, Ponte Rasa - São Pau
+- SP, 03652-000, Brasil
+Fim das atividades durante 24 de set. de
+2026
+A Editar período
+Página ini.. Descubra Ganhos Caixa de e..
+Menu
+''';
+
+      test('extrai as 6 corridas apesar dos 3 bugs reais', () {
+        final rides = parser.parse(rawText, now: now);
+        expect(rides, hasLength(6));
+      });
+
+      test('corrida 1: horário intercalado no meio do bloco de serviço, '
+          'nome do serviço sem o "." de separador solto', () {
+        final ride = parser.parse(rawText, now: now)[0];
+        expect(ride.startedAt, DateTime(2026, 9, 24, 22, 1));
+        expect(ride.serviceType, 'Uber X');
+        expect(ride.fareBrl, 63.85);
+        expect(ride.surgeBrl, 5.25);
+        expect(ride.durationSeconds, 48 * 60 + 29);
+        expect(ride.distanceKm, 29.44);
+      });
+
+      test('corrida 3: "km" sumiu do OCR e a distância não fica truncada '
+          'pelo backtracking do "\\S+"', () {
+        final ride = parser.parse(rawText, now: now)[2];
+        expect(ride.fareBrl, 23.98);
+        expect(ride.serviceType, 'Uber X');
+        expect(ride.distanceKm, 8.11);
+      });
+
+      test('corrida 4: "l" no lugar de "1" nos minutos/segundos não trava '
+          'o match', () {
+        final ride = parser.parse(rawText, now: now)[3];
+        expect(ride.serviceType, 'Prioridade');
+        expect(ride.fareBrl, 25.69);
+        expect(ride.durationSeconds, 21 * 60 + 1);
+        expect(ride.distanceKm, 9.87);
+      });
+
+      test('corrida 6: "1l" no lugar de "11" nos minutos não trava o '
+          'match', () {
+        final ride = parser.parse(rawText, now: now)[5];
+        expect(ride.serviceType, 'Uber X');
+        expect(ride.fareBrl, 9.15);
+        expect(ride.durationSeconds, 11 * 60);
+        expect(ride.distanceKm, 2.62);
+      });
+    });
   });
 }
