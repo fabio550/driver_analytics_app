@@ -19,7 +19,20 @@ class MlKitTextRecognizerService implements TextRecognizerService {
   Future<String> recognizeText(String imagePath) async {
     final inputImage = InputImage.fromFilePath(imagePath);
     final result = await _recognizer.processImage(inputImage);
-    return result.text;
+
+    // O ML Kit não garante ordem de leitura topo->baixo em telas com
+    // imagem no meio (mapa de cada corrida) — ele agrupa por blocos
+    // visuais, e o destino de uma corrida pode acabar emitido depois
+    // da tarifa da corrida seguinte. Cada TextLine carrega sua própria
+    // posição (boundingBox) na tela, então ordenar por ela reconstrói
+    // a ordem visual real em vez de confiar na ordem que o ML Kit
+    // devolveu.
+    final lines = <MapEntry<double, String>>[
+      for (final block in result.blocks)
+        for (final line in block.lines) MapEntry(line.boundingBox.top, line.text),
+    ]..sort((a, b) => a.key.compareTo(b.key));
+
+    return lines.map((e) => e.value).join('\n');
   }
 
   @override

@@ -276,5 +276,108 @@ Avenida Imigrante Japones, Vila Sônia - São Paulo - SP, 05521-000, Brasil
         expect(ride.startedAt, DateTime(2026, 9, 19, 3, 39));
       });
     });
+
+    group('OCR real do celular (tela "Histórico de ganhos" com mapa)', () {
+      // Texto reconstruído a partir de um print real, na ordem visual
+      // correta (o fix de MlKitTextRecognizerService ordena por posição
+      // Y antes de virar string) — mas mantendo os erros de OCR que
+      // apareceram de verdade: separador sumido ("Uber X5 min" sem
+      // nada entre X e 5), "segundos" lido como "sequndos", o badge
+      // "↑ Aumentou" colado na mesma linha da tarifa, e rótulos de
+      // bairro/rodovia do mapa intercalados entre os campos.
+      final now = DateTime(2026, 9, 25, 12);
+
+      const rawText = '''
+sáb., 19 de set.
+
+R\$ 27,59
+
+Prioridade- 19 min 43 sequndos
+10.08 km
+
+3:41
+
+rocaba-
+250
+
+Butantá Shopping Av. Prof. Francisco Morato,
+Butantä - São Paulo - SP 05512-300, Brasil
+
+Rua Vicente Amato, Campo Limpo - São Paulo -S
+05794-390, Brasil
+
+R\$ 12,98
+
+Uber X5 min 30 sequndos 4.02
+km
+
+3:39
+
+cÒNJUNTO
+PROMORAR-
+RAPOso
+TẦV A RES
+021
+
+Rod. Raposo Tavares, Jardim Boa Vista - São Paulc
+SP. 05576-100, Brasil
+
+Avenida Imigrante Japones, Vila Sônia - São Paulc
+SP, 05521-000, Brasil
+
+R\$ 38,73 ↑ Aumentou
+
+Uber X 27 min 53 sequndos
+21.03 km
+
+2:59
+
+Cotia
+Embu das Artes
+Itapecerièa da Serra
+
+Rua Taquaruçu, Jabaquara - São Paulo - SP,
+04346-040, Brasil
+
+R. Eusébio de Paula Marcondes, Rio Pequeno - Sãc
+Paulo - SP, 05398-020, Brasil
+''';
+
+      test('extrai as 3 corridas apesar do ruído e dos erros de OCR', () {
+        final rides = parser.parse(rawText, now: now);
+        expect(rides, hasLength(3));
+      });
+
+      test('separador sumido entre serviço e duração ("Uber X5 min")', () {
+        final ride = parser.parse(rawText, now: now)[1];
+        expect(ride.serviceType, 'Uber X');
+        expect(ride.fareBrl, 12.98);
+        expect(ride.durationSeconds, 330);
+        expect(ride.distanceKm, 4.02);
+        expect(ride.pickupPostalCode, '05576-100');
+        expect(ride.destinationPostalCode, '05521-000');
+      });
+
+      test('"segundos" lido como "sequndos" não trava o match', () {
+        final ride = parser.parse(rawText, now: now)[0];
+        expect(ride.serviceType, 'Prioridade');
+        expect(ride.durationSeconds, 1183);
+      });
+
+      test('badge "↑ Aumentou" colado na linha da tarifa', () {
+        final ride = parser.parse(rawText, now: now)[2];
+        expect(ride.fareBrl, 38.73);
+        expect(ride.serviceType, 'Uber X');
+        expect(ride.durationSeconds, 1673);
+        expect(ride.distanceKm, 21.03);
+      });
+
+      test('ruído de rótulo de mapa entre os campos não é confundido '
+          'com corrida', () {
+        final rides = parser.parse(rawText, now: now);
+        expect(rides.map((r) => r.serviceType),
+            everyElement(isNot(contains('CONJUNTO'))));
+      });
+    });
   });
 }

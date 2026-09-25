@@ -5,7 +5,12 @@ import 'package:driver_analytics_app/features/earning/infrastructure/parser/ride
 /// branch `develop`) — mesmo texto de entrada (extraído pelo ML Kit),
 /// mesmas regras de extração.
 class UberParser implements RideParser {
-  static final RegExp _reFare = RegExp(r'^R\$\s+(\d+[.,]\d{2})$');
+  // Sem `$` no fim: o Uber às vezes cola um badge (“↑ Aumentou”) na
+  // mesma linha da tarifa. O lookahead negativo evita casar a própria
+  // linha de dinâmico/gorjeta ("R$ 2,25 Preço dinâmico"), que também
+  // começa com "R$ X,XX".
+  static final RegExp _reFare =
+      RegExp(r'^R\$\s+(\d+[.,]\d{2})(?!\s*(?:Preço|Valor))');
 
   static final RegExp _reSurge = RegExp(
     r'^R\$\s*(\d+[.,]\d{2})\s+Preço\s+dinâmico',
@@ -22,9 +27,16 @@ class UberParser implements RideParser {
   /// `const` dentro de uma raw string (`r'...'`) não funciona, e trocar
   /// pra string normal exigiria escapar `\d`/`\s` manualmente no resto
   /// do padrão.
+  ///
+  /// O separador (·/•/-/*) e os espaços ao redor dele são opcionais —
+  /// no OCR real do Uber ele às vezes some (“Uber X5 min 30 seg…”, sem
+  /// nada entre “X” e “5”). A palavra depois da duração é `\S+` em vez
+  /// de exigir "segundos"/"segs" literalmente, porque o OCR
+  /// ocasionalmente lê "segundos" como "sequndos" (g→q) — não dá pra
+  /// prever todo erro de caractere, então não trava nisso.
   static final RegExp _reService = RegExp(
-    r'^(.+?)\s+(?:·|•|-|\*)\s+'
-    r'(?:(\d+)\s+min\s+(\d+)\s+(?:segundos?|segs?)\s+(?:·|•|-|\*)\s+(\d+(?:[.,]\d+)?)\s+km'
+    r'^(.+?)\s*(?:·|•|-|\*)?\s*'
+    r'(?:(\d+)\s+min\s+(\d+)\s+\S+\s*(?:·|•|-|\*)?\s*(\d+(?:[.,]\d+)?)\s+km'
     r'|(Você cancelou|Cancelado pelo usuário))$',
   );
 
