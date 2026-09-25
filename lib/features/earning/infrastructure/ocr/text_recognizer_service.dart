@@ -16,14 +16,18 @@ abstract class TextRecognizerService {
 class MlKitTextRecognizerService implements TextRecognizerService {
   final TextRecognizer _recognizer;
 
-  // O print grande de teste real tinha só 540x16302px (8,8 milhões de
-  // pixels, ~3,4 MB) — nem de longe grande o bastante pra estourar
-  // memória de decodificação. As duas hipóteses testadas (teto de 8000
-  // e depois 14000px) derrubaram a resolução sem necessidade e não
-  // mudaram o resultado (0 blocos de texto), então a causa não era
-  // tamanho/memória. O teto sobe bem alto (só protege contra um caso
-  // realmente extremo) pra isolar a variável: testar o ML Kit com a
-  // imagem praticamente intocada.
+  // O print grande de teste real (540x16302px, 3,4 MB) continuou dando
+  // 0 blocos de texto mesmo sem NENHUM redimensionamento — ou seja,
+  // tamanho/memória nunca foi a causa. Mas o ui.ImageDescriptor (decoder
+  // do Flutter/Skia, usado só pra medir a imagem) lê as dimensões dela
+  // sem problema, enquanto o ML Kit (que no Android decodifica via
+  // BitmapFactory, uma implementação diferente) não encontra nada -
+  // sugere que esse JPEG específico (gerado por um app de "scroll
+  // capture") tem algo que o decoder nativo não tolera bem, mesmo sendo
+  // um arquivo "válido" pro Skia. Por isso agora SEMPRE reescreve a
+  // imagem como PNG novo via Skia antes de mandar pro ML Kit (mesmo
+  // abaixo do teto de redimensionamento) — um PNG recém-gerado não
+  // carrega qualquer estrutura interna estranha do arquivo original.
   static const _maxHeightPx = 30000;
 
   MlKitTextRecognizerService()
@@ -64,13 +68,14 @@ class MlKitTextRecognizerService implements TextRecognizerService {
   @override
   Future<void> dispose() => _recognizer.close();
 
-  /// Se a imagem for mais alta que [_maxHeightPx], usa [ui.ImageDescriptor]
-  /// pra decodificar já pedindo o tamanho reduzido (o decoder faz o
-  /// downscale, então nunca aloca o bitmap gigante original por inteiro)
-  /// e escreve o resultado num PNG temporário. Devolve o caminho
-  /// original se não precisar reduzir ou se algo falhar — nesse caso o
-  /// ML Kit tenta com a imagem original, mesmo sabendo que pode falhar,
-  /// em vez de travar a importação com um erro nosso. [log] recebe as
+  /// Sempre decodifica a imagem original via [ui.ImageDescriptor] (Skia)
+  /// e reescreve como PNG novo — reduzindo a altura pro teto
+  /// [_maxHeightPx] só se necessário, mas rodando a reescrita mesmo
+  /// quando não precisa reduzir nada, já que o objetivo agora também é
+  /// "higienizar" o arquivo (ver comentário em [_maxHeightPx]). Devolve
+  /// o caminho original se a decodificação falhar — nesse caso o ML Kit
+  /// tenta com o arquivo original, mesmo sabendo que pode falhar, em
+  /// vez de travar a importação com um erro nosso. [log] recebe as
   /// dimensões encontradas e o que foi feito, pra aparecer no painel de
   /// diagnóstico se o OCR não achar nada.
   Future<String> _capImageHeight(String imagePath, StringBuffer log) async {
@@ -86,16 +91,14 @@ class MlKitTextRecognizerService implements TextRecognizerService {
         '${(bytes.length / 1024 / 1024).toStringAsFixed(1)} MB.',
       );
 
-      if (descriptor.height <= _maxHeightPx) {
-        log.writeln('Abaixo do teto de $_maxHeightPx px — sem redimensionar.');
-        return imagePath;
-      }
-
-      final scale = _maxHeightPx / descriptor.height;
-      final targetWidth = (descriptor.width * scale).round();
+      final needsDownscale = descriptor.height > _maxHeightPx;
+      final targetHeight = needsDownscale ? _maxHeightPx : descriptor.height;
+      final targetWidth = needsDownscale
+          ? (descriptor.width * (_maxHeightPx / descriptor.height)).round()
+          : descriptor.width;
 
       final codec = await descriptor.instantiateCodec(
-        targetHeight: _maxHeightPx,
+        targetHeight: targetHeight,
         targetWidth: targetWidth,
       );
       final frame = await codec.getNextFrame();
@@ -105,7 +108,7 @@ class MlKitTextRecognizerService implements TextRecognizerService {
       resized.dispose();
       codec.dispose();
       if (byteData == null) {
-        log.writeln('Redimensionamento falhou ao gerar os bytes do PNG.');
+        log.writeln('Reescrita falhou ao gerar os bytes do PNG.');
         return imagePath;
       }
 
@@ -113,10 +116,14 @@ class MlKitTextRecognizerService implements TextRecognizerService {
       final outPath =
           '${tempDir.path}/ride_import_ocr_${DateTime.now().millisecondsSinceEpoch}.png';
       await File(outPath).writeAsBytes(byteData.buffer.asUint8List());
-      log.writeln('Redimensionada para ${targetWidth}x$_maxHeightPx px.');
+      log.writeln(
+        needsDownscale
+            ? 'Redimensionada e reescrita como PNG: ${targetWidth}x$targetHeight px.'
+            : 'Reescrita como PNG sem redimensionar: ${targetWidth}x$targetHeight px.',
+      );
       return outPath;
     } catch (error) {
-      log.writeln('Erro ao tentar redimensionar: $error');
+      log.writeln('Erro ao tentar reescrever a imagem: $error');
       return imagePath;
     }
   }
