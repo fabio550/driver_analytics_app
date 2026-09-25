@@ -220,7 +220,14 @@ class _RideImportPageState extends ConsumerState<RideImportPage> {
         ),
         const SizedBox(height: AppSpacing.sm),
         if (state.candidates.isEmpty)
-          _EmptyResult(rawText: state.rawText)
+          Text(
+            'Não reconheci nenhuma corrida nesse texto. Pode ser um layout '
+            'de print diferente do esperado, ou o OCR não leu bem a imagem.',
+            style: Theme.of(context)
+                .textTheme
+                .bodyMedium
+                ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
+          )
         else
           for (var i = 0; i < state.candidates.length; i++) ...[
             RideImportCandidateTile(
@@ -232,74 +239,63 @@ class _RideImportPageState extends ConsumerState<RideImportPage> {
             ),
             const SizedBox(height: AppSpacing.sm),
           ],
+        // Sempre disponível, mesmo com corridas encontradas — um print
+        // que lê só parte das corridas (ex.: 2 de 5) não cai no caso
+        // "vazio" e antes não tinha como conferir o texto bruto pra
+        // descobrir onde o parser ou o OCR estão perdendo o resto.
+        if (state.rawText != null) ...[
+          const SizedBox(height: AppSpacing.md),
+          _RawTextPanel(rawText: state.rawText!),
+        ],
       ],
     );
   }
 }
 
-/// Nenhuma corrida reconhecida — pode ser um print de outro layout, ou
-/// OCR que leu mal a imagem. Mostra o texto que foi lido (se teve algum)
-/// pra dar pra diagnosticar em vez de só dizer "não achei nada".
-class _EmptyResult extends StatelessWidget {
-  final String? rawText;
+/// Texto bruto que o OCR (ou o texto colado manualmente) produziu na
+/// última tentativa, sempre disponível pra conferência — tanto quando
+/// nenhuma corrida foi reconhecida quanto quando só parte delas foi.
+class _RawTextPanel extends StatelessWidget {
+  final String rawText;
 
-  const _EmptyResult({required this.rawText});
+  const _RawTextPanel({required this.rawText});
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
+    final isEmpty = rawText.trim().isEmpty;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return ExpansionTile(
+      tilePadding: EdgeInsets.zero,
+      title: const Text('Ver texto reconhecido'),
       children: [
-        Text(
-          'Não reconheci nenhuma corrida nesse texto. Pode ser um layout '
-          'de print diferente do esperado, ou o OCR não leu bem a imagem.',
-          style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(AppSpacing.sm),
+          decoration: BoxDecoration(
+            color: colorScheme.surfaceContainerHigh,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: SelectableText(
+            isEmpty ? '(nenhum texto foi extraído da imagem)' : rawText,
+            style: textTheme.bodySmall,
+          ),
         ),
-        if (rawText != null) ...[
-          const SizedBox(height: AppSpacing.md),
-          // Mostra o painel mesmo com texto vazio ("" != null: o OCR
-          // rodou mas não reconheceu nenhum caractere) — sem isso, um
-          // resultado "nada foi lido" fica indistinguível de "leu, mas
-          // não bateu com nenhuma corrida", que são causas bem
-          // diferentes de investigar.
-          ExpansionTile(
-            tilePadding: EdgeInsets.zero,
-            title: const Text('Ver texto reconhecido'),
-            children: [
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(AppSpacing.sm),
-                decoration: BoxDecoration(
-                  color: colorScheme.surfaceContainerHigh,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: SelectableText(
-                  rawText!.trim().isEmpty
-                      ? '(nenhum texto foi extraído da imagem)'
-                      : rawText!,
-                  style: textTheme.bodySmall,
-                ),
-              ),
-              if (rawText!.trim().isNotEmpty) ...[
-                const SizedBox(height: AppSpacing.sm),
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: TextButton.icon(
-                    onPressed: () {
-                      Clipboard.setData(ClipboardData(text: rawText!));
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Texto copiado')),
-                      );
-                    },
-                    icon: const Icon(Icons.copy, size: 16),
-                    label: const Text('Copiar'),
-                  ),
-                ),
-              ],
-            ],
+        if (!isEmpty) ...[
+          const SizedBox(height: AppSpacing.sm),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: TextButton.icon(
+              onPressed: () {
+                Clipboard.setData(ClipboardData(text: rawText));
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Texto copiado')),
+                );
+              },
+              icon: const Icon(Icons.copy, size: 16),
+              label: const Text('Copiar'),
+            ),
           ),
         ],
       ],

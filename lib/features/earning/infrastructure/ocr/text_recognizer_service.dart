@@ -16,16 +16,15 @@ abstract class TextRecognizerService {
 class MlKitTextRecognizerService implements TextRecognizerService {
   final TextRecognizer _recognizer;
 
-  // Scroll captures (screenshot empilhado) de vários prints do Uber
-  // passam de 20-30 mil px de altura — decodificar isso no tamanho
-  // original estoura memória/limite do decoder em vários aparelhos e o
-  // OCR falha antes de devolver qualquer texto. Reduzir demais também
-  // não serve: o primeiro teto (8000px) deixou o texto pequeno demais
-  // pro ML Kit reconhecer qualquer caractere (0 corridas E nenhum texto
-  // reconhecido). 14000px é uma folga mais conservadora — reduz menos
-  // que a metade da altura original nesse tipo de print, mantendo o
-  // texto legível, mas ainda evita decodificar o bitmap gigante inteiro.
-  static const _maxHeightPx = 14000;
+  // O print grande de teste real tinha só 540x16302px (8,8 milhões de
+  // pixels, ~3,4 MB) — nem de longe grande o bastante pra estourar
+  // memória de decodificação. As duas hipóteses testadas (teto de 8000
+  // e depois 14000px) derrubaram a resolução sem necessidade e não
+  // mudaram o resultado (0 blocos de texto), então a causa não era
+  // tamanho/memória. O teto sobe bem alto (só protege contra um caso
+  // realmente extremo) pra isolar a variável: testar o ML Kit com a
+  // imagem praticamente intocada.
+  static const _maxHeightPx = 30000;
 
   MlKitTextRecognizerService()
       : _recognizer = TextRecognizer(script: TextRecognitionScript.latin);
@@ -82,7 +81,8 @@ class MlKitTextRecognizerService implements TextRecognizerService {
       );
 
       log.writeln(
-        'Imagem original: ${descriptor.width}x${descriptor.height}px, '
+        'Imagem original ($imagePath): ${descriptor.width}x'
+        '${descriptor.height}px, '
         '${(bytes.length / 1024 / 1024).toStringAsFixed(1)} MB.',
       );
 
