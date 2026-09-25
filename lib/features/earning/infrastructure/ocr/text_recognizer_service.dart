@@ -32,7 +32,8 @@ class MlKitTextRecognizerService implements TextRecognizerService {
 
   @override
   Future<String> recognizeText(String imagePath) async {
-    final preparedPath = await _capImageHeight(imagePath);
+    final resizeLog = StringBuffer();
+    final preparedPath = await _capImageHeight(imagePath, resizeLog);
     final inputImage = InputImage.fromFilePath(preparedPath);
     final result = await _recognizer.processImage(inputImage);
 
@@ -48,6 +49,16 @@ class MlKitTextRecognizerService implements TextRecognizerService {
         for (final line in block.lines) MapEntry(line.boundingBox.top, line.text),
     ]..sort((a, b) => a.key.compareTo(b.key));
 
+    if (lines.isEmpty) {
+      // Sem isso, "OCR rodou mas não achou nada" e "algo no
+      // redimensionamento deu errado silenciosamente" ficam
+      // indistinguíveis pra quem só vê a tela vazia — esse texto (que
+      // não bate com nenhum padrão do parser) aparece no painel "Ver
+      // texto reconhecido" e mostra exatamente o que aconteceu.
+      return '[Diagnóstico: ML Kit não retornou nenhum bloco de texto '
+          'para essa imagem.\n$resizeLog]';
+    }
+
     return lines.map((e) => e.value).join('\n');
   }
 
@@ -60,15 +71,23 @@ class MlKitTextRecognizerService implements TextRecognizerService {
   /// e escreve o resultado num PNG temporário. Devolve o caminho
   /// original se não precisar reduzir ou se algo falhar — nesse caso o
   /// ML Kit tenta com a imagem original, mesmo sabendo que pode falhar,
-  /// em vez de travar a importação com um erro nosso.
-  Future<String> _capImageHeight(String imagePath) async {
+  /// em vez de travar a importação com um erro nosso. [log] recebe as
+  /// dimensões encontradas e o que foi feito, pra aparecer no painel de
+  /// diagnóstico se o OCR não achar nada.
+  Future<String> _capImageHeight(String imagePath, StringBuffer log) async {
     try {
       final bytes = await File(imagePath).readAsBytes();
       final descriptor = await ui.ImageDescriptor.encoded(
         await ui.ImmutableBuffer.fromUint8List(bytes),
       );
 
+      log.writeln(
+        'Imagem original: ${descriptor.width}x${descriptor.height}px, '
+        '${(bytes.length / 1024 / 1024).toStringAsFixed(1)} MB.',
+      );
+
       if (descriptor.height <= _maxHeightPx) {
+        log.writeln('Abaixo do teto de $_maxHeightPx px — sem redimensionar.');
         return imagePath;
       }
 
@@ -85,14 +104,19 @@ class MlKitTextRecognizerService implements TextRecognizerService {
       final byteData = await resized.toByteData(format: ui.ImageByteFormat.png);
       resized.dispose();
       codec.dispose();
-      if (byteData == null) return imagePath;
+      if (byteData == null) {
+        log.writeln('Redimensionamento falhou ao gerar os bytes do PNG.');
+        return imagePath;
+      }
 
       final tempDir = await getTemporaryDirectory();
       final outPath =
           '${tempDir.path}/ride_import_ocr_${DateTime.now().millisecondsSinceEpoch}.png';
       await File(outPath).writeAsBytes(byteData.buffer.asUint8List());
+      log.writeln('Redimensionada para ${targetWidth}x$_maxHeightPx px.');
       return outPath;
-    } catch (_) {
+    } catch (error) {
+      log.writeln('Erro ao tentar redimensionar: $error');
       return imagePath;
     }
   }
