@@ -12,13 +12,18 @@ class UberParser implements RideParser {
   static final RegExp _reFare =
       RegExp(r'^R\$\s+(\d+[.,]\d{2})(?!\s*(?:Preço|Valor))');
 
+  // Sem `^`: no OCR real, essas linhas às vezes vêm com um caractere de
+  // ícone solto colado na frente ("9 R$ 5,25 Preço dinâmico" — o mesmo
+  // tipo de ruído que já tolerado no nome do serviço). `firstMatch` acha
+  // o valor em qualquer posição da linha em vez de exigir que "R$" seja
+  // literalmente o primeiro caractere.
   static final RegExp _reSurge = RegExp(
-    r'^R\$\s*(\d+[.,]\d{2})\s+Preço\s+dinâmico',
+    r'R\$\s*(\d+[.,]\d{2})\s+Preço\s+dinâmico',
     caseSensitive: false,
   );
 
   static final RegExp _reTip = RegExp(
-    r'^R\$\s*(\d+[.,]\d{2})\s+Valor\s+extra',
+    r'R\$\s*(\d+[.,]\d{2})\s+Valor\s+extra',
     caseSensitive: false,
   );
 
@@ -53,8 +58,14 @@ class UberParser implements RideParser {
     r'|(Você cancelou|Cancelado pelo usuário))$',
   );
 
+  // A pontuação entre o dia da semana e o número já apareceu como
+  // ".," (esperado), mas também só "," ou ",," (o OCR troca o "." por
+  // vírgula, ou duplica a vírgula) — sem essa data bater, currentDate
+  // nunca é setado e NENHUMA corrida do texto inteiro entra no
+  // resultado (a checagem de tarifa exige currentDate != null), então
+  // vale a pena ser bem tolerante aqui.
   static final RegExp _reDate = RegExp(
-    r'^(?:seg|ter|qua|qui|sex|sáb|dom)\.,?\s+(\d{1,2})\s+de\s+'
+    r'^(?:seg|ter|qua|qui|sex|sáb|dom)[.,]*\s+(\d{1,2})\s+de\s+'
     r'(jan|fev|mar|abr|mai|jun|jul|ago|set|out|nov|dez)\.?$',
     caseSensitive: false,
   );
@@ -127,14 +138,14 @@ class UberParser implements RideParser {
           final l = lines[i];
           rawLines.add(l);
 
-          final surgeMatch = _reSurge.matchAsPrefix(l);
+          final surgeMatch = _reSurge.firstMatch(l);
           if (surgeMatch != null) {
             surgeBrl = _parseBrl(surgeMatch.group(1)!);
             i++;
             continue;
           }
 
-          final tipMatch = _reTip.matchAsPrefix(l);
+          final tipMatch = _reTip.firstMatch(l);
           if (tipMatch != null) {
             tipBrl = _parseBrl(tipMatch.group(1)!);
             i++;

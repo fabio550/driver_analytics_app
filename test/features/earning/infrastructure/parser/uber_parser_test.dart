@@ -587,5 +587,61 @@ Menu
         expect(ride.distanceKm, 2.62);
       });
     });
+
+    group('OCR real do celular (data com pontuação trocada, "qui,, 24 de set.")', () {
+      // Quarto print real: o mesmo layout do grupo "print meio termo"
+      // acima, mas o cabeçalho de data veio como "qui,, 24 de set."
+      // (vírgula dupla, sem nenhum ".") em vez de "qui., 24 de set.".
+      // Como o regex de data exigia um "." literal (não opcional), a
+      // data nunca batia, currentDate ficava null pro texto inteiro, e
+      // ISSO DERRUBAVA TODAS AS CORRIDAS — a checagem de tarifa exige
+      // currentDate != null. Um único caractere de pontuação trocado
+      // zerava o resultado inteiro ("0 corridas encontradas").
+      //
+      // Também cobre o valor de "Preço dinâmico" vindo com um caractere
+      // de ícone colado na frente ("9 R$ 5,25 Preço dinâmico"), que
+      // antes não batia por exigir "R$" logo no início da linha.
+      final now = DateTime(2026, 9, 25, 12);
+
+      const rawText = '''
+qui,, 24 de set.
+
+R\$ 63,85
+
+Oo
+
+22:01
+
+Uber X 48 min 29 sequndos
+
+29.44 km
+
+9 R\$ 5,25 Preço dinâmico
+
+R\$ 14,36
+
+21:49
+
+Uber X16 min 52 segundos 6.76
+km
+''';
+
+      test('a data com "," duplicado no lugar de "." ainda é reconhecida '
+          '(sem isso, 0 corridas)', () {
+        final rides = parser.parse(rawText, now: now);
+        expect(rides, hasLength(2));
+      });
+
+      test('corrida 1: horário, tarifa e dinâmico com ícone colado na '
+          'frente', () {
+        final ride = parser.parse(rawText, now: now)[0];
+        expect(ride.startedAt, DateTime(2026, 9, 24, 22, 1));
+        expect(ride.serviceType, 'Uber X');
+        expect(ride.fareBrl, 63.85);
+        expect(ride.surgeBrl, 5.25);
+        expect(ride.durationSeconds, 48 * 60 + 29);
+        expect(ride.distanceKm, 29.44);
+      });
+    });
   });
 }
