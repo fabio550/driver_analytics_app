@@ -227,6 +227,38 @@ Rua Serra de Botucatu, Tatuape - Sao Paulo - SP, 03317-000, BR
       expect(candidates[0].isImportable, isFalse);
     });
 
+    test('nome do serviço com ruído de OCR colado na frente ainda é '
+        'reconhecido', () async {
+      // O OCR às vezes lê um ícone/pino do layout como um caractere
+      // solto colado antes do nome real do serviço ("8 uber X", "&
+      // uber X", "8 Comfort") — visto em prints reais. Isso não pode
+      // ser confundido com uma variante de verdade diferente, como
+      // "UberXL" (caso acima), que precisa continuar não reconhecida.
+      const rawTextComRuido = '''
+SEX., 05 de JUN.
+
+R\$ 26,47
+
+8 uber X- 37 min 42 segundos-13.88 km
+
+16:45
+
+Rua Serra de Botucatu, Tatuape - Sao Paulo - SP, 03317-000, BR
+''';
+      final useCase = PreviewRideImportUseCase(
+        parser: UberParser(),
+        geoLookupService: geoLookupService,
+        repository: FakeEarningRepository(),
+      );
+
+      final candidates = await useCase.execute(rawTextComRuido);
+
+      expect(candidates, hasLength(1));
+      expect(candidates[0].isRecognized, isTrue);
+      expect(candidates[0].serviceType, RideServiceType.uberX);
+      expect(candidates[0].isImportable, isTrue);
+    });
+
     test('dedupHash bate com RideHash.compute nos mesmos campos', () async {
       final useCase = PreviewRideImportUseCase(
         parser: UberParser(),
