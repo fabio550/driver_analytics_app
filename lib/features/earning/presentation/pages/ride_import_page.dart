@@ -39,7 +39,19 @@ class _RideImportPageState extends ConsumerState<RideImportPage> {
   }
 
   Future<void> _pickImage() async {
-    final file = await ImagePicker().pickImage(source: ImageSource.gallery);
+    // Sem esses parâmetros, o image_picker (ou o seletor de fotos do
+    // próprio Android, que ele usa por baixo) pode devolver uma cópia
+    // reduzida da imagem em vez do arquivo original — foi o que
+    // explicava um print de scroll-capture, nítido quando aberto na
+    // galeria, chegar aqui com só 540px de largura. Pedir
+    // explicitamente qualidade máxima e um teto bem folgado de
+    // dimensão evita cair em algum caminho de compressão padrão.
+    final file = await ImagePicker().pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 100,
+      maxWidth: 8000,
+      maxHeight: 40000,
+    );
     if (file == null || !mounted) return;
     await ref.read(rideImportNotifierProvider.notifier).previewFromImagePath(file.path);
   }
