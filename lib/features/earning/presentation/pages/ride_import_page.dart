@@ -258,8 +258,13 @@ class _EmptyResult extends StatelessWidget {
           'de print diferente do esperado, ou o OCR não leu bem a imagem.',
           style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant),
         ),
-        if (rawText != null && rawText!.trim().isNotEmpty) ...[
+        if (rawText != null) ...[
           const SizedBox(height: AppSpacing.md),
+          // Mostra o painel mesmo com texto vazio ("" != null: o OCR
+          // rodou mas não reconheceu nenhum caractere) — sem isso, um
+          // resultado "nada foi lido" fica indistinguível de "leu, mas
+          // não bateu com nenhuma corrida", que são causas bem
+          // diferentes de investigar.
           ExpansionTile(
             tilePadding: EdgeInsets.zero,
             title: const Text('Ver texto reconhecido'),
@@ -271,22 +276,29 @@ class _EmptyResult extends StatelessWidget {
                   color: colorScheme.surfaceContainerHigh,
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: SelectableText(rawText!, style: textTheme.bodySmall),
-              ),
-              const SizedBox(height: AppSpacing.sm),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: TextButton.icon(
-                  onPressed: () {
-                    Clipboard.setData(ClipboardData(text: rawText!));
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Texto copiado')),
-                    );
-                  },
-                  icon: const Icon(Icons.copy, size: 16),
-                  label: const Text('Copiar'),
+                child: SelectableText(
+                  rawText!.trim().isEmpty
+                      ? '(nenhum texto foi extraído da imagem)'
+                      : rawText!,
+                  style: textTheme.bodySmall,
                 ),
               ),
+              if (rawText!.trim().isNotEmpty) ...[
+                const SizedBox(height: AppSpacing.sm),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: TextButton.icon(
+                    onPressed: () {
+                      Clipboard.setData(ClipboardData(text: rawText!));
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Texto copiado')),
+                      );
+                    },
+                    icon: const Icon(Icons.copy, size: 16),
+                    label: const Text('Copiar'),
+                  ),
+                ),
+              ],
             ],
           ),
         ],

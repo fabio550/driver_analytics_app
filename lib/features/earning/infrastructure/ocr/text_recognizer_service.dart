@@ -16,15 +16,16 @@ abstract class TextRecognizerService {
 class MlKitTextRecognizerService implements TextRecognizerService {
   final TextRecognizer _recognizer;
 
-  // Scroll captures (screenshot empilhado) podem passar de 10-15 mil px
-  // de altura. Decodificar um bitmap desse tamanho estoura o limite de
-  // alocação do decoder/Skia em vários aparelhos e o ML Kit falha (ou o
-  // app trava) antes de devolver qualquer texto — por isso o print
-  // grande "nem aparece a opção de ver texto": o OCR nunca chega a
-  // rodar. Reduzir a altura antes de mandar pro ML Kit evita isso sem
-  // perder legibilidade (o texto do Uber continua nítido bem abaixo
-  // desse teto).
-  static const _maxHeightPx = 8000;
+  // Scroll captures (screenshot empilhado) de vários prints do Uber
+  // passam de 20-30 mil px de altura — decodificar isso no tamanho
+  // original estoura memória/limite do decoder em vários aparelhos e o
+  // OCR falha antes de devolver qualquer texto. Reduzir demais também
+  // não serve: o primeiro teto (8000px) deixou o texto pequeno demais
+  // pro ML Kit reconhecer qualquer caractere (0 corridas E nenhum texto
+  // reconhecido). 14000px é uma folga mais conservadora — reduz menos
+  // que a metade da altura original nesse tipo de print, mantendo o
+  // texto legível, mas ainda evita decodificar o bitmap gigante inteiro.
+  static const _maxHeightPx = 14000;
 
   MlKitTextRecognizerService()
       : _recognizer = TextRecognizer(script: TextRecognitionScript.latin);
