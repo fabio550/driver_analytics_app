@@ -1,3 +1,5 @@
+// ignore_for_file: prefer_initializing_formals
+
 import 'package:driver_analytics_app/features/earning/application/use_cases/ride_import_candidate.dart';
 import 'package:driver_analytics_app/features/earning/domain/enums/ride_app.dart';
 import 'package:driver_analytics_app/features/earning/domain/enums/ride_service_type.dart';

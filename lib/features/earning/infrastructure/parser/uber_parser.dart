@@ -17,16 +17,15 @@ class UberParser implements RideParser {
     caseSensitive: false,
   );
 
-  static const _sep = r'(?:·|•|-|\*)';
-
+  /// Padrão usado duas vezes dentro de [_reService] (antes e depois da
+  /// duração) — mantido inline nos dois lugares porque interpolar um
+  /// `const` dentro de uma raw string (`r'...'`) não funciona, e trocar
+  /// pra string normal exigiria escapar `\d`/`\s` manualmente no resto
+  /// do padrão.
   static final RegExp _reService = RegExp(
-    r'^(.+?)\s+' +
-        _sep +
-        r'\s+'
-            r'(?:(\d+)\s+min\s+(\d+)\s+(?:segundos?|segs?)\s+' +
-        _sep +
-        r'\s+(\d+(?:[.,]\d+)?)\s+km'
-            r'|(Você cancelou|Cancelado pelo usuário))$',
+    r'^(.+?)\s+(?:·|•|-|\*)\s+'
+    r'(?:(\d+)\s+min\s+(\d+)\s+(?:segundos?|segs?)\s+(?:·|•|-|\*)\s+(\d+(?:[.,]\d+)?)\s+km'
+    r'|(Você cancelou|Cancelado pelo usuário))$',
   );
 
   static final RegExp _reDate = RegExp(

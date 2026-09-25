@@ -81,7 +81,7 @@ class _RideImportPageState extends ConsumerState<RideImportPage> {
             ? null
             : () async {
                 await notifier.confirmImport(shiftId: widget.shiftId);
-                if (!context.mounted) return;
+                if (!mounted) return;
                 _textController.clear();
                 setState(() => _showPasteFallback = false);
                 _showResultSnackBar(context);

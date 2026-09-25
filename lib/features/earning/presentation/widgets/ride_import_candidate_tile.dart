@@ -33,6 +33,9 @@ class RideImportCandidateTile extends StatelessWidget {
 
     final pickup = candidate.pickupGeo?.districtName;
     final destination = candidate.destinationGeo?.districtName;
+    // ignore: use_null_aware_elements — a sintaxe `?pickup` ainda é
+    // experimental no Dart estável (precisa de --enable-experiment),
+    // então fica com o `if` até virar estável.
     final route = [
       if (pickup != null) pickup,
       if (destination != null) destination,
