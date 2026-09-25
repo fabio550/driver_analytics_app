@@ -118,10 +118,35 @@ class _RideImportPageState extends ConsumerState<RideImportPage> {
 
   Widget _initial(RideImportState state, RideImportNotifier notifier) {
     if (state.status == LoadStatus.error) {
-      return ErrorStateView(
-        message: 'Não consegui processar isso. Confira se é mesmo um '
-            'print da tela de corridas do Uber e tenta de novo.',
-        onRetry: notifier.reset,
+      return ScreenScrollView(
+        children: [
+          ErrorStateView(
+            message: 'Não consegui processar isso. Confira se é mesmo um '
+                'print da tela de corridas do Uber e tenta de novo.',
+            onRetry: notifier.reset,
+          ),
+          if (state.error != null) ...[
+            const SizedBox(height: AppSpacing.sm),
+            ExpansionTile(
+              tilePadding: EdgeInsets.zero,
+              title: const Text('Detalhes técnicos'),
+              children: [
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(AppSpacing.sm),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.surfaceContainerHigh,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: SelectableText(
+                    state.error.toString(),
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ],
       );
     }
 
