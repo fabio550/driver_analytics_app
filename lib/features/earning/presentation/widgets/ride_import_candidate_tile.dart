@@ -1,3 +1,8 @@
+// ignore_for_file: use_null_aware_elements
+// `?elemento` em listas ainda é experimental no Dart estável (precisa
+// de --enable-experiment), então fica com `if (x != null) x` até virar
+// estável.
+
 import 'package:driver_analytics_app/core/extensions/datetime_extensions.dart';
 import 'package:driver_analytics_app/core/extensions/num_extensions.dart';
 import 'package:driver_analytics_app/core/presentation/theme/app_radius.dart';
@@ -33,9 +38,6 @@ class RideImportCandidateTile extends StatelessWidget {
 
     final pickup = candidate.pickupGeo?.districtName;
     final destination = candidate.destinationGeo?.districtName;
-    // ignore: use_null_aware_elements — a sintaxe `?pickup` ainda é
-    // experimental no Dart estável (precisa de --enable-experiment),
-    // então fica com o `if` até virar estável.
     final route = [
       if (pickup != null) pickup,
       if (destination != null) destination,
