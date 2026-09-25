@@ -10,6 +10,7 @@ import 'package:driver_analytics_app/features/earning/domain/enums/ride_service_
 import 'package:driver_analytics_app/features/earning/domain/enums/ride_status.dart';
 import 'package:driver_analytics_app/features/earning/domain/repositories/earning_repository.dart';
 import 'package:driver_analytics_app/features/earning/domain/validators/earning_validator.dart';
+import 'package:driver_analytics_app/features/earning/infrastructure/dedup/ride_hash.dart';
 
 class CreateRideEarningUseCase {
   final EarningRepository _repository;
@@ -42,6 +43,19 @@ class CreateRideEarningUseCase {
     String? destinationDistrictId,
     String? dedupHash,
   }) async {
+    // A importação por print já calcula e passa o dedupHash (checado na
+    // prévia, antes do usuário confirmar). O formulário manual não
+    // calcula nada — computa aqui do mesmo jeito, pra cadastrar a mesma
+    // corrida duas vezes também caia na mesma checagem.
+    final effectiveDedupHash = dedupHash ??
+        RideHash.compute(
+          app: app.name,
+          rideTimestamp: occurredAt,
+          fareBrl: fare,
+          pickupPostalCode: pickupCep,
+          destinationPostalCode: destinationCep,
+        );
+
     final earning = RideEarningEntity(
       id: _idGenerator.generate(),
       shiftId: shiftId,
@@ -59,10 +73,18 @@ class CreateRideEarningUseCase {
       destinationCep: destinationCep,
       pickupDistrictId: pickupDistrictId,
       destinationDistrictId: destinationDistrictId,
-      dedupHash: dedupHash,
+      dedupHash: effectiveDedupHash,
     );
 
     final failures = _validator.validate(earning);
+
+    if (await _repository.existsRideWithDedupHash(effectiveDedupHash)) {
+      failures.add(const ValidationFailure(
+        field: EarningField.occurredAt,
+        message: 'Já existe uma corrida com esse horário, valor e trajeto.',
+      ));
+    }
+
     if (failures.isNotEmpty) {
       return Failure<EarningEntity, List<ValidationFailure<EarningField>>>(failures);
     }
