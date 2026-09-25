@@ -379,5 +379,70 @@ Paulo - SP, 05398-020, Brasil
             everyElement(isNot(contains('CONJUNTO'))));
       });
     });
+
+    group('OCR real do celular (horário ANTES da linha de serviço)', () {
+      // Segundo print real do usuário: com o fix de ordenação por
+      // posição Y, o horário passou a aparecer numa linha própria logo
+      // após a tarifa — ANTES de serviço/duração/distância — em vez de
+      // depois (caso já coberto pelo grupo acima). Sem tratar essa
+      // ordem, o horário nunca era capturado e nenhuma corrida entrava
+      // no resultado ("0 corridas encontradas").
+      final now = DateTime(2026, 9, 25, 12);
+
+      const rawText = '''
+sex., 18 de set.
+
+R\$ 22,40
+
+3:15
+
+Uber X · 14 min 20 segundos · 6.7 km
+
+Jardim das Flores, Rua Aurora,
+04567-120, Brasil
+
+Vila Nova, Rua das Palmeiras,
+04890-050, Brasil
+
+R\$ 18,90
+
+3:02
+
+Uber X · 11 min 5 segundos · 5.2 km
+
+Centro, Rua XV de Novembro,
+01013-000, Brasil
+
+Bela Vista, Rua Bela Cintra,
+01415-000, Brasil
+''';
+
+      test('extrai as 2 corridas com horário antes da linha de serviço', () {
+        final rides = parser.parse(rawText, now: now);
+        expect(rides, hasLength(2));
+      });
+
+      test('corrida 1: horário, serviço e tarifa corretos', () {
+        final ride = parser.parse(rawText, now: now)[0];
+        expect(ride.startedAt, DateTime(2026, 9, 18, 3, 15));
+        expect(ride.serviceType, 'Uber X');
+        expect(ride.fareBrl, 22.40);
+        expect(ride.durationSeconds, 860);
+        expect(ride.distanceKm, 6.7);
+        expect(ride.pickupPostalCode, '04567-120');
+        expect(ride.destinationPostalCode, '04890-050');
+      });
+
+      test('corrida 2: horário, serviço e tarifa corretos', () {
+        final ride = parser.parse(rawText, now: now)[1];
+        expect(ride.startedAt, DateTime(2026, 9, 18, 3, 2));
+        expect(ride.serviceType, 'Uber X');
+        expect(ride.fareBrl, 18.90);
+        expect(ride.durationSeconds, 665);
+        expect(ride.distanceKm, 5.2);
+        expect(ride.pickupPostalCode, '01013-000');
+        expect(ride.destinationPostalCode, '01415-000');
+      });
+    });
   });
 }

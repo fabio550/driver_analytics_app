@@ -128,6 +128,24 @@ class UberParser implements RideParser {
             continue;
           }
 
+          // No print real (após ordenar por posição Y), o horário
+          // ("3:41") aparece numa linha própria logo após a tarifa —
+          // ANTES da linha de serviço/duração/distância, não depois
+          // dela. Sem checar isso aqui, essa linha cai no fallthrough
+          // genérico (i++) e o horário nunca é capturado, derrubando a
+          // corrida inteira (startedAt fica null).
+          if (rideTime == null) {
+            final standaloneTimeMatch = _reTime.matchAsPrefix(l);
+            if (standaloneTimeMatch != null) {
+              rideTime = (
+                int.parse(standaloneTimeMatch.group(1)!),
+                int.parse(standaloneTimeMatch.group(2)!),
+              );
+              i++;
+              continue;
+            }
+          }
+
           // Só tenta achar o serviço enquanto ainda não achou o desta
           // corrida — sem essa guarda, a tentativa de juntar linha atual
           // + próxima (abaixo) roda de novo pra cada linha seguinte
