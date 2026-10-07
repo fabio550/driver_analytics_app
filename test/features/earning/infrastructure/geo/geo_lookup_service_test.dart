@@ -50,5 +50,15 @@ void main() {
       final match = service.resolvePostalCode('99999-999');
       expect(match, isNull);
     });
+
+    test('resolveDistrictName resolve o id do Tatuapé de volta pro nome', () {
+      final match = service.resolvePostalCode('03317-000');
+      expect(match, isNotNull);
+      expect(service.resolveDistrictName(match!.districtId), 'Tatuape');
+    });
+
+    test('resolveDistrictName com id inexistente retorna null', () {
+      expect(service.resolveDistrictName(-1), isNull);
+    });
   });
 }

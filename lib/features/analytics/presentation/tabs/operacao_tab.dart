@@ -12,6 +12,7 @@ import 'package:driver_analytics_app/features/analytics/presentation/widgets/dis
 import 'package:driver_analytics_app/features/analytics/presentation/widgets/hourly_earnings_chart.dart';
 import 'package:driver_analytics_app/features/analytics/presentation/widgets/split_card.dart';
 import 'package:driver_analytics_app/features/analytics/presentation/widgets/stat_grid_card.dart';
+import 'package:driver_analytics_app/features/earning/application/providers/ride_import_dependency.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -33,6 +34,19 @@ class OperacaoTab extends ConsumerWidget {
       );
     }
 
+    // O ranking de bairros só guarda o id do distrito na ride (o nome
+    // resolvido na importação não é persistido) — resolve de volta pro
+    // nome aqui, pra não mostrar o id cru na legenda do gráfico. Se o
+    // geo.db ainda não carregou, cai no fallback do próprio card (mostra
+    // o id) até o provider resolver e a tela recompor.
+    final geoLookup = ref.watch(geoLookupServiceProvider).valueOrNull;
+    final districtNames = <String, String>{
+      if (geoLookup != null)
+        for (final d in operation.districts ?? const <DistrictEntry>[])
+          if (int.tryParse(d.districtId) case final id?)
+            if (geoLookup.resolveDistrictName(id) case final name?) d.districtId: name,
+    };
+
     return ScreenScrollView(
       children: [
         StatGridCard(
@@ -49,6 +63,7 @@ class OperacaoTab extends ConsumerWidget {
           operation: operation,
           series: series,
           colorScheme: colorScheme,
+          districtNames: districtNames,
         ),
       ],
     );
@@ -59,11 +74,13 @@ class _OperationDetail extends StatelessWidget {
   final OperationAnalytics operation;
   final List<Color> series;
   final ColorScheme colorScheme;
+  final Map<String, String> districtNames;
 
   const _OperationDetail({
     required this.operation,
     required this.series,
     required this.colorScheme,
+    required this.districtNames,
   });
 
   @override
@@ -181,7 +198,11 @@ class _OperationDetail extends StatelessWidget {
           ),
         ),
         const SizedBox(height: AppSpacing.sm),
-        DistrictRankingCard(districts: operation.districts!, barColor: series[0]),
+        DistrictRankingCard(
+          districts: operation.districts!,
+          barColor: series[0],
+          districtNames: districtNames,
+        ),
         const SizedBox(height: AppSpacing.sm),
         Container(
           height: 108,

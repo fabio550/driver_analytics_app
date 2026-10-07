@@ -10,6 +10,13 @@ abstract class GeoLookupService {
   /// Resolve um CEP no formato "NNNNN-NNN" para o distrito/zona que o
   /// contém. Retorna null se o CEP não estiver na base local.
   GeoMatch? resolvePostalCode(String postalCode);
+
+  /// Nome do distrito a partir do seu id — usado pra mostrar o nome em
+  /// vez do id numérico cru em telas que só guardaram o id (ex.: o
+  /// ranking de bairros das Análises, que lê `pickupDistrictId` direto
+  /// da ride já salva, sem o [GeoMatch] completo que existia na hora da
+  /// importação). Retorna null se o id não existir na base local.
+  String? resolveDistrictName(int districtId);
 }
 
 /// Consulta postal_codes -> districts -> zones num `geo.db` já aberto.
@@ -49,6 +56,16 @@ class SqliteGeoLookupService implements GeoLookupService {
       zoneId: row['zone_id'] as int,
       zoneName: row['zone_name'] as String,
     );
+  }
+
+  @override
+  String? resolveDistrictName(int districtId) {
+    final result = _db.select(
+      'select name from districts where id = ? limit 1',
+      [districtId],
+    );
+    if (result.isEmpty) return null;
+    return result.first['name'] as String;
   }
 }
 

@@ -12,7 +12,19 @@ class DistrictRankingCard extends StatefulWidget {
   final List<DistrictEntry> districts;
   final Color barColor;
 
-  const DistrictRankingCard({super.key, required this.districts, required this.barColor});
+  /// districtId -> nome do bairro, resolvido contra o geo.db por quem
+  /// monta a tela (o cálculo de analytics é domínio puro e só conhece
+  /// o id salvo na ride). Um id sem nome resolvido (base desatualizada,
+  /// ainda carregando) cai de volta pro id cru em vez de não mostrar
+  /// nada.
+  final Map<String, String> districtNames;
+
+  const DistrictRankingCard({
+    super.key,
+    required this.districts,
+    required this.barColor,
+    this.districtNames = const {},
+  });
 
   @override
   State<DistrictRankingCard> createState() => _DistrictRankingCardState();
@@ -42,7 +54,8 @@ class _DistrictRankingCardState extends State<DistrictRankingCard> {
         _DistrictMetric.hora => d.revenuePerHour.formattedCurrencyOrDash,
         _DistrictMetric.qtd => '${d.rideCount}',
       };
-      return RankedItem(label: d.districtId, value: value, displayValue: display);
+      final label = widget.districtNames[d.districtId] ?? d.districtId;
+      return RankedItem(label: label, value: value, displayValue: display);
     }).toList();
 
     return RankedBarCard(
