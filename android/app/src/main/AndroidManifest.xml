@@ -1,4 +1,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Exigida pra chamar a Cloud Vision API (OCR em nuvem, com
+         fallback pro ML Kit on-device quando falha ou não há conexão —
+         ver docs/google-cloud-vision-setup.md). O ML Kit sozinho não
+         precisa disso (modelo embutido no app), mas a chamada HTTP da
+         Cloud Vision precisa. -->
+    <uses-permission android:name="android.permission.INTERNET"/>
     <application
         android:label="driver_analytics_app"
         android:name="${applicationName}"

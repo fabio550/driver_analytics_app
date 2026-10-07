@@ -33,6 +33,11 @@ migrate_working_dir/
 /build/
 /coverage/
 
+# Chave da Cloud Vision (--dart-define-from-file) — nunca commitar,
+# ver docs/google-cloud-vision-setup.md
+dart_defines.json
+dart_defines*.json
+
 # Symbolication related
 app.*.symbols
 
