@@ -73,6 +73,21 @@ class UberParser implements RideParser {
   static final RegExp _reTime = RegExp(r'\b(\d{1,2}):(\d{2})\b');
   static final RegExp _reCep = RegExp(r'(\d{5}-\d{3})');
 
+  /// Quando a corrida passa de 1 hora, o Uber troca o formato de duração
+  /// de "X min Y segundos" pra "Xh Y min" (sem segundos) — um formato
+  /// totalmente diferente que `_reService` não reconhece. Normaliza pra
+  /// "<minutos totais> min 0 segundos" ANTES do match, assim o resto do
+  /// parser nem precisa saber que esse formato existe.
+  static final RegExp _reHourMinute = RegExp(r'(\d+)\s*h\s+(\d+)\s*min\b');
+
+  static String _normalizeHourMinuteDuration(String line) {
+    return line.replaceAllMapped(_reHourMinute, (m) {
+      final hours = int.parse(m.group(1)!);
+      final minutes = int.parse(m.group(2)!);
+      return '${hours * 60 + minutes} min 0 segundos';
+    });
+  }
+
   static const _months = {
     'jan': 1,
     'fev': 2,
@@ -99,6 +114,7 @@ class UberParser implements RideParser {
         .split('\n')
         .map((l) => l.trim())
         .where((l) => l.isNotEmpty)
+        .map(_normalizeHourMinuteDuration)
         .toList();
 
     final rides = <ParsedRide>[];

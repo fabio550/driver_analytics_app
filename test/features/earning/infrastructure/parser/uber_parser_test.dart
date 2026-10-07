@@ -643,5 +643,38 @@ km
         expect(ride.distanceKm, 29.44);
       });
     });
+
+    group('duração acima de 1 hora ("1h 6 min", sem segundos)', () {
+      // Quando a corrida passa de 1 hora, o Uber troca o formato de
+      // duração de "X min Y segundos" pra "Xh Y min" — formato
+      // totalmente diferente, sem segundos, que _reService não
+      // reconhecia antes (a corrida inteira era descartada).
+      final now = DateTime(2026, 10, 3, 12);
+
+      const rawText = '''
+sex., 2 de out.
+
+R\$ 41,81
+
+18:04
+
+Uber X · 1h 6 min · 17.10 km
+
+Rua Lima Campos, Artur Alvim - São Paulo - SP, 03689-000, Brasil
+
+Rua dos Coqueiros, Bairro Campestre - Santo André - SP, 09080-010, Brasil
+''';
+
+      test('reconhece a corrida e converte "1h 6 min" pra 3960 segundos', () {
+        final rides = parser.parse(rawText, now: now);
+        expect(rides, hasLength(1));
+        final ride = rides[0];
+        expect(ride.serviceType, 'Uber X');
+        expect(ride.fareBrl, 41.81);
+        expect(ride.durationSeconds, 66 * 60); // 1h6min = 3960s
+        expect(ride.distanceKm, 17.10);
+        expect(ride.startedAt, DateTime(2026, 10, 2, 18, 4));
+      });
+    });
   });
 }
