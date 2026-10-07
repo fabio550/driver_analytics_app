@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Variante escura da splash (Modo Escuro do sistema, API 21+) — mesmo
+     fundo (?android:colorBackground, já escuro no tema Theme.Black
+     aplicado via values-night/styles.xml), mas com o símbolo em branco
+     em vez do símbolo azul usado no modo claro, pra manter contraste. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="?android:colorBackground" />
+
+    <item>
+        <bitmap
+            android:gravity="center"
+            android:src="@drawable/splash_icon_dark" />
+    </item>
+</layer-list>

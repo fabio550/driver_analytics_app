@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Fundo do ícone adaptativo (Android 8+) — mesma cor semente do
+         tema do app (AppColors.seed em app_colors.dart). O primeiro
+         plano (ic_launcher_foreground) é o símbolo branco por cima. -->
+    <color name="ic_launcher_background">#2E5CFF</color>
+</resources>
