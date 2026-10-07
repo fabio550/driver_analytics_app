@@ -88,6 +88,7 @@ class _ShiftsListViewState extends ConsumerState<ShiftsListView> {
             child: ShiftListTile(
               shift: shift,
               onEdit: () => context.push('/shifts/edit', extra: shift),
+              onViewRides: () => context.push('/shifts/rides', extra: shift),
             ),
           ),
         );

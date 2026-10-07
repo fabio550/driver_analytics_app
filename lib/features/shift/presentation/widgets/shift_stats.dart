@@ -12,12 +12,14 @@ class ShiftStats extends StatelessWidget {
   final ShiftEntity shift;
   final DateTime now;
   final bool isExpanded;
+  final VoidCallback? onViewRides;
 
   const ShiftStats({
     super.key,
     required this.shift,
     required this.now,
     required this.isExpanded,
+    this.onViewRides,
   });
 
   @override
@@ -84,6 +86,15 @@ class ShiftStats extends StatelessWidget {
             ),
           ],
         ),
+        if (onViewRides != null) ...[
+          const SizedBox(height: AppSpacing.sm),
+          OutlinedButton.icon(
+            onPressed: onViewRides,
+            icon: const Icon(Icons.list_alt_outlined),
+            label: const Text('Ver corridas desta jornada'),
+            style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(48)),
+          ),
+        ],
       ],
     );
   }

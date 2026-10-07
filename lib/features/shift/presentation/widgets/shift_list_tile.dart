@@ -18,11 +18,13 @@ import 'package:flutter/material.dart';
 class ShiftListTile extends StatefulWidget {
   final ShiftEntity shift;
   final VoidCallback? onEdit;
+  final VoidCallback? onViewRides;
 
   const ShiftListTile({
     super.key,
     required this.shift,
     this.onEdit,
+    this.onViewRides,
   });
 
   @override
@@ -61,7 +63,12 @@ class _ShiftListTileState extends State<ShiftListTile> {
               ],
               const SizedBox(height: AppSpacing.fieldPadding),
               _buildMetrics(now),
-              ShiftStats(shift: shift, now: now, isExpanded: _isExpanded),
+              ShiftStats(
+                shift: shift,
+                now: now,
+                isExpanded: _isExpanded,
+                onViewRides: widget.onViewRides,
+              ),
             ],
           ),
         ),

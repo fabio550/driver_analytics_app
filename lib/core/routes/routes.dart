@@ -14,6 +14,7 @@ import 'package:driver_analytics_app/features/earning/presentation/pages/ride_im
 import 'package:driver_analytics_app/features/shift/domain/entities/shift_entity.dart';
 import 'package:driver_analytics_app/features/shift/presentation/pages/active_shift_page.dart';
 import 'package:driver_analytics_app/features/shift/presentation/pages/shift_create_page.dart';
+import 'package:driver_analytics_app/features/shift/presentation/pages/shift_rides_page.dart';
 import 'package:driver_analytics_app/features/shift/presentation/pages/shift_summary_page.dart';
 import 'package:driver_analytics_app/features/shift/presentation/pages/shifts_page.dart';
 import 'package:flutter/material.dart';
@@ -69,6 +70,10 @@ final routes = [
   GoRoute(
     path: '/shifts/edit',
     builder: (context, state) => ShiftCreatePage(existing: state.extra as ShiftEntity),
+  ),
+  GoRoute(
+    path: '/shifts/rides',
+    builder: (context, state) => ShiftRidesPage(shift: state.extra as ShiftEntity),
   ),
   GoRoute(
     path: '/shifts/active',
