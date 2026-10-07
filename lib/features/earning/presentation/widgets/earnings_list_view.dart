@@ -3,17 +3,19 @@ import 'package:driver_analytics_app/core/extensions/num_extensions.dart';
 import 'package:driver_analytics_app/core/presentation/theme/app_spacing.dart';
 import 'package:driver_analytics_app/core/presentation/widgets/empty_state_view.dart';
 import 'package:driver_analytics_app/core/presentation/widgets/section_header.dart';
+import 'package:driver_analytics_app/features/earning/application/providers/earning_provider.dart';
 import 'package:driver_analytics_app/features/earning/domain/entities/earning_entity.dart';
 import 'package:driver_analytics_app/features/earning/presentation/widgets/shift_earnings_group.dart';
 import 'package:driver_analytics_app/features/shift/domain/entities/shift_entity.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// Lista de ganhos agrupada por jornada, com cabeçalho de mês.
 ///
 /// Um lançamento sem jornada vinculada (promoção do dia, ajuste do
 /// suporte) cai num grupo do próprio dia. Não existe tratamento especial
 /// nem aviso pra isso: é só mais um dia com dinheiro entrando.
-class EarningsListView extends StatelessWidget {
+class EarningsListView extends ConsumerStatefulWidget {
   final List<EarningEntity> earnings;
   final List<ShiftEntity> shifts;
   final void Function(EarningEntity earning)? onTapEarning;
@@ -28,8 +30,20 @@ class EarningsListView extends StatelessWidget {
   });
 
   @override
+  ConsumerState<EarningsListView> createState() => _EarningsListViewState();
+}
+
+class _EarningsListViewState extends ConsumerState<EarningsListView> {
+  // Remove da tela antes do delete no banco confirmar, pra o Dismissible
+  // (um nível abaixo, dentro de cada ShiftEarningsGroup) não sobrar na
+  // árvore já dispensado.
+  final _hiddenIds = <String>{};
+
+  @override
   Widget build(BuildContext context) {
-    final groups = _buildGroups();
+    final visibleEarnings =
+        widget.earnings.where((e) => !_hiddenIds.contains(e.id)).toList();
+    final groups = _buildGroups(visibleEarnings);
 
     if (groups.isEmpty) {
       return EmptyStateView(
@@ -37,10 +51,10 @@ class EarningsListView extends StatelessWidget {
         title: 'Nenhum ganho lançado',
         message: 'Detalhe as corridas ao finalizar uma jornada, ou lance uma '
             'promoção ou ajuste aqui.',
-        action: onCreate == null
+        action: widget.onCreate == null
             ? null
             : FilledButton.icon(
-                onPressed: onCreate,
+                onPressed: widget.onCreate,
                 icon: const Icon(Icons.add),
                 label: const Text('Novo lançamento'),
                 style: FilledButton.styleFrom(
@@ -80,13 +94,19 @@ class EarningsListView extends StatelessWidget {
           shiftStartTime: group.date,
           shiftEarnings: group.shiftEarnings,
           earnings: group.earnings,
-          onTapEarning: onTapEarning,
+          onTapEarning: widget.onTapEarning,
+          onDeleteEarning: _deleteEarning,
         );
       },
     );
   }
 
-  List<_EarningsGroup> _buildGroups() {
+  Future<void> _deleteEarning(EarningEntity earning) async {
+    setState(() => _hiddenIds.add(earning.id));
+    await ref.read(earningNotifierProvider.notifier).deleteEarning(earning.id);
+  }
+
+  List<_EarningsGroup> _buildGroups(List<EarningEntity> earnings) {
     final byShift = <String, List<EarningEntity>>{};
     final looseByDay = <DateTime, List<EarningEntity>>{};
 
@@ -106,7 +126,7 @@ class EarningsListView extends StatelessWidget {
 
     final groups = <_EarningsGroup>[];
 
-    for (final shift in shifts) {
+    for (final shift in widget.shifts) {
       final shiftEarnings = byShift[shift.id];
       if (shiftEarnings == null) continue;
       groups.add(

@@ -3,6 +3,7 @@ import 'package:driver_analytics_app/core/extensions/num_extensions.dart';
 import 'package:driver_analytics_app/core/presentation/theme/app_spacing.dart';
 import 'package:driver_analytics_app/core/presentation/theme/app_text_styles.dart';
 import 'package:driver_analytics_app/features/earning/domain/entities/earning_entity.dart';
+import 'package:driver_analytics_app/features/earning/presentation/dialogs/delete_earning_dialog.dart';
 import 'package:driver_analytics_app/features/earning/presentation/widgets/earning_row_tile.dart';
 import 'package:flutter/material.dart';
 
@@ -15,12 +16,17 @@ class ShiftEarningsGroup extends StatelessWidget {
   final List<EarningEntity> earnings;
   final void Function(EarningEntity earning)? onTapEarning;
 
+  /// Igual ao swipe-pra-excluir da tela de jornadas: arrasta a linha do
+  /// lançamento, confirma num diálogo, some da lista.
+  final void Function(EarningEntity earning)? onDeleteEarning;
+
   const ShiftEarningsGroup({
     super.key,
     required this.shiftStartTime,
     required this.shiftEarnings,
     required this.earnings,
     this.onTapEarning,
+    this.onDeleteEarning,
   });
 
   @override
@@ -71,9 +77,21 @@ class ShiftEarningsGroup extends StatelessWidget {
             ),
             Divider(color: colorScheme.outlineVariant, height: 1),
             for (final earning in earnings)
-              EarningRowTile(
-                earning: earning,
-                onTap: onTapEarning == null ? null : () => onTapEarning!(earning),
+              Dismissible(
+                key: ValueKey(earning.id),
+                direction: DismissDirection.endToStart,
+                background: Container(
+                  alignment: Alignment.centerRight,
+                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                  color: colorScheme.errorContainer,
+                  child: Icon(Icons.delete, color: colorScheme.onErrorContainer),
+                ),
+                confirmDismiss: (_) => DeleteEarningDialog.show(context),
+                onDismissed: (_) => onDeleteEarning?.call(earning),
+                child: EarningRowTile(
+                  earning: earning,
+                  onTap: onTapEarning == null ? null : () => onTapEarning!(earning),
+                ),
               ),
             Container(
               color: colorScheme.surfaceContainerLow,
