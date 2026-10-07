@@ -50,10 +50,12 @@ class UberParser implements RideParser {
   /// "1l min"); `_normalizeDigits` converte de volta antes de fazer o
   /// parse. O "km" no fim é opcional: em alguns prints reais essa
   /// palavra some inteiramente do texto reconhecido, e sem isso a
-  /// corrida inteira era descartada por só faltar a unidade.
+  /// corrida inteira era descartada por só faltar a unidade. ":" entra
+  /// na lista de separadores porque já apareceu no lugar do "·" em
+  /// "...segundos: 1710 km".
   static final RegExp _reService = RegExp(
-    r'^(.+?)\s*(?:·|•|-|\*|\.)?\s*'
-    r'(?:([\dlI]+)\s+min\s+([\dlI]+)\s+[^\d\s]+\s*(?:·|•|-|\*|\.)?\s*'
+    r'^(.+?)\s*(?:·|•|-|\*|\.|:)?\s*'
+    r'(?:([\dlI]+)\s+min\s+([\dlI]+)\s+[^\d\s]+\s*(?:·|•|-|\*|\.|:)?\s*'
     r'([\dlI]+(?:[.,][\dlI]+)?)\s*(?:km)?'
     r'|(Você cancelou|Cancelado pelo usuário))$',
   );
@@ -70,20 +72,28 @@ class UberParser implements RideParser {
     caseSensitive: false,
   );
 
-  static final RegExp _reTime = RegExp(r'\b(\d{1,2}):(\d{2})\b');
+  // Tolera `l`/`I` no lugar de dígito aqui também (ex.: "l:02" em vez
+  // de "1:02") — mesmo problema de OCR que já era tolerado dentro de
+  // `_reService`, só que esse regex nunca tinha ganhado o mesmo
+  // tratamento. Sem isso, o horário inteiro falhava e a corrida ficava
+  // sem `startedAt`, sendo descartada mesmo com serviço/tarifa ok.
+  static final RegExp _reTime = RegExp(r'\b([\dlI]{1,2}):([\dlI]{2})\b');
   static final RegExp _reCep = RegExp(r'(\d{5}-\d{3})');
 
   /// Quando a corrida passa de 1 hora, o Uber troca o formato de duração
   /// de "X min Y segundos" pra "Xh Y min" (sem segundos) — um formato
   /// totalmente diferente que `_reService` não reconhece. Normaliza pra
   /// "<minutos totais> min 0 segundos" ANTES do match, assim o resto do
-  /// parser nem precisa saber que esse formato existe.
-  static final RegExp _reHourMinute = RegExp(r'(\d+)\s*h\s+(\d+)\s*min\b');
+  /// parser nem precisa saber que esse formato existe. Tolera `l`/`I`
+  /// no lugar do dígito da hora e espaço opcional (não obrigatório) ao
+  /// redor de "h"/"min" — já apareceu compactado sem nenhum espaço
+  /// ("Xlh6min" em vez de "X 1h 6 min").
+  static final RegExp _reHourMinute = RegExp(r'([\dlI]+)\s*h\s*([\dlI]+)\s*min\b');
 
   static String _normalizeHourMinuteDuration(String line) {
     return line.replaceAllMapped(_reHourMinute, (m) {
-      final hours = int.parse(m.group(1)!);
-      final minutes = int.parse(m.group(2)!);
+      final hours = int.parse(_normalizeDigits(m.group(1)!));
+      final minutes = int.parse(_normalizeDigits(m.group(2)!));
       return '${hours * 60 + minutes} min 0 segundos';
     });
   }
@@ -178,8 +188,8 @@ class UberParser implements RideParser {
             final standaloneTimeMatch = _reTime.matchAsPrefix(l);
             if (standaloneTimeMatch != null) {
               rideTime = (
-                int.parse(standaloneTimeMatch.group(1)!),
-                int.parse(standaloneTimeMatch.group(2)!),
+                int.parse(_normalizeDigits(standaloneTimeMatch.group(1)!)),
+                int.parse(_normalizeDigits(standaloneTimeMatch.group(2)!)),
               );
               i++;
               continue;
@@ -252,8 +262,8 @@ class UberParser implements RideParser {
 
             if (skippedTimeMatch != null) {
               rideTime ??= (
-                int.parse(skippedTimeMatch.group(1)!),
-                int.parse(skippedTimeMatch.group(2)!),
+                int.parse(_normalizeDigits(skippedTimeMatch.group(1)!)),
+                int.parse(_normalizeDigits(skippedTimeMatch.group(2)!)),
               );
             } else if (rideTime == null) {
               Match? timeMatch = _reTime.firstMatch(svcText);
@@ -269,8 +279,8 @@ class UberParser implements RideParser {
 
               if (timeMatch != null) {
                 rideTime = (
-                  int.parse(timeMatch.group(1)!),
-                  int.parse(timeMatch.group(2)!),
+                  int.parse(_normalizeDigits(timeMatch.group(1)!)),
+                  int.parse(_normalizeDigits(timeMatch.group(2)!)),
                 );
               }
             }

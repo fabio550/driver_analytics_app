@@ -676,5 +676,62 @@ Rua dos Coqueiros, Bairro Campestre - Santo André - SP, 09080-010, Brasil
         expect(ride.startedAt, DateTime(2026, 10, 2, 18, 4));
       });
     });
+
+    group('horário com "l" no lugar de "1" ("l:02" em vez de "1:02")', () {
+      // _reTime não tolerava l/I como dígito (só os grupos de duração
+      // dentro de _reService toleravam) — o horário inteiro falhava e
+      // a corrida ficava sem startedAt, sendo descartada mesmo com
+      // serviço/tarifa/distância ok.
+      final now = DateTime(2026, 10, 3, 12);
+
+      const rawText = '''
+sex., 2 de out.
+
+R\$ 24,61
+
+l:02
+
+Uber X - 15 min 48 segundos
+
+13.79 km
+''';
+
+      test('reconhece "l:02" como 1:02', () {
+        final rides = parser.parse(rawText, now: now);
+        expect(rides, hasLength(1));
+        expect(rides[0].startedAt, DateTime(2026, 10, 2, 1, 2));
+        expect(rides[0].fareBrl, 24.61);
+      });
+    });
+
+    group('duração "Xh Ymin" compactada, sem espaços nem separador '
+        'reconhecível ("Xlh6min: 1710 km")', () {
+      // Passada de OCR pior que a do grupo "1h 6 min" acima: sem
+      // nenhum espaço entre os tokens, "l" no lugar do dígito da hora,
+      // e ":" no lugar do "·" entre a duração e a distância.
+      final now = DateTime(2026, 10, 3, 12);
+
+      const rawText = '''
+sex., 2 de out.
+
+R\$ 41,81
+
+18:04
+
+Uber Xlh6min: 1710 km
+
+Rua Lima Campos, Artur Alvim - São Paulo - SP, 03689-000, Brasil
+''';
+
+      test('ainda reconhece a corrida (mesmo com a distância sem o ponto '
+          'decimal, perda de OCR não recuperável)', () {
+        final rides = parser.parse(rawText, now: now);
+        expect(rides, hasLength(1));
+        final ride = rides[0];
+        expect(ride.serviceType, 'Uber X');
+        expect(ride.fareBrl, 41.81);
+        expect(ride.durationSeconds, 66 * 60);
+      });
+    });
   });
 }
