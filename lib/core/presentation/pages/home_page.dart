@@ -1,8 +1,11 @@
+import 'dart:io';
+
 import 'package:driver_analytics_app/core/domain/enums/load_status.dart';
 import 'package:driver_analytics_app/core/extensions/datetime_extensions.dart';
 import 'package:driver_analytics_app/core/extensions/duration_extensions.dart';
 import 'package:driver_analytics_app/core/extensions/num_extensions.dart';
 import 'package:driver_analytics_app/core/infrastructure/database/seed_data_provider.dart';
+import 'package:driver_analytics_app/core/infrastructure/export/export_dependency.dart';
 import 'package:driver_analytics_app/core/presentation/theme/app_radius.dart';
 import 'package:driver_analytics_app/core/presentation/theme/app_sizes.dart';
 import 'package:driver_analytics_app/core/presentation/theme/app_spacing.dart';
@@ -13,10 +16,15 @@ import 'package:driver_analytics_app/core/presentation/widgets/screen_scroll_vie
 import 'package:driver_analytics_app/core/presentation/widgets/section_header.dart';
 import 'package:driver_analytics_app/core/presentation/widgets/skeleton_box.dart';
 import 'package:driver_analytics_app/features/analytics/application/providers/analytics_provider.dart';
+import 'package:driver_analytics_app/features/cost/application/providers/cost_dependency.dart';
 import 'package:driver_analytics_app/features/cost/application/providers/cost_provider.dart';
+import 'package:driver_analytics_app/features/earning/application/providers/earning_dependency.dart';
 import 'package:driver_analytics_app/features/earning/application/providers/earning_provider.dart';
+import 'package:driver_analytics_app/features/earning/application/providers/ride_import_dependency.dart';
 import 'package:driver_analytics_app/features/earning/domain/entities/earning_entity.dart';
+import 'package:driver_analytics_app/features/earning/infrastructure/geo/geo_lookup_service.dart';
 import 'package:driver_analytics_app/features/shift/application/providers/active_shift_provider.dart';
+import 'package:driver_analytics_app/features/shift/application/providers/shift_dependency.dart';
 import 'package:driver_analytics_app/features/shift/application/providers/shift_provider.dart';
 import 'package:driver_analytics_app/features/shift/domain/entities/shift_entity.dart';
 import 'package:driver_analytics_app/features/shift/domain/enums/shift_status.dart';
@@ -27,6 +35,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
 
 /// Tela do dia. Antes era um menu de quatro botões, que obrigava o
 /// motorista a escolher um destino antes de ver qualquer coisa — e a
@@ -41,6 +51,7 @@ class HomePage extends ConsumerStatefulWidget {
 
 class _HomePageState extends ConsumerState<HomePage> {
   bool _isSeeding = false;
+  bool _isExporting = false;
 
   @override
   void initState() {
@@ -136,7 +147,11 @@ class _HomePageState extends ConsumerState<HomePage> {
                 ),
               ),
             ),
-            if (kDebugMode) _seedButton(),
+            if (kDebugMode) ...[
+              _seedButton(),
+              const SizedBox(height: AppSpacing.sm),
+              _exportButton(),
+            ],
           ],
         ),
       );
@@ -169,6 +184,8 @@ class _HomePageState extends ConsumerState<HomePage> {
           if (kDebugMode) ...[
             const SizedBox(height: AppSpacing.lg),
             _seedButton(),
+            const SizedBox(height: AppSpacing.sm),
+            _exportButton(),
           ],
         ],
       ),
@@ -272,6 +289,23 @@ class _HomePageState extends ConsumerState<HomePage> {
     );
   }
 
+  Widget _exportButton() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+      child: OutlinedButton(
+        onPressed: _isExporting ? null : _exportData,
+        style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(44)),
+        child: _isExporting
+            ? const SizedBox(
+                height: 16,
+                width: 16,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
+            : const Text('Exportar dados pra planilha (debug)'),
+      ),
+    );
+  }
+
   Future<void> _startShift() async {
     final initialKm = await StartShiftDialog.show(context);
     if (initialKm == null || !mounted) return;
@@ -296,6 +330,48 @@ class _HomePageState extends ConsumerState<HomePage> {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Dados de exemplo adicionados.')),
     );
+  }
+
+  Future<void> _exportData() async {
+    setState(() => _isExporting = true);
+
+    try {
+      final shifts = await ref.read(shiftRepositoryProvider).getAll();
+      final earnings = await ref.read(earningRepositoryProvider).getAll();
+      final costs = await ref.read(costRepositoryProvider).getAll();
+
+      GeoLookupService? geoLookup;
+      try {
+        geoLookup = await ref.read(geoLookupServiceProvider.future);
+      } catch (_) {
+        // Nome do bairro é só um complemento — exporta sem ele se a base
+        // geo não abrir.
+      }
+
+      final bytes = ref.read(xlsxExportServiceProvider).build(
+            shifts: shifts,
+            earnings: earnings,
+            costs: costs,
+            geoLookup: geoLookup,
+          );
+
+      final timestamp = DateTime.now();
+      final fileName = 'driver_analytics_${timestamp.millisecondsSinceEpoch}.xlsx';
+      final file = File('${(await getTemporaryDirectory()).path}/$fileName');
+      await file.writeAsBytes(bytes);
+
+      if (!mounted) return;
+      await SharePlus.instance.share(
+        ShareParams(files: [XFile(file.path)], subject: 'Exportação Driver Analytics'),
+      );
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Falha ao exportar: $error')),
+      );
+    } finally {
+      if (mounted) setState(() => _isExporting = false);
+    }
   }
 }
 
