@@ -1,3 +1,5 @@
+import 'package:driver_analytics_app/features/earning/domain/enums/ride_service_type.dart';
+
 /// Quanto do tempo/km ativo teve passageiro dentro vs. disponível esperando
 /// ou deslocando. Só existe quando [ShiftCompleteness.isFullyComplete] —
 /// ver o comentário em cima dela.
@@ -80,6 +82,77 @@ class DistrictEntry {
   }
 }
 
+/// Faixa de distância da corrida (km com passageiro). Ordem fixa
+/// (curta -> viagem) de propósito: ao contrário do ranking de bairros/
+/// tipos, o que importa aqui é ver a tendência ao longo da distância
+/// (ex.: corrida curta paga mais por km, viagem paga mais por hora),
+/// que só aparece se as faixas não forem reordenadas por valor.
+enum DistanceRange {
+  curta, // até 3 km
+  media, // 3 a 8 km
+  longa, // 8 a 20 km
+  viagem; // acima de 20 km
+
+  static DistanceRange of(double distanceKm) {
+    if (distanceKm <= 3) return DistanceRange.curta;
+    if (distanceKm <= 8) return DistanceRange.media;
+    if (distanceKm <= 20) return DistanceRange.longa;
+    return DistanceRange.viagem;
+  }
+}
+
+/// Ranking por faixa de distância — sempre as 4 faixas de [DistanceRange],
+/// mesmo sem nenhuma corrida nela (fica com contagem 0), porque aqui o
+/// valor está em comparar as mesmas 4 categorias período a período.
+class DistanceRangeEntry {
+  final DistanceRange range;
+  final double revenue;
+  final double distanceKm;
+  final Duration duration;
+  final int rideCount;
+
+  const DistanceRangeEntry({
+    required this.range,
+    required this.revenue,
+    required this.distanceKm,
+    required this.duration,
+    required this.rideCount,
+  });
+
+  double? get revenuePerKm => distanceKm > 0 ? revenue / distanceKm : null;
+
+  double? get revenuePerHour {
+    final hours = duration.inSeconds / 3600;
+    return hours > 0 ? revenue / hours : null;
+  }
+}
+
+/// Ranking por tipo de serviço (Uber X, Comfort, Black...). Diferente da
+/// faixa de distância, não tem ordem natural entre os tipos — ordena
+/// pela métrica escolhida, igual ao ranking de bairros.
+class ServiceTypeEntry {
+  final RideServiceType serviceType;
+  final double revenue;
+  final double distanceKm;
+  final Duration duration;
+  final int rideCount;
+
+  const ServiceTypeEntry({
+    required this.serviceType,
+    required this.revenue,
+    required this.distanceKm,
+    required this.duration,
+    required this.rideCount,
+  });
+
+  double? get revenuePerKm => distanceKm > 0 ? revenue / distanceKm : null;
+
+  double? get revenuePerHour {
+    final hours = duration.inSeconds / 3600;
+    return hours > 0 ? revenue / hours : null;
+  }
+}
+
 /// §checksum: quando a jornada tem lançamentos, a soma deles precisa bater
 /// com o valor declarado ao finalizar — senão falta (ou sobra) lançamento.
 /// Jornada sem nenhum lançamento é trivialmente completa (cai no valor
@@ -118,6 +191,8 @@ class OperationAnalytics {
   final PaceStats? pace;
   final List<HourlyEarningEntry>? hourlyEarnings;
   final List<DistrictEntry>? districts;
+  final List<DistanceRangeEntry>? distanceRanges;
+  final List<ServiceTypeEntry>? serviceTypes;
 
   const OperationAnalytics({
     required this.totalTime,
@@ -128,6 +203,8 @@ class OperationAnalytics {
     this.timeSplit,
     this.distanceSplit,
     this.pace,
+    this.distanceRanges,
+    this.serviceTypes,
     this.hourlyEarnings,
     this.districts,
   });

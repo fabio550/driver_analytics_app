@@ -1,6 +1,7 @@
 import 'package:driver_analytics_app/features/analytics/domain/entities/operation_analytics.dart';
 import 'package:driver_analytics_app/core/domain/value_objects/analytics_period.dart';
 import 'package:driver_analytics_app/features/earning/domain/entities/earning_entity.dart';
+import 'package:driver_analytics_app/features/earning/domain/enums/ride_service_type.dart';
 import 'package:driver_analytics_app/features/earning/domain/enums/ride_status.dart';
 import 'package:driver_analytics_app/features/shift/domain/entities/shift_entity.dart';
 import 'package:driver_analytics_app/features/shift/domain/enums/shift_status.dart';
@@ -124,6 +125,8 @@ class OperationAnalyticsCalculator {
 
     final hourlyEarnings = _hourlyEarnings(completedRides);
     final districts = _districtRanking(completedRides);
+    final distanceRanges = _distanceRangeRanking(completedRides);
+    final serviceTypes = _serviceTypeRanking(completedRides);
 
     return OperationAnalytics(
       totalTime: totalTime,
@@ -136,6 +139,8 @@ class OperationAnalyticsCalculator {
       pace: pace,
       hourlyEarnings: hourlyEarnings,
       districts: districts,
+      distanceRanges: distanceRanges,
+      serviceTypes: serviceTypes,
     );
   }
 
@@ -172,6 +177,44 @@ class OperationAnalyticsCalculator {
       for (final entry in byDistrict.entries)
         DistrictEntry(
           districtId: entry.key,
+          revenue: entry.value.fold<double>(0, (t, r) => t + r.amount),
+          distanceKm: entry.value.fold<double>(0, (t, r) => t + r.distanceKm),
+          duration: entry.value.fold<Duration>(Duration.zero, (t, r) => t + r.duration),
+          rideCount: entry.value.length,
+        ),
+    ]..sort((a, b) => b.revenue.compareTo(a.revenue));
+  }
+
+  List<DistanceRangeEntry> _distanceRangeRanking(List<RideEarningEntity> completedRides) {
+    final byRange = <DistanceRange, List<RideEarningEntity>>{
+      for (final range in DistanceRange.values) range: [],
+    };
+    for (final ride in completedRides) {
+      byRange[DistanceRange.of(ride.distanceKm)]!.add(ride);
+    }
+
+    return [
+      for (final range in DistanceRange.values)
+        DistanceRangeEntry(
+          range: range,
+          revenue: byRange[range]!.fold<double>(0, (t, r) => t + r.amount),
+          distanceKm: byRange[range]!.fold<double>(0, (t, r) => t + r.distanceKm),
+          duration: byRange[range]!.fold<Duration>(Duration.zero, (t, r) => t + r.duration),
+          rideCount: byRange[range]!.length,
+        ),
+    ];
+  }
+
+  List<ServiceTypeEntry> _serviceTypeRanking(List<RideEarningEntity> completedRides) {
+    final byType = <RideServiceType, List<RideEarningEntity>>{};
+    for (final ride in completedRides) {
+      byType.putIfAbsent(ride.serviceType, () => []).add(ride);
+    }
+
+    return [
+      for (final entry in byType.entries)
+        ServiceTypeEntry(
+          serviceType: entry.key,
           revenue: entry.value.fold<double>(0, (t, r) => t + r.amount),
           distanceKm: entry.value.fold<double>(0, (t, r) => t + r.distanceKm),
           duration: entry.value.fold<Duration>(Duration.zero, (t, r) => t + r.duration),

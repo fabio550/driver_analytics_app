@@ -8,8 +8,10 @@ import 'package:driver_analytics_app/core/presentation/widgets/empty_state_view.
 import 'package:driver_analytics_app/core/presentation/widgets/screen_scroll_view.dart';
 import 'package:driver_analytics_app/features/analytics/application/providers/analytics_provider.dart';
 import 'package:driver_analytics_app/features/analytics/domain/entities/operation_analytics.dart';
+import 'package:driver_analytics_app/features/analytics/presentation/widgets/distance_range_ranking_card.dart';
 import 'package:driver_analytics_app/features/analytics/presentation/widgets/district_ranking_card.dart';
 import 'package:driver_analytics_app/features/analytics/presentation/widgets/hourly_earnings_chart.dart';
+import 'package:driver_analytics_app/features/analytics/presentation/widgets/service_type_ranking_card.dart';
 import 'package:driver_analytics_app/features/analytics/presentation/widgets/split_card.dart';
 import 'package:driver_analytics_app/features/analytics/presentation/widgets/stat_grid_card.dart';
 import 'package:driver_analytics_app/features/earning/application/providers/ride_import_dependency.dart';
@@ -202,6 +204,16 @@ class _OperationDetail extends StatelessWidget {
           districts: operation.districts!,
           barColor: series[0],
           districtNames: districtNames,
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        DistanceRangeRankingCard(
+          ranges: operation.distanceRanges!,
+          barColor: series[2],
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        ServiceTypeRankingCard(
+          serviceTypes: operation.serviceTypes!,
+          barColor: series[4],
         ),
         const SizedBox(height: AppSpacing.sm),
         Container(
