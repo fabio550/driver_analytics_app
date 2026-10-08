@@ -41,7 +41,7 @@ class OperacaoTab extends ConsumerWidget {
     // nome aqui, pra não mostrar o id cru na legenda do gráfico. Se o
     // geo.db ainda não carregou, cai no fallback do próprio card (mostra
     // o id) até o provider resolver e a tela recompor.
-    final geoLookup = ref.watch(geoLookupServiceProvider).valueOrNull;
+    final geoLookup = ref.watch(geoLookupServiceProvider).value;
     final districtNames = <String, String>{
       if (geoLookup != null)
         for (final d in operation.districts ?? const <DistrictEntry>[])
