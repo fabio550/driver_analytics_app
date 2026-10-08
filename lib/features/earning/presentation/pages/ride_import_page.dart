@@ -8,9 +8,11 @@ import 'package:driver_analytics_app/features/earning/application/providers/ride
 import 'package:driver_analytics_app/features/earning/application/state/ride_import_notifier.dart';
 import 'package:driver_analytics_app/features/earning/application/state/ride_import_state.dart';
 import 'package:driver_analytics_app/features/earning/presentation/widgets/ride_import_candidate_tile.dart';
+import 'package:driver_analytics_app/features/shift/domain/entities/shift_entity.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 
 /// Seleciona um print da tela de corridas do Uber, roda OCR on-device
@@ -103,6 +105,8 @@ class _RideImportPageState extends ConsumerState<RideImportPage> {
             : () async {
                 await notifier.confirmImport(shiftId: widget.shiftId);
                 if (!mounted) return;
+                await _offerShiftForPendingRides(notifier);
+                if (!mounted) return;
                 _textController.clear();
                 setState(() => _showPasteFallback = false);
                 _showResultSnackBar(context);
@@ -122,6 +126,27 @@ class _RideImportPageState extends ConsumerState<RideImportPage> {
     }
 
     return null;
+  }
+
+  /// Corridas importadas sem jornada (import aberto fora do fluxo de
+  /// finalizar jornada) ficam em [RideImportState.unassignedImportedRides]
+  /// depois de [RideImportNotifier.confirmImport] — aqui a tela oferece
+  /// criar a jornada delas, com o total já preenchido (editável). Se o
+  /// usuário cancelar o formulário, as corridas continuam salvas, só
+  /// sem jornada associada.
+  Future<void> _offerShiftForPendingRides(RideImportNotifier notifier) async {
+    final pendingRides = ref.read(rideImportNotifierProvider).unassignedImportedRides;
+    if (pendingRides == null || pendingRides.isEmpty) return;
+
+    final total = pendingRides.fold<double>(0, (sum, ride) => sum + ride.amount);
+    final createdShift = await context.push<ShiftEntity>('/shifts/create', extra: total);
+    if (!mounted) return;
+
+    if (createdShift != null) {
+      await notifier.assignShiftToPendingRides(createdShift.id);
+    } else {
+      notifier.discardPendingShiftRides();
+    }
   }
 
   void _showResultSnackBar(BuildContext context) {

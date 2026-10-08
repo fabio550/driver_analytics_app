@@ -23,7 +23,12 @@ import 'package:go_router/go_router.dart';
 class ShiftCreatePage extends ConsumerStatefulWidget {
   final ShiftEntity? existing;
 
-  const ShiftCreatePage({super.key, this.existing});
+  /// Preenche o campo "Ganhos" ao criar uma jornada nova (ignorado em
+  /// modo de edição) — usado quando a jornada nasce associada a
+  /// corridas já importadas, pro total delas vir pronto, editável.
+  final double? initialEarnings;
+
+  const ShiftCreatePage({super.key, this.existing, this.initialEarnings});
 
   @override
   ConsumerState<ShiftCreatePage> createState() => _ShiftCreatePageState();
@@ -70,6 +75,8 @@ class _ShiftCreatePageState extends ConsumerState<ShiftCreatePage> {
       if (existing.earnings != null) {
         _earningsController.text = CurrencyInputFormatter.format(existing.earnings!);
       }
+    } else if (widget.initialEarnings != null) {
+      _earningsController.text = CurrencyInputFormatter.format(widget.initialEarnings!);
     }
   }
 
@@ -292,6 +299,8 @@ class _ShiftCreatePageState extends ConsumerState<ShiftCreatePage> {
 
     setState(() => _formState = _formState.copyWith(isSubmitting: true));
 
+    ShiftEntity? createdShift;
+
     if (_isEditing) {
       final idGenerator = ref.read(uuidGeneratorProvider);
       final entity = ShiftEntity(
@@ -312,7 +321,7 @@ class _ShiftCreatePageState extends ConsumerState<ShiftCreatePage> {
       );
       await ref.read(shiftNotifierProvider.notifier).updateShift(entity);
     } else {
-      await ref.read(shiftNotifierProvider.notifier).createShift(
+      createdShift = await ref.read(shiftNotifierProvider.notifier).createShift(
             initialKm: initialKm,
             startTime: startTime,
             status: ShiftStatus.submitted,
@@ -327,7 +336,7 @@ class _ShiftCreatePageState extends ConsumerState<ShiftCreatePage> {
 
     final validationFailures = ref.read(shiftNotifierProvider).validationFailures;
     if (validationFailures.isEmpty) {
-      context.pop();
+      context.pop(createdShift);
       return;
     }
 

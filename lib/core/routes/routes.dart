@@ -65,7 +65,7 @@ final routes = [
   ),
   GoRoute(
     path: '/shifts/create',
-    builder: (context, state) => const ShiftCreatePage(),
+    builder: (context, state) => ShiftCreatePage(initialEarnings: state.extra as double?),
   ),
   GoRoute(
     path: '/shifts/edit',

@@ -41,7 +41,11 @@ class ShiftNotifier extends Notifier<ShiftState> {
     }
   }
 
-  Future<void> createShift({
+  /// Retorna a jornada criada (com o id gerado) em caso de sucesso, ou
+  /// null em falha de validação — usado por quem precisa da jornada
+  /// recém-criada pra associar outra coisa a ela (ex.: corridas
+  /// importadas sem jornada, que ganham uma jornada nova em seguida).
+  Future<ShiftEntity?> createShift({
     required double initialKm,
     required DateTime startTime,
     required ShiftStatus status,
@@ -61,12 +65,14 @@ class ShiftNotifier extends Notifier<ShiftState> {
       pauses: pauses,
     );
     switch (result) {
-      case Success():
+      case Success(value: final shift):
         await loadShifts();
+        return shift;
       case Failure():
         state = state.copyWith(
           validationFailures: result.error,
         );
+        return null;
     }
   }
 

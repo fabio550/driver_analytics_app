@@ -1,5 +1,6 @@
 import 'package:driver_analytics_app/core/domain/enums/load_status.dart';
 import 'package:driver_analytics_app/features/earning/application/use_cases/ride_import_candidate.dart';
+import 'package:driver_analytics_app/features/earning/domain/entities/earning_entity.dart';
 
 class RideImportState {
   final LoadStatus status;
@@ -21,6 +22,13 @@ class RideImportState {
   final int? frameProgressCurrent;
   final int? frameProgressTotal;
 
+  /// Corridas confirmadas na última importação que não tinham jornada
+  /// (import aberto fora do fluxo de finalizar jornada) — null quando a
+  /// importação já tinha uma jornada, ou antes de confirmar. A tela usa
+  /// isso pra oferecer criar a jornada logo em seguida, com o total já
+  /// preenchido, e associar essas corridas a ela.
+  final List<RideEarningEntity>? unassignedImportedRides;
+
   const RideImportState({
     this.status = LoadStatus.initial,
     this.candidates = const [],
@@ -32,6 +40,7 @@ class RideImportState {
     this.lastSkippedCount,
     this.frameProgressCurrent,
     this.frameProgressTotal,
+    this.unassignedImportedRides,
   });
 
   RideImportState copyWith({
@@ -45,9 +54,11 @@ class RideImportState {
     int? lastSkippedCount,
     int? frameProgressCurrent,
     int? frameProgressTotal,
+    List<RideEarningEntity>? unassignedImportedRides,
     bool clearError = false,
     bool clearResult = false,
     bool clearProgress = false,
+    bool clearUnassignedImportedRides = false,
   }) {
     return RideImportState(
       status: status ?? this.status,
@@ -65,6 +76,9 @@ class RideImportState {
           : frameProgressCurrent ?? this.frameProgressCurrent,
       frameProgressTotal:
           clearProgress ? null : frameProgressTotal ?? this.frameProgressTotal,
+      unassignedImportedRides: clearUnassignedImportedRides
+          ? null
+          : unassignedImportedRides ?? this.unassignedImportedRides,
     );
   }
 }

@@ -43,4 +43,29 @@ class RideEarningEntity extends EarningEntity {
   double get amount => fare + surge + tip;
 
   Duration get duration => Duration(seconds: durationSeconds);
+
+  /// Só pra associar a jornada depois de criada — ex.: corridas
+  /// importadas sem jornada (print/vídeo abertos fora do fluxo de
+  /// finalizar jornada) ganham uma jornada nova logo em seguida.
+  RideEarningEntity copyWith({String? shiftId}) {
+    return RideEarningEntity(
+      id: id,
+      shiftId: shiftId ?? this.shiftId,
+      occurredAt: occurredAt,
+      description: description,
+      app: app,
+      serviceType: serviceType,
+      fare: fare,
+      surge: surge,
+      tip: tip,
+      durationSeconds: durationSeconds,
+      distanceKm: distanceKm,
+      status: status,
+      pickupCep: pickupCep,
+      destinationCep: destinationCep,
+      pickupDistrictId: pickupDistrictId,
+      destinationDistrictId: destinationDistrictId,
+      dedupHash: dedupHash,
+    );
+  }
 }
