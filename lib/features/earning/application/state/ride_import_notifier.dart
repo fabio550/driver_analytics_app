@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:io';
+
 import 'package:driver_analytics_app/core/domain/enums/load_status.dart';
 import 'package:driver_analytics_app/core/domain/result/result.dart';
 import 'package:driver_analytics_app/features/earning/application/providers/earning_dependency.dart';
@@ -29,6 +32,7 @@ class RideImportNotifier extends Notifier<RideImportState> {
       status: LoadStatus.loading,
       clearError: true,
       clearResult: true,
+      clearProgress: true,
     );
     await _runPreview(rawText);
   }
@@ -40,12 +44,58 @@ class RideImportNotifier extends Notifier<RideImportState> {
       status: LoadStatus.loading,
       clearError: true,
       clearResult: true,
+      clearProgress: true,
     );
 
     try {
       final recognizer = ref.read(textRecognizerServiceProvider);
       final rawText = await recognizer.recognizeText(imagePath);
       await _runPreview(rawText);
+    } catch (error) {
+      state = state.copyWith(status: LoadStatus.error, error: error);
+    }
+  }
+
+  /// Extrai frames de um vídeo (gravação de tela rolando a lista de
+  /// corridas — alternativa ao print quando a Uber bloqueia screenshot
+  /// nessa tela), roda OCR em cada frame e junta todo o texto
+  /// reconhecido num só bloco antes de mandar pro mesmo pipeline de
+  /// [preview]. Frames sobrepostos geram a mesma corrida mais de uma
+  /// vez no texto — o dedup em [PreviewRideImportUseCase] descarta a
+  /// repetição antes de virar candidato.
+  Future<void> previewFromVideoPath(String videoPath) async {
+    state = state.copyWith(
+      status: LoadStatus.loading,
+      clearError: true,
+      clearResult: true,
+      clearProgress: true,
+    );
+
+    try {
+      final extractor = ref.read(videoFrameExtractorServiceProvider);
+      final recognizer = ref.read(mlKitTextRecognizerServiceProvider);
+      final framePaths = await extractor.extractFrames(videoPath);
+
+      if (framePaths.isEmpty) {
+        throw StateError('Não consegui extrair nenhum frame desse vídeo.');
+      }
+
+      final texts = <String>[];
+      for (var i = 0; i < framePaths.length; i++) {
+        final framePath = framePaths[i];
+        try {
+          texts.add(await recognizer.recognizeText(framePath));
+        } finally {
+          unawaited(File(framePath).delete().catchError((_) => File(framePath)));
+        }
+
+        state = state.copyWith(
+          frameProgressCurrent: i + 1,
+          frameProgressTotal: framePaths.length,
+        );
+      }
+
+      await _runPreview(texts.join('\n'));
     } catch (error) {
       state = state.copyWith(status: LoadStatus.error, error: error);
     }

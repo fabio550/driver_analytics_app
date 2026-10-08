@@ -1,13 +1,14 @@
 // ignore_for_file: prefer_initializing_formals
 
+import 'package:driver_analytics_app/features/earning/application/use_cases/ride_batch_deduper.dart';
 import 'package:driver_analytics_app/features/earning/application/use_cases/ride_import_candidate.dart';
 import 'package:driver_analytics_app/features/earning/domain/enums/ride_app.dart';
-import 'package:driver_analytics_app/features/earning/domain/enums/ride_service_type.dart';
 import 'package:driver_analytics_app/features/earning/domain/enums/ride_status.dart';
 import 'package:driver_analytics_app/features/earning/domain/repositories/earning_repository.dart';
 import 'package:driver_analytics_app/features/earning/infrastructure/dedup/ride_hash.dart';
 import 'package:driver_analytics_app/features/earning/infrastructure/geo/geo_lookup_service.dart';
 import 'package:driver_analytics_app/features/earning/infrastructure/parser/ride_parser.dart';
+import 'package:driver_analytics_app/features/earning/infrastructure/parser/ride_service_type_matcher.dart';
 
 /// Parser -> geo lookup -> dedup, sem persistir nada — o resultado é uma
 /// lista de candidatos pra o usuário revisar e confirmar antes de salvar.
@@ -26,9 +27,20 @@ class PreviewRideImportUseCase {
 
   Future<List<RideImportCandidate>> execute(String rawText) async {
     final parsedRides = _parser.parse(rawText);
+
+    // Um vídeo de scroll gera vários frames sobrepostos — a mesma
+    // corrida pode ser parseada mais de uma vez, a partir de frames
+    // diferentes, com pequenas divergências de leitura entre eles. O
+    // deduper agrupa essas leituras e decide um valor único por campo
+    // antes de virar candidato — a checagem contra o banco (abaixo) só
+    // pega duplicata de uma importação anterior, não dentro do mesmo
+    // lote.
+    final reconciledRides = const RideBatchDeduper().reconcile(parsedRides);
     final candidates = <RideImportCandidate>[];
 
-    for (final ride in parsedRides) {
+    for (final reconciled in reconciledRides) {
+      final ride = reconciled.ride;
+
       final pickupGeo = ride.pickupPostalCode != null
           ? _geoLookupService.resolvePostalCode(ride.pickupPostalCode!)
           : null;
@@ -49,7 +61,7 @@ class PreviewRideImportUseCase {
       candidates.add(RideImportCandidate(
         app: RideApp.uber,
         serviceTypeRaw: ride.serviceType,
-        serviceType: _mapServiceType(ride.serviceType),
+        serviceType: RideServiceTypeMatcher.match(ride.serviceType),
         status: _mapStatus(ride.status),
         occurredAt: ride.startedAt,
         fareBrl: ride.fareBrl,
@@ -64,40 +76,11 @@ class PreviewRideImportUseCase {
         dedupHash: dedupHash,
         isDuplicate: isDuplicate,
         rawOcrText: ride.rawOcrText,
+        hasDivergentReadings: reconciled.hasDivergentReadings,
       ));
     }
 
     return candidates;
-  }
-
-  static final RegExp _reUberX = RegExp(r'\buber ?x\b');
-  static final RegExp _reComfort = RegExp(r'\bcomfort\b');
-  static final RegExp _reBlack = RegExp(r'\bblack\b');
-  static final RegExp _reMoto = RegExp(r'\bmoto\b');
-  static final RegExp _reFlash = RegExp(r'\bflash\b');
-  static final RegExp _rePet = RegExp(r'\bpet\b');
-  static final RegExp _rePrioridade = RegExp(r'\bprioridade\b');
-
-  /// O OCR às vezes cola um caractere de ícone (um pino/bullet do layout
-  /// mal reconhecido) direto na frente do nome do serviço — "8 uber X",
-  /// "& uber X", "8 Comfort" — em vez do texto limpo. Comparar por
-  /// igualdade exata perdia essas corridas inteiras como "não
-  /// reconhecidas" por causa de 1 caractere solto. `\b` (borda de
-  /// palavra) tolera esse prefixo solto sem abrir mão de precisão: uma
-  /// variante real diferente como "UberXL" não bate com `uber ?x\b`,
-  /// porque não há borda de palavra entre o "x" e o "l" que vem colado
-  /// nele.
-  RideServiceType? _mapServiceType(String raw) {
-    final normalized = raw.trim().toLowerCase();
-
-    if (_reUberX.hasMatch(normalized)) return RideServiceType.uberX;
-    if (_reComfort.hasMatch(normalized)) return RideServiceType.comfort;
-    if (_reBlack.hasMatch(normalized)) return RideServiceType.black;
-    if (_reMoto.hasMatch(normalized)) return RideServiceType.moto;
-    if (_reFlash.hasMatch(normalized)) return RideServiceType.flash;
-    if (_rePet.hasMatch(normalized)) return RideServiceType.pet;
-    if (_rePrioridade.hasMatch(normalized)) return RideServiceType.priority;
-    return null;
   }
 
   RideStatus _mapStatus(String raw) {

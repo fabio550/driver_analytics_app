@@ -1,3 +1,4 @@
+import 'package:driver_analytics_app/features/earning/application/use_cases/ride_batch_deduper.dart';
 import 'package:driver_analytics_app/features/earning/domain/enums/ride_app.dart';
 import 'package:driver_analytics_app/features/earning/domain/enums/ride_service_type.dart';
 import 'package:driver_analytics_app/features/earning/domain/enums/ride_status.dart';
@@ -31,6 +32,12 @@ class RideImportCandidate {
   final bool isDuplicate;
   final String rawOcrText;
 
+  /// true quando essa corrida veio de leituras divergentes agrupadas
+  /// (ex.: frames diferentes de um vídeo leram tarifa/duração/distância
+  /// diferentes pra mesma corrida) — ver [RideBatchDeduper]. Vale
+  /// conferir esse candidato com atenção antes de confirmar.
+  final bool hasDivergentReadings;
+
   const RideImportCandidate({
     required this.app,
     required this.serviceTypeRaw,
@@ -49,6 +56,7 @@ class RideImportCandidate {
     required this.dedupHash,
     required this.isDuplicate,
     required this.rawOcrText,
+    this.hasDivergentReadings = false,
   });
 
   bool get isRecognized => serviceType != null;

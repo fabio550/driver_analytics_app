@@ -105,6 +105,13 @@ class RideImportCandidateTile extends StatelessWidget {
                       color: colorScheme.surfaceContainerHigh,
                       onColor: colorScheme.onSurfaceVariant,
                     ),
+                  ] else if (candidate.hasDivergentReadings) ...[
+                    const SizedBox(height: AppSpacing.xs),
+                    _Badge(
+                      label: 'Leituras divergentes — confira os valores',
+                      color: colorScheme.tertiaryContainer,
+                      onColor: colorScheme.onTertiaryContainer,
+                    ),
                   ],
                 ],
               ),

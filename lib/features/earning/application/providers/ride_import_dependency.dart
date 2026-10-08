@@ -2,6 +2,7 @@ import 'package:driver_analytics_app/features/earning/infrastructure/geo/geo_loo
 import 'package:driver_analytics_app/features/earning/infrastructure/ocr/fallback_text_recognizer_service.dart';
 import 'package:driver_analytics_app/features/earning/infrastructure/ocr/google_cloud_vision_text_recognizer_service.dart';
 import 'package:driver_analytics_app/features/earning/infrastructure/ocr/text_recognizer_service.dart';
+import 'package:driver_analytics_app/features/earning/infrastructure/ocr/video_frame_extractor_service.dart';
 import 'package:driver_analytics_app/features/earning/infrastructure/parser/ride_parser.dart';
 import 'package:driver_analytics_app/features/earning/infrastructure/parser/uber_parser.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -34,6 +35,10 @@ final rideParserProvider = Provider<RideParser>((ref) {
   return UberParser();
 });
 
+final videoFrameExtractorServiceProvider = Provider<VideoFrameExtractorService>((ref) {
+  return const ThumbnailGenVideoFrameExtractorService();
+});
+
 /// Um recognizer por tela de importação — fecha (libera o motor on-device
 /// e o client HTTP da Cloud Vision, se estiver em uso) quando o provider
 /// é descartado, ex: ao sair da tela.
@@ -56,6 +61,19 @@ final textRecognizerServiceProvider = Provider<TextRecognizerService>((ref) {
     primary: GoogleCloudVisionTextRecognizerService(apiKey: _googleCloudVisionApiKey),
     fallback: mlKit,
   );
+  ref.onDispose(service.dispose);
+  return service;
+});
+
+/// Sempre ML Kit, nunca Cloud Vision — usado só pra extrair texto dos
+/// frames de um vídeo importado. Um vídeo gera dezenas de frames (uma
+/// chamada de OCR cada); rodar isso contra a Cloud Vision estouraria a
+/// cota gratuita num único import. Como o scroll do vídeo sobrepõe
+/// frames, a mesma corrida é lida mais de uma vez — a redundância
+/// compensa boa parte da imprecisão do motor on-device, e a confirmação
+/// final continua manual na tela de revisão.
+final mlKitTextRecognizerServiceProvider = Provider<MlKitTextRecognizerService>((ref) {
+  final service = MlKitTextRecognizerService();
   ref.onDispose(service.dispose);
   return service;
 });

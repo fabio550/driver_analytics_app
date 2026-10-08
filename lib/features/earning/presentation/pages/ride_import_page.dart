@@ -56,6 +56,15 @@ class _RideImportPageState extends ConsumerState<RideImportPage> {
     await ref.read(rideImportNotifierProvider.notifier).previewFromImagePath(file.path);
   }
 
+  Future<void> _pickVideo() async {
+    // Alternativa pro print quando a Uber bloqueia a captura de tela
+    // nessa tela com um aviso cobrindo o conteúdo — gravação de tela
+    // (rolando a lista devagar) não aciona o mesmo bloqueio.
+    final file = await ImagePicker().pickVideo(source: ImageSource.gallery);
+    if (file == null || !mounted) return;
+    await ref.read(rideImportNotifierProvider.notifier).previewFromVideoPath(file.path);
+  }
+
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(rideImportNotifierProvider);
@@ -163,7 +172,10 @@ class _RideImportPageState extends ConsumerState<RideImportPage> {
     }
 
     if (state.status == LoadStatus.loading) {
-      return const _LoadingSkeleton();
+      return _LoadingSkeleton(
+        current: state.frameProgressCurrent,
+        total: state.frameProgressTotal,
+      );
     }
 
     return ScreenScrollView(
@@ -171,7 +183,9 @@ class _RideImportPageState extends ConsumerState<RideImportPage> {
         Text(
           'Selecione o print da tela de corridas do Uber. O texto é lido '
           'direto no aparelho (nada é enviado pra fora) e cada corrida '
-          'encontrada aparece pra você conferir antes de salvar.',
+          'encontrada aparece pra você conferir antes de salvar. Se a Uber '
+          'bloquear o print, grave a tela rolando a lista e selecione o '
+          'vídeo em vez da imagem.',
           style: Theme.of(context).textTheme.bodyMedium,
         ),
         const SizedBox(height: AppSpacing.lg),
@@ -179,6 +193,13 @@ class _RideImportPageState extends ConsumerState<RideImportPage> {
           onPressed: _pickImage,
           icon: const Icon(Icons.image_outlined),
           label: const Text('Selecionar print'),
+          style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(56)),
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        OutlinedButton.icon(
+          onPressed: _pickVideo,
+          icon: const Icon(Icons.videocam_outlined),
+          label: const Text('Selecionar vídeo (scroll gravado)'),
           style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(56)),
         ),
         const SizedBox(height: AppSpacing.md),
@@ -316,12 +337,25 @@ class _RawTextPanel extends StatelessWidget {
 }
 
 class _LoadingSkeleton extends StatelessWidget {
-  const _LoadingSkeleton();
+  final int? current;
+  final int? total;
+
+  const _LoadingSkeleton({this.current, this.total});
 
   @override
   Widget build(BuildContext context) {
     return ScreenScrollView(
       children: [
+        if (current != null && total != null) ...[
+          Text(
+            'Lendo frame $current de $total…',
+            style: Theme.of(context)
+                .textTheme
+                .bodyMedium
+                ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
+          ),
+          const SizedBox(height: AppSpacing.md),
+        ],
         for (var i = 0; i < 3; i++) ...[
           const SkeletonCard(
             children: [

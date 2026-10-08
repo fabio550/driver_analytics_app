@@ -45,6 +45,7 @@ dependencies:
   path: ^1.9.1
   image_picker: ^1.2.3
   google_mlkit_text_recognition: ^0.17.1
+  video_thumbnail_gen: ^0.6.3
   crypto: ^3.0.7
   http: ^1.2.2
   excel: ^4.0.6

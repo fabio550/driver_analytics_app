@@ -16,6 +16,11 @@ class RideImportState {
   final int? lastImportedCount;
   final int? lastSkippedCount;
 
+  /// Progresso de frame processado durante a importação por vídeo — null
+  /// fora desse fluxo (print único/texto colado não têm várias etapas).
+  final int? frameProgressCurrent;
+  final int? frameProgressTotal;
+
   const RideImportState({
     this.status = LoadStatus.initial,
     this.candidates = const [],
@@ -25,6 +30,8 @@ class RideImportState {
     this.isSaving = false,
     this.lastImportedCount,
     this.lastSkippedCount,
+    this.frameProgressCurrent,
+    this.frameProgressTotal,
   });
 
   RideImportState copyWith({
@@ -36,8 +43,11 @@ class RideImportState {
     bool? isSaving,
     int? lastImportedCount,
     int? lastSkippedCount,
+    int? frameProgressCurrent,
+    int? frameProgressTotal,
     bool clearError = false,
     bool clearResult = false,
+    bool clearProgress = false,
   }) {
     return RideImportState(
       status: status ?? this.status,
@@ -50,6 +60,11 @@ class RideImportState {
           clearResult ? null : lastImportedCount ?? this.lastImportedCount,
       lastSkippedCount:
           clearResult ? null : lastSkippedCount ?? this.lastSkippedCount,
+      frameProgressCurrent: clearProgress
+          ? null
+          : frameProgressCurrent ?? this.frameProgressCurrent,
+      frameProgressTotal:
+          clearProgress ? null : frameProgressTotal ?? this.frameProgressTotal,
     );
   }
 }

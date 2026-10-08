@@ -288,5 +288,23 @@ Rua Serra de Botucatu, Tatuape - Sao Paulo - SP, 03317-000, BR
       final candidates = await useCase.execute('nada aqui');
       expect(candidates, isEmpty);
     });
+
+    test('corrida repetida dentro do mesmo texto (frames de vídeo '
+        'sobrepostos) aparece só uma vez', () async {
+      // Simula o que acontece ao juntar o texto de vários frames de um
+      // vídeo com scroll lento: a mesma corrida é OCR'd em frames
+      // vizinhos e cai duas vezes no texto final, uma atrás da outra.
+      final overlappingText = '$_rawText\n$_rawText';
+
+      final useCase = PreviewRideImportUseCase(
+        parser: UberParser(),
+        geoLookupService: geoLookupService,
+        repository: FakeEarningRepository(),
+      );
+      final candidates = await useCase.execute(overlappingText);
+
+      expect(candidates, hasLength(7));
+      expect(candidates.every((c) => !c.isDuplicate), isTrue);
+    });
   });
 }
