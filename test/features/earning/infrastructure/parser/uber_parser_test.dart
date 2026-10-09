@@ -733,5 +733,54 @@ Rua Lima Campos, Artur Alvim - São Paulo - SP, 03689-000, Brasil
         expect(ride.durationSeconds, 66 * 60);
       });
     });
+
+    group('duração "Xh Ymin" colada direto na distância, sem separador '
+        'nem espaço ("min78.21", vídeo com scroll rápido)', () {
+      // "min" seguido de dígito sem nada no meio — "n" e o dígito são os
+      // dois caracteres de palavra, então não existe borda ali e o `\b`
+      // do fim de `_reHourMinute` falhava silenciosamente, deixando a
+      // linha inteira sem normalizar (a corrida inteira era perdida).
+      final now = DateTime(2026, 10, 9, 12);
+
+      const rawText = '''
+dom., 4 de out.
+
+R\$ 114,46
+
+17:26
+
+Uber X.lh9 min78.21 km
+
+R. Gaspar Fernandes, Vila Monumento - São Paulo - SP, 01549-000, Brasil
+
+
+R\$ 58,88
+
+15:58
+
+Uber Xlh5min31.70 km
+
+9 R\$ 9,00 Preço dinâmico
+''';
+
+      test('reconhece as duas corridas (1h9min e 1h5min) mesmo com a '
+          'distância colada direto em "min"', () {
+        final rides = parser.parse(rawText, now: now);
+        expect(rides, hasLength(2));
+
+        final ride1 = rides[0];
+        expect(ride1.serviceType, 'Uber X');
+        expect(ride1.fareBrl, 114.46);
+        expect(ride1.durationSeconds, 69 * 60);
+        expect(ride1.distanceKm, 78.21);
+
+        final ride2 = rides[1];
+        expect(ride2.serviceType, 'Uber X');
+        expect(ride2.fareBrl, 58.88);
+        expect(ride2.durationSeconds, 65 * 60);
+        expect(ride2.distanceKm, 31.70);
+        expect(ride2.surgeBrl, 9.00);
+      });
+    });
   });
 }

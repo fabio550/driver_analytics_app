@@ -88,7 +88,16 @@ class UberParser implements RideParser {
   /// no lugar do dígito da hora e espaço opcional (não obrigatório) ao
   /// redor de "h"/"min" — já apareceu compactado sem nenhum espaço
   /// ("Xlh6min" em vez de "X 1h 6 min").
-  static final RegExp _reHourMinute = RegExp(r'([\dlI]+)\s*h\s*([\dlI]+)\s*min\b');
+  ///
+  /// Termina em negativa de letra, não em `\b`: a distância às vezes
+  /// vem colada direto em "min" sem separador nem espaço ("min78.21",
+  /// visto num vídeo com scroll rápido) — "n" e "7" são os dois
+  /// caracteres de palavra, então não existe borda ali e `\b` falhava
+  /// silenciosamente, deixando a linha inteira sem normalizar. A
+  /// negativa só impede casar "min" como prefixo de outra palavra
+  /// ("minuto"), e deixa dígito colado passar.
+  static final RegExp _reHourMinute =
+      RegExp(r'([\dlI]+)\s*h\s*([\dlI]+)\s*min(?![a-zA-ZÀ-ÿ])');
 
   static String _normalizeHourMinuteDuration(String line) {
     return line.replaceAllMapped(_reHourMinute, (m) {
