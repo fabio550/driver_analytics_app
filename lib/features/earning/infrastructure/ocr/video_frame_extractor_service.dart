@@ -36,19 +36,22 @@ class ThumbnailGenVideoFrameExtractorService implements VideoFrameExtractorServi
     if (durationMs <= 0) return const [];
 
     final timesMs = _sampleTimes(durationMs);
-    final frames = await VideoThumbnail.thumbnailDataList(
-      video: videoPath,
-      timesMs: timesMs,
-      imageFormat: ImageFormat.JPEG,
-      quality: 90,
-    );
-
     final tempDir = await getTemporaryDirectory();
     final batchId = DateTime.now().microsecondsSinceEpoch;
     final paths = <String>[];
 
-    for (var i = 0; i < frames.length; i++) {
-      final bytes = frames[i];
+    // `thumbnailDataList` (extração em lote) tem um bug na versão atual
+    // do pacote — o lado nativo sempre espera um `timeMs` no payload,
+    // mesmo pra esse método, e o wrapper Dart dele não manda, gerando
+    // NPE do lado Android. `thumbnailData` (frame único) manda esse
+    // campo certinho, então extrai um frame por vez em vez de em lote.
+    for (var i = 0; i < timesMs.length; i++) {
+      final bytes = await VideoThumbnail.thumbnailData(
+        video: videoPath,
+        timeMs: timesMs[i],
+        imageFormat: ImageFormat.JPEG,
+        quality: 90,
+      );
       if (bytes == null) continue;
 
       final file = File('${tempDir.path}/ride_import_frame_${batchId}_$i.jpg');
